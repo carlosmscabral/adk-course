@@ -41,7 +41,7 @@ There are 6 hook points in the invocation lifecycle plus 2 error hooks. They are
 
 - `adk-samples/python/agents/llm-auditor/llm_auditor/sub_agents/critic/agent.py` — `after_model_callback=_render_reference` appends Google Search grounding URLs to the response.
 - `adk-samples/python/agents/llm-auditor/llm_auditor/sub_agents/reviser/agent.py` — `after_model_callback=_remove_end_of_edit_mark` strips a sentinel suffix.
-- `adk-samples/python/agents/travel-planner-google-maps-mcp/travel_planner_agent/agent.py` — imports the full callback surface alongside an `MCPToolset`.
+- `adk-samples/python/agents/travel-planner-google-maps-mcp/travel_planner_agent/agent.py` — imports the full callback surface alongside an `McpToolset`.
 - `adk-samples/python/agents/safety-plugins/safety_plugins/plugins/model_armor.py` — same idioms as plugins (and the plugin-vs-callback distinction is the next thing you'll learn).
 
 ## 🗺 Map of this module

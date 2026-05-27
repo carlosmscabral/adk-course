@@ -30,7 +30,7 @@ The course's modules map to these doc sections. Page references in `05_Dissectin
 | Tools — `FunctionTool`, docstring schema | [03 Tools](../Notes/03_Tools/) |
 | Tools — `AgentTool`, built-in tools | [03 Tools](../Notes/03_Tools/), [05 Multi-Agent](../Notes/05_MultiAgent/) |
 | Tools — `LongRunningFunctionTool` | [03 Tools](../Notes/03_Tools/), [18 Streaming & Live](../Notes/18_StreamingLive/) |
-| Tools — `MCPToolset` | [08 MCP](../Notes/08_MCP/) |
+| Tools — `McpToolset` | [08 MCP](../Notes/08_MCP/) |
 | Tools — `SkillToolset` | [09 Skills](../Notes/09_Skills/) |
 | Runtime — `Runner`, `InMemoryRunner` | [02 First Agent](../Notes/02_FirstAgent/) |
 | Runtime — Resume / Cancel (2.0) | [02 First Agent](../Notes/02_FirstAgent/), [06 Graph Workflows](../Notes/06_GraphWorkflows/) |

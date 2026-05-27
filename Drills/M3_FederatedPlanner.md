@@ -4,7 +4,7 @@ page: M3_FederatedPlanner
 title: Milestone M3 — Federated Travel Planner (Callbacks + MCP + Skills + A2A)
 estimated_minutes: 960
 prereqs: [00_Setup/last, 01_Foundations/last, 02_FirstAgent/last, 03_Tools/last, 04_SessionsState/last, 05_MultiAgent/last, 07_Callbacks/last, 08_MCP/last, 09_Skills/last, 10_A2A/last]
-concepts: [SequentialAgent, sub_agents, MCPToolset, FastMCP, Skill, SkillToolset, to_a2a, RemoteA2aAgent, before_tool_callback]
+concepts: [SequentialAgent, sub_agents, McpToolset, FastMCP, Skill, SkillToolset, to_a2a, RemoteA2aAgent, before_tool_callback]
 icon: 🏁
 in_production: false
 detours_suggested: [FastMCP, a2UI, VisualBuilder]
@@ -26,7 +26,7 @@ A **federated travel planner** that exercises every primitive from the Integrati
    ──── A2A ────►      │   ├── itinerary_agent  (LlmAgent sub_agent)         │
    RemoteA2aAgent      │   └── booking_agent    (LlmAgent sub_agent)         │
                        │           ├── SkillToolset(booking_skill)           │
-                       │           └── MCPToolset ──► hotels_mcp (port 8090) │
+                       │           └── McpToolset ──► hotels_mcp (port 8090) │
                        └─────────────────────────────────────────────────────┘
                                                           │
                                                           ▼
@@ -51,7 +51,7 @@ Three OS processes, one network, every M07-M10 primitive touched at least once.
 ## 📋 Prereqs
 
 - Completed `Notes/00_Setup` through `Notes/10_A2A`, including all mini-drills.
-- `google-adk` installed (2.0 GA or later) — needs `to_a2a`, `RemoteA2aAgent`, `SkillToolset`, `MCPToolset`.
+- `google-adk` installed (2.0 GA or later) — needs `to_a2a`, `RemoteA2aAgent`, `SkillToolset`, `McpToolset`.
 - `fastmcp` installed (for the hotels MCP server).
 - `uvicorn` installed (for the A2A ASGI app).
 - LLM credentials configured (Gemini API key or Vertex auth).
@@ -175,7 +175,7 @@ from pathlib import Path
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.agents import LlmAgent
 from google.adk.skills import load_skill_from_dir
-from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
 # NOTE: `MCPToolset` is deprecated in favor of `McpToolset` per `mcp_toolset.py:66,500`.
 from google.adk.tools.skill_toolset import SkillToolset
 
@@ -212,7 +212,7 @@ booking_agent = LlmAgent(
     ),
     tools=[
         SkillToolset(skills=[booking_skill]),
-        MCPToolset(
+        McpToolset(
             connection_params=StreamableHTTPConnectionParams(
                 url=os.getenv("HOTELS_MCP_URL", "http://localhost:8090/mcp"),
             )
@@ -352,7 +352,7 @@ Run order matters. Three terminals:
 
 Common pitfalls — call them out before they bite:
 
-- **Forgot to start the MCP server first.** The planner boots fine because the `MCPToolset` connects lazily, but the first `search_hotels` call fails with a connection error. Symptom: client final response says "I couldn't reach the hotels system." Fix: always start MCP first, planner second.
+- **Forgot to start the MCP server first.** The planner boots fine because the `McpToolset` connects lazily, but the first `search_hotels` call fails with a connection error. Symptom: client final response says "I couldn't reach the hotels system." Fix: always start MCP first, planner second.
 - **Ran planner with `python agent.py` instead of `uvicorn`.** The module defines `a2a_app` but no `if __name__ == "__main__": uvicorn.run(...)` block. Symptom: script exits immediately with no error. Fix: use the uvicorn CLI exactly as written.
 - **`agent_card="http://localhost:10002/"` instead of the full `.well-known/agent.json` path.** `RemoteA2aAgent` does not auto-discover. Symptom: client crashes at startup with "card not found". Fix: include `/.well-known/agent.json` in the URL.
 - **MCP session not cleaned up.** Symptom: stale sessions accumulate, eventually port 8090 connections refuse. Fix: see [[08_MCP/04_LifecycleManagement]] — wrap the toolset's `__aexit__` properly when running long-lived planners.

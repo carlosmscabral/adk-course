@@ -4,6 +4,34 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.6] - 2026-05-27
+
+The two deferred items from v0.3.5 — `Contents.md` rewrite and the `MCPToolset` → `McpToolset` deprecation sweep — landed together. 50 files modified across two parallel fix agents.
+
+### Fixed
+
+**`Contents.md` — full rewrite**
+- Old TOC was severely stale (~70 broken links + ~50 orphan pages from Phase 3.5 onward). Rewrote from disk: every module/page link verified to resolve. New structure mirrors `MAP.md`'s 8-track grouping (Foundation / Composition / Integration / Data & GCP / Runtime / Production / Reference / Capstone) with side modules (1A `AppAndRunner`, 2A `AgentConfig`, etc.) tagged inline so students can tell main-line from optional at a glance.
+- Final count: **~393 link entries** — 351 module pages + 27 Detours + 5 Drills + 7 cheat sheets + 3 meta refs. Voice preserved from prior file.
+
+**`MCPToolset` → `McpToolset` deprecation sweep**
+- `class MCPToolset(McpToolset)` at `mcp_toolset.py:495-505` is a deprecation alias that emits a `DeprecationWarning` at instantiation; `McpToolset` is the modern name (`mcp_toolset.py:66`). 49 files updated (`Notes/`, `Drills/`, `Reference/`), ~144 occurrences renamed.
+- New 🪧 callout at `Notes/08_MCP/02_MCPToolset.md:19` explains the alias + how to silence the warning without code change.
+- **Intentionally retained** (2 files):
+  - `Notes/08_MCP/02_MCPToolset.md` — frontmatter `page:` slug, breadcrumb, historical `title:` (the page IS about the deprecation story).
+  - `Drills/M3_FederatedPlanner.md` — line-179 deprecation explainer comment + line-384 wiki-link to the MCP module page.
+
+### Method
+- Two parallel fix agents with non-overlapping scopes (Contents.md rewrite / corpus-wide sweep). Both verified post-run.
+
+### Why
+- User: "let's continue working. we are almost there." Both items were the last debts from the Wave 3-4 dogfood cycle. Shipping them together unblocks the Phase 4-5 authoring track that was waiting on a clean TOC.
+
+### Deferred
+- Wave 4 🟡 polish items remain open; small enough to fold into the next functional bump rather than block on a polish-only release.
+
+---
+
 ## [0.3.5] - 2026-05-27
 
 Dogfood Wave 4 — student-facing reference surface. Five parallel read-only verification agents covered the surfaces waves 1-3 hadn't sampled: all 7 cheatsheets, all 5 milestone drills, the entire `21_AdkApiSurface` module, every module-local `AGENTS.md`, and top-level `AGENTS.md`/`MAP.md`/`Contents.md`. Three parallel fix agents then corrected 17 files. (Top-level `AGENTS.md`/`MAP.md` verified clean. `Contents.md` is severely stale — ~70 broken links + ~50 orphan pages — deferred to v0.3.6 as a focused rewrite.)

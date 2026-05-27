@@ -11,7 +11,7 @@
        └─────┬──────┘   └─────┬──────┘        └─────┬──────┘
              │                │                     │
              │ google_search  │                     │  rubric-based eval
-             │ MCPToolset(    │  output_schema=     │
+             │ McpToolset(    │  output_schema=     │
              │   doc-store)   │  Summary            │
              │                │                     │
              ▼                ▼                     ▼

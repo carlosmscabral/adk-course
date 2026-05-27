@@ -168,7 +168,7 @@ The framework wires every public `BaseComputer` method into the LLM's tool list 
 
 Every action returns a fresh screenshot. Gemini uses pixel coordinates against the screenshot it just received — that's why `screen_size()` must report the real dimensions of the screenshots you produce.
 
-## 🧠 When this beats `FunctionTool` / `MCPToolset`
+## 🧠 When this beats `FunctionTool` / `McpToolset`
 
 * **No API.** The site has no public API and you don't want to scrape HTML. Computer Use clicks like a human.
 * **Auth flows.** SSO, captchas, "are you a robot?" — easier to drive interactively than to forge tokens.
@@ -177,7 +177,7 @@ Every action returns a fresh screenshot. Gemini uses pixel coordinates against t
 ## ⚠️ When this is the wrong hammer
 
 * Anything with a stable JSON API — `FunctionTool` is 100× faster and 1000× cheaper per call.
-* Internal tools at your company — write an `MCPToolset` (Module 08), don't drive a browser.
+* Internal tools at your company — write an `McpToolset` (Module 08), don't drive a browser.
 * Anything safety-critical (banking, healthcare records, prod infra) — model misclicks happen.
 
 > **🚀 In Production**

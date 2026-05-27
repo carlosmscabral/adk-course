@@ -33,7 +33,7 @@ Walk this list when you think you're done. Each item must be **yes** with a poin
 ## Production primitives
 
 - [ ] **07 Callbacks** — ≥2 callbacks, ≥1 of them a guardrail.
-- [ ] **08 MCP** — at least one `MCPToolset` (mandatory for Tracks A and B; optional but encouraged for Track C).
+- [ ] **08 MCP** — at least one `McpToolset` (mandatory for Tracks A and B; optional but encouraged for Track C).
 - [ ] **09 Skills** — Track C only mandatory; Tracks A/B optional. If present, frontmatter + body in proper `.skill` files.
 - [ ] **10 A2A** — `to_a2a(root)` runs; tested with `RemoteA2aAgent` client; AgentCard valid.
 

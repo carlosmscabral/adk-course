@@ -51,7 +51,7 @@ root_agent = LlmAgent(
     description="An agent that can help with currency conversions",
     instruction=SYSTEM_INSTRUCTION,
     tools=[
-        MCPToolset(
+        McpToolset(
             connection_params=StreamableHTTPConnectionParams(
                 url=os.getenv("MCP_SERVER_URL", "http://localhost:8080/mcp")
             )
@@ -117,7 +117,7 @@ This calls the A2A client SDK to discover the agent, open a task, and stream res
                        currency_agent/agent.py
                               │
                               ▼
-                         root_agent  (LlmAgent + MCPToolset)
+                         root_agent  (LlmAgent + McpToolset)
                           ╱     │     ╲
             ┌────────────┘      │      └────────────────┐
             ▼                   ▼                       ▼

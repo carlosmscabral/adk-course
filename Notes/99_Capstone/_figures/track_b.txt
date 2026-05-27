@@ -14,7 +14,7 @@
        │   Agent    │   │   Agent    │        │   Agent    │
        └─────┬──────┘   └─────┬──────┘        └─────┬──────┘
              │                │                     │
-             │ FunctionTool:  │  FunctionTool:      │ MCPToolset:
+             │ FunctionTool:  │  FunctionTool:      │ McpToolset:
              │ run_tests()    │  lint()             │ security-rules-server
              │   (Vertex      │                     │
              │    sandbox)    │                     │

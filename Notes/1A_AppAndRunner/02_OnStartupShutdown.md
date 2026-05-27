@@ -4,7 +4,7 @@ page: 02_OnStartupShutdown
 title: App lifecycle — on_startup and on_shutdown hooks
 estimated_minutes: 20
 prereqs: [1A_AppAndRunner/01]
-concepts: [lifecycle, startup, shutdown, MCPToolset, connection-pool, warm-up]
+concepts: [lifecycle, startup, shutdown, McpToolset, connection-pool, warm-up]
 icon: 🛠
 in_production: true
 detours_suggested: [PY_async, FastAPI_for_ADK]
@@ -24,7 +24,7 @@ The `App` Pydantic model itself does not (today) expose `on_startup=` / `on_shut
 
 | Resource | Why it needs startup | Why putting it in `LlmAgent(...)` at import time is wrong |
 |---|---|---|
-| **MCP server child process** | `MCPToolset(stdio_params=...)` spawns a subprocess; you do not want one per request. | Spawning at import time blocks import. Spawning per-request adds ~200ms latency. |
+| **MCP server child process** | `McpToolset(stdio_params=...)` spawns a subprocess; you do not want one per request. | Spawning at import time blocks import. Spawning per-request adds ~200ms latency. |
 | **Database connection pool** | Opening a pool is async I/O. | Cannot `await` at import time without `asyncio.run` hacks. |
 | **Vertex AI client warm-up** | First API call after process start pays ~500ms TLS + auth. | Better to pay it once before the first user request lands. |
 | **Loading a large local model** | `LiteLlm(model="gemma-2-9b")` may pull weights. | Should happen before serving begins, not on the hot path. |
@@ -163,7 +163,7 @@ $ adk api_server my_agent/
 
 … discovers `my_agent/agent.py`, imports `root_agent` or `app`, builds the Runner, opens lifespan. You get pattern 2 for free. See [Module 21 ADK API Surface](../21_AdkApiSurface/) for the full picture.
 
-> ❓ **Ask the student:** "We have an `MCPToolset(stdio_params=...)` that spawns a Python subprocess on import. Why is that subprocess a startup-hook concern instead of just `agent = LlmAgent(tools=[MCPToolset(...)])` at module scope?"
+> ❓ **Ask the student:** "We have an `McpToolset(stdio_params=...)` that spawns a Python subprocess on import. Why is that subprocess a startup-hook concern instead of just `agent = LlmAgent(tools=[McpToolset(...)])` at module scope?"
 > *(Expected: import-time subprocess spawning blocks Python's import machinery, can race against testing, and offers no clean shutdown path. The pattern is: declare the toolset config at module scope, but `await toolset.connect()` inside the startup hook so it owns the subprocess lifetime.)*
 
 ## 🚀 In Production

@@ -34,7 +34,7 @@ See `_figures/decision_flowchart.txt` for the ASCII flowchart.
 
 ### 3. Need MCP from day 1?
 
-- **Yes**: ADK (first-class `MCPToolset`).
+- **Yes**: ADK (first-class `McpToolset`).
 - **No**: anything else works; ADK still has the smoothest MCP wiring.
 
 ### 4. Need A2A?

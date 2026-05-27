@@ -42,7 +42,7 @@
         ▼                ▼
       ADK            anything
       (first-class    (LangChain has
-       MCPToolset)    adapters; ADK
+       McpToolset)    adapters; ADK
                       is just smoother)
 
    ┌──────────────────────────────────────┐

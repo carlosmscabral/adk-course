@@ -4,7 +4,7 @@ page: 00_Overview
 title: Module 08 — MCP (consume external servers, expose your own tools)
 estimated_minutes: 10
 prereqs: [03_Tools/00, 07_Callbacks/00]
-concepts: [MCP, MCPToolset, stdio, sse, streamable_http, FastMCP]
+concepts: [MCP, McpToolset, stdio, sse, streamable_http, FastMCP]
 icon: 🗺
 in_production: true
 detours_suggested: [FastMCP, PY_async]
@@ -18,12 +18,12 @@ You are here: 🗺 Integration Track ▸ 08 MCP ▸ 00 Overview
 
 You can write Python functions and turn them into ADK tools (Module 03). That's great until you need to share those tools across many agents, or integrate with someone else's catalog (Google Maps tools, Stripe tools, a corporate knowledge base).
 
-**MCP** is the standard that solves both. It is a JSON-RPC-over-transports protocol for tool / resource / prompt exposure. ADK ships an `MCPToolset` to consume *any* MCP server as if its tools were native. And `FastMCP` lets you publish your own.
+**MCP** is the standard that solves both. It is a JSON-RPC-over-transports protocol for tool / resource / prompt exposure. ADK ships an `McpToolset` to consume *any* MCP server as if its tools were native. And `FastMCP` lets you publish your own.
 
 ## 🎯 What you'll walk away knowing
 
 - The MCP wire model: tools, resources, prompts, transports.
-- How to consume an MCP server from an ADK agent with `MCPToolset`.
+- How to consume an MCP server from an ADK agent with `McpToolset`.
 - The 3 transports: stdio (local subprocess), HTTP-SSE, Streamable-HTTP.
 - How to serve your own tools with `FastMCP`.
 - Lifecycle management (the cleanup pattern that catches everyone).
@@ -51,7 +51,7 @@ You can write Python functions and turn them into ADK tools (Module 03). That's 
 ```
 00 Overview            ← you are here
 01 What Is MCP
-02 MCPToolset
+02 McpToolset
 03 Transports
 04 Lifecycle Management
 05 Serving via FastMCP

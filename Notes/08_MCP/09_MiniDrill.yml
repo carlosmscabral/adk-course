@@ -10,17 +10,17 @@ exercise:
        city. Run on port 8080 over Streamable-HTTP.
 
     2. Write a client agent `Work/weather_agent.py` that uses
-       `MCPToolset(StreamableHTTPConnectionParams(url=...))` to consume the
+       `McpToolset(StreamableHTTPConnectionParams(url=...))` to consume the
        server. Model: `gemini-2.5-flash`. Instruction: "Answer weather
        questions using the fetch_weather tool."
 
     3. Add a driver block that runs the agent against the prompt
        "What's the weather in Tokyo?" and prints the final reply.
 
-    4. Ensure the MCPToolset gets cleaned up — either by calling
+    4. Ensure the McpToolset gets cleaned up — either by calling
        `await runner.close()` in a `try/finally` around the run, or by
-       calling `await toolset.close()` directly. (MCPToolset does NOT
-       implement `__aenter__` / `__aexit__`; `async with MCPToolset(...)`
+       calling `await toolset.close()` directly. (McpToolset does NOT
+       implement `__aenter__` / `__aexit__`; `async with McpToolset(...)`
        will raise.)
   scaffolding_hint: |
     See `currency-agent/mcp-server/server.py` for the FastMCP shape.
@@ -50,8 +50,8 @@ exercise:
       server running.
     - Skipping cleanup (`await runner.close()` or `await toolset.close()`)
       and wondering why a port stays bound after exit. Note: trying
-      `async with MCPToolset(...)` is a real footgun — it raises
-      `AttributeError: __aenter__` because MCPToolset does not implement
+      `async with McpToolset(...)` is a real footgun — it raises
+      `AttributeError: __aenter__` because McpToolset does not implement
       the async-context-manager protocol. Cleanup is via `Runner.close()`
       (auto, walks agent tree) or the explicit `await toolset.close()`.
     Stretch: ask them to add a `before_tool_callback` that injects a

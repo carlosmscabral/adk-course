@@ -60,7 +60,7 @@ For tools that come from a toolset (MCP, Skills, AgentTool), the YAML form is **
 
 ```yaml
 tools:
-  - name: google.adk.tools.mcp_tool.MCPToolset
+  - name: google.adk.tools.mcp_tool.McpToolset
     args:
       connection_params:
         url: http://localhost:8080/mcp

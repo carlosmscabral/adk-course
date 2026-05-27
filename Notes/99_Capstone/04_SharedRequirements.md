@@ -20,7 +20,7 @@ Regardless of track, your capstone MUST satisfy all of the below. These are also
 ## Composition
 
 - [ ] **≥3 agents composed** — via `sub_agents` (transfer pattern) OR via a `WorkflowAgent` graph.
-- [ ] **≥2 tools** — `FunctionTool`, `LongRunningFunctionTool`, `AgentTool`, or `MCPToolset`. At least ONE must NOT be a built-in (`google_search`, `load_memory`, etc.).
+- [ ] **≥2 tools** — `FunctionTool`, `LongRunningFunctionTool`, `AgentTool`, or `McpToolset`. At least ONE must NOT be a built-in (`google_search`, `load_memory`, etc.).
 
 ## State and memory
 

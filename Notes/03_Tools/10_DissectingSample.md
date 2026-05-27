@@ -4,7 +4,7 @@ page: 10_DissectingSample
 title: Dissecting currency-agent and academic-research tool use
 estimated_minutes: 20
 prereqs: [03_Tools/09]
-concepts: [MCPToolset, google_search, AgentTool, real-samples]
+concepts: [McpToolset, google_search, AgentTool, real-samples]
 icon: 🧠
 in_production: false
 detours_suggested: []
@@ -22,11 +22,11 @@ We've talked about tools abstractly. Now read how two real ADK samples wire them
 
 Open [`adk-samples/python/agents/currency-agent/currency_agent/agent.py`](../../../adk-samples/python/agents/currency-agent/currency_agent/agent.py).
 
-Tool definition is in the MCP server (`mcp-server/` subdir). The agent receives it via `MCPToolset`:
+Tool definition is in the MCP server (`mcp-server/` subdir). The agent receives it via `McpToolset`:
 
 ```python
 tools=[
-    MCPToolset(
+    McpToolset(
         connection_params=StreamableHTTPConnectionParams(
             url=os.getenv("MCP_SERVER_URL", "http://localhost:8080/mcp")
         )
@@ -34,7 +34,7 @@ tools=[
 ],
 ```
 
-**Big point:** the agent doesn't `import` the tool function. It connects to a process that exposes one. `MCPToolset` auto-discovers tools from the connected MCP server at startup. This decouples the *agent author* from the *tool author* — Module 08 unpacks this fully.
+**Big point:** the agent doesn't `import` the tool function. It connects to a process that exposes one. `McpToolset` auto-discovers tools from the connected MCP server at startup. This decouples the *agent author* from the *tool author* — Module 08 unpacks this fully.
 
 For our purposes today: the tool ends up looking, from Gemini's view, exactly like a `FunctionTool` would. Same JSON schema, same call mechanics, same return shape. The transport changed; the contract didn't.
 
@@ -82,7 +82,7 @@ Three tools chained, two levels deep. **All built from the primitives in this mo
 
 | Concept | `currency-agent` | `academic-research` |
 |---|---|---|
-| How tools enter the agent | `MCPToolset` (remote, dynamic) | Built-in + `AgentTool` (in-process) |
+| How tools enter the agent | `McpToolset` (remote, dynamic) | Built-in + `AgentTool` (in-process) |
 | Tool count | Discovered from MCP server | 2 wrapped sub-agents (each with 1 tool) |
 | Depth | 1 level (agent → tool) | 2 levels (coordinator → sub-agent → tool) |
 | Module to deep-dive | 08 (MCP) | 05 (Multi-agent) |

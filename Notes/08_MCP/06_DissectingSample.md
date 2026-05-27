@@ -4,7 +4,7 @@ page: 06_DissectingSample
 title: Dissecting antom-payment, currency-agent, travel-planner
 estimated_minutes: 30
 prereqs: [08_MCP/05]
-concepts: [MCPToolset, StdioConnectionParams, StreamableHTTPConnectionParams, FastMCP]
+concepts: [McpToolset, StdioConnectionParams, StreamableHTTPConnectionParams, FastMCP]
 icon: 🧠
 in_production: false
 detours_suggested: []
@@ -24,7 +24,7 @@ File: `/home/carloscabral/study/adk-samples/python/agents/antom-payment/antom-pa
 
 ```python
 from google.adk.agents import Agent
-from google.adk.tools import MCPToolset
+from google.adk.tools import McpToolset
 from google.adk.tools.mcp_tool import StdioConnectionParams
 from mcp import StdioServerParameters
 
@@ -33,7 +33,7 @@ root_agent = Agent(
     model="gemini-2.0-flash",
     instruction="You are an Antom payment agent...",
     tools=[
-        MCPToolset(
+        McpToolset(
             connection_params=StdioConnectionParams(
                 server_params=StdioServerParameters(
                     command="uvx",
@@ -95,7 +95,7 @@ A FastMCP server that wraps the public Frankfurter FX API. Note `transport="http
 
 ```python
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 
 root_agent = LlmAgent(
@@ -103,7 +103,7 @@ root_agent = LlmAgent(
     name="currency_agent",
     instruction="You are a specialized assistant for currency conversions...",
     tools=[
-        MCPToolset(
+        McpToolset(
             connection_params=StreamableHTTPConnectionParams(
                 url=os.getenv("MCP_SERVER_URL", "http://localhost:8080/mcp"),
             )
@@ -116,7 +116,7 @@ a2a_app = to_a2a(root_agent, port=10000)
 
 Two things to notice:
 
-1. The MCPToolset's URL is **configurable via env** — you can point at localhost in dev, Cloud Run in prod.
+1. The McpToolset's URL is **configurable via env** — you can point at localhost in dev, Cloud Run in prod.
 2. `to_a2a(...)` exposes the whole agent over A2A (Module 10 preview). This is the canonical "agent as a service" stack: A2A in front, MCP in back.
 
 ## 3. travel-planner-google-maps-mcp — MCP + callbacks + skills

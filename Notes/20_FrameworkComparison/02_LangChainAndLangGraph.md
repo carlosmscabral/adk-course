@@ -76,7 +76,7 @@ The official prebuilt is `langgraph.prebuilt.create_react_agent` and the `langgr
 
 ## Where ADK beats LangGraph
 
-- **MCP first-class** (LangGraph has community adapters; ADK has built-in `MCPToolset`).
+- **MCP first-class** (LangGraph has community adapters; ADK has built-in `McpToolset`).
 - **A2A protocol** (LangGraph has none).
 - **GCP integration** (Vertex AI, BigQuery, Cloud Run — native in ADK).
 - **Graph workflows feel more first-class in ADK 2.0** (Workflow nodes have first-party retry, parallel, dynamic scheduling; LangGraph leaves more to the user).
@@ -96,6 +96,6 @@ The official prebuilt is `langgraph.prebuilt.create_react_agent` and the `langgr
 
 > 🛠 **Have the student run:** read [LangGraph's "multi-agent collaboration" guide](https://langchain-ai.github.io/langgraph/tutorials/multi_agent/) (if accessible) and compare its supervisor-pattern code to ADK's `Workflow` + sub_agents. The mental model overlap is high; the API ceremony differs.
 
-> ❓ **Ask the student:** "If you had to migrate an ADK Workflow to LangGraph in a day, what would you change first?" *(Answer: replace `sub_agents` with `StateGraph` nodes + a typed State dict, port tools to `@tool`, replace `MCPToolset` with LangChain MCP adapters.)*
+> ❓ **Ask the student:** "If you had to migrate an ADK Workflow to LangGraph in a day, what would you change first?" *(Answer: replace `sub_agents` with `StateGraph` nodes + a typed State dict, port tools to `@tool`, replace `McpToolset` with LangChain MCP adapters.)*
 
 [← Prev: 20_FrameworkComparison/01_TheLandscape]  [↑ Map](../../MAP.md)  [Next: 20_FrameworkComparison/03_CrewAI →]

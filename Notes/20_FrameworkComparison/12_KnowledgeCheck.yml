@@ -2,7 +2,7 @@ module: 20_FrameworkComparison
 questions:
   - id: q1
     prompt: "Name one feature ADK has first-class that LangGraph does not (as of May 2026)."
-    expected_keywords: [A2A, MCPToolset, Live, Skills, GCP, Vertex]
+    expected_keywords: [A2A, McpToolset, Live, Skills, GCP, Vertex]
     accept_paraphrase: true
     difficulty: easy
   - id: q2

@@ -6,7 +6,7 @@ questions:
     accept_paraphrase: true
     difficulty: easy
   - id: q2
-    prompt: "Which class do you put inside MCPToolset(connection_params=...) for a modern HTTP-based MCP server?"
+    prompt: "Which class do you put inside McpToolset(connection_params=...) for a modern HTTP-based MCP server?"
     expected_keywords: [StreamableHTTPConnectionParams]
     accept_paraphrase: false
     difficulty: easy
@@ -16,7 +16,7 @@ questions:
     accept_paraphrase: true
     difficulty: medium
   - id: q4
-    prompt: "How do you clean up an MCPToolset before process exit, and what happens if you skip it?"
+    prompt: "How do you clean up an McpToolset before process exit, and what happens if you skip it?"
     expected_keywords: [Runner.close, toolset.close, auto, leak, subprocess, connection]
     accept_paraphrase: true
     difficulty: medium
@@ -26,7 +26,7 @@ questions:
     accept_paraphrase: false
     difficulty: easy
   - id: q6
-    prompt: "In a long-running ADK server, where does MCPToolset lifecycle code typically live?"
+    prompt: "In a long-running ADK server, where does McpToolset lifecycle code typically live?"
     expected_keywords: [lifespan, startup, shutdown, to_a2a, Runner.close]
     accept_paraphrase: true
     difficulty: medium

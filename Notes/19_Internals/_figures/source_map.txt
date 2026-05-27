@@ -21,7 +21,7 @@ adk-python/src/google/adk/
 │   ├── function_tool.py          - FunctionTool: docstring/types → FunctionDeclaration
 │   ├── agent_tool.py             - AgentTool: wrap an agent as a tool
 │   ├── tool_context.py           - ToolContext: state, actions, artifacts
-│   └── mcp_tool/                 - MCPToolset
+│   └── mcp_tool/                 - McpToolset
 ├── flows/llm_flows/            ← The "loop": preprocess → LLM call → postprocess → fn calls
 │   ├── base_llm_flow.py          - BaseLlmFlow.run_async + _run_one_step_async
 │   ├── single_flow.py            - SingleFlow: tools, no transfer

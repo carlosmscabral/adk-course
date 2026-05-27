@@ -4,7 +4,7 @@ page: 05_DissectingSample
 title: Dissecting currency-agent
 estimated_minutes: 20
 prereqs: [02_FirstAgent/04]
-concepts: [LlmAgent, MCPToolset, currency-agent]
+concepts: [LlmAgent, McpToolset, currency-agent]
 icon: 🧠
 in_production: false
 detours_suggested: []
@@ -24,7 +24,7 @@ import os
 from dotenv import load_dotenv
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
 
 load_dotenv()
 
@@ -44,7 +44,7 @@ root_agent = LlmAgent(
     description="An agent that can help with currency conversions",
     instruction=SYSTEM_INSTRUCTION,
     tools=[
-        MCPToolset(
+        McpToolset(
             connection_params=StreamableHTTPConnectionParams(
                 url=os.getenv("MCP_SERVER_URL", "http://localhost:8080/mcp")
             )
@@ -64,7 +64,7 @@ a2a_app = to_a2a(root_agent, port=10000)
 
 ## 🧠 What's new?
 
-1. **`MCPToolset`** — instead of a function tool, the agent connects to an **MCP server** (Model Context Protocol — a tool transport) over HTTP. The MCP server exposes `get_exchange_rate` and possibly more. ADK auto-discovers tools from the connected server. We cover MCP in depth in Module 08; for now, treat it as "tools coming from a remote process."
+1. **`McpToolset`** — instead of a function tool, the agent connects to an **MCP server** (Model Context Protocol — a tool transport) over HTTP. The MCP server exposes `get_exchange_rate` and possibly more. ADK auto-discovers tools from the connected server. We cover MCP in depth in Module 08; for now, treat it as "tools coming from a remote process."
 2. **`to_a2a(root_agent, port=10000)`** — wraps the agent as an A2A (Agent-to-Agent) HTTP server. Other agents can call this one over the network. Covered in Module 10.
 
 ## 🧠 Where's the runtime?

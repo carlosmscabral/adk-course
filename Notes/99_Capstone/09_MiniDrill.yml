@@ -28,7 +28,7 @@ exercise:
     grading_rubric:
       # Composition
       - "≥3 agents composed (sub_agents OR Workflow graph)."
-      - "≥2 tools wired; ≥1 not a built-in (FunctionTool / MCPToolset / AgentTool)."
+      - "≥2 tools wired; ≥1 not a built-in (FunctionTool / McpToolset / AgentTool)."
       # State & memory
       - "Persistent state via DatabaseSessionService or SqliteSessionService (NOT InMemory)."
       - "Memory service wired (Vertex Memory Bank, RAG, or InMemory with prod-swap note)."
@@ -47,7 +47,7 @@ exercise:
       - "README contains: architecture diagram, run commands (≤3), extend example (≤20 lines), eval results, limitations."
       - "README contains a 'why ADK / where competitors would do as well or better' paragraph (module 20 self-review)."
       # Track-specific
-      - "Track A: WorkflowAgent graph; MCPToolset; critic loop with bounded cycles."
+      - "Track A: WorkflowAgent graph; McpToolset; critic loop with bounded cycles."
       - "Track B: VertexAiCodeExecutor or ContainerCodeExecutor (NOT UnsafeLocal); diff-safety callback present."
       - "Track C: BOTH VertexAiMemoryBankService AND VertexAiRagMemoryService wired; Skills pack with ≥3 .skill files."
 

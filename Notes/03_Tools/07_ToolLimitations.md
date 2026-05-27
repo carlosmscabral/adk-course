@@ -4,7 +4,7 @@ page: 07_ToolLimitations
 title: Tool limitations — single-instance & mutually-exclusive constraints
 estimated_minutes: 15
 prereqs: [03_Tools/05, 03_Tools/06]
-concepts: [tool-constraints, single-instance, bypass_multi_tools_limit, MCPToolset-gotchas]
+concepts: [tool-constraints, single-instance, bypass_multi_tools_limit, McpToolset-gotchas]
 icon: ⚠️
 in_production: true
 detours_suggested: []
@@ -76,9 +76,9 @@ coordinator = LlmAgent(
 
 This is exactly the pattern `adk-samples/python/agents/RAG/` uses.
 
-## ⚠️ `MCPToolset` gotchas
+## ⚠️ `McpToolset` gotchas
 
-`MCPToolset` is composable — you can run two of them, plus FunctionTools, plus AgentTools. But:
+`McpToolset` is composable — you can run two of them, plus FunctionTools, plus AgentTools. But:
 
 * **Connection lifecycle.** The toolset holds an open transport (stdio or SSE). If your server crashes mid-conversation, tools 404 silently and the LLM hallucinates results. Wrap it in a callback that pings the server before tool dispatch.
 * **Discovery on init.** Tools are listed at startup. If the server adds a tool later, the agent doesn't see it until you rebuild the toolset (or call `await toolset.reload()` where supported).

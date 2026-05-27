@@ -68,7 +68,7 @@ That's it. Run the agent and ask "review this blog post for SEO" — the LLM wil
 `SkillToolset` accepts `additional_tools=[...]` for plain tools that should sit alongside skills:
 
 ```python
-from google.adk.tools.mcp_tool import MCPToolset
+from google.adk.tools.mcp_tool import McpToolset
 
 toolset = SkillToolset(
     skills=[travel_skill],

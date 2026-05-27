@@ -65,7 +65,7 @@ This is fundamentally different from ADK's **structured `sub_agents` + workflow*
 - **Structured workflows.** ADK's graph + sub_agent split makes "this happens before that" trivial; AutoGen needs careful termination conditions or chat order.
 - **GCP / cloud integration.** AutoGen is provider-neutral but cloud-agnostic; no native Vertex tooling.
 - **A2A protocol.** AutoGen has none.
-- **MCP.** AutoGen has only community-built adapters; ADK has `MCPToolset`.
+- **MCP.** AutoGen has only community-built adapters; ADK has `McpToolset`.
 - **Evals.** ADK has first-class eval suites; AutoGen has community contribs.
 - **Maturity.** The 2024 fork (AG2 vs autogen-core) means a single dependency choice is destabilizing; ADK's GA is a single supported track.
 

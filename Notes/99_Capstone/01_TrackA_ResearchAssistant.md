@@ -26,7 +26,7 @@ A research assistant that ingests a question, **researches** it across the open 
 ### Agents (3 minimum — graph workflow)
 
 1. **`Researcher`** (`LlmAgent`)
-   - Tools: `google_search` (built-in) + `MCPToolset` for a private doc store (your local `mcp-server-filesystem` over a `/docs/` dir is fine for the demo).
+   - Tools: `google_search` (built-in) + `McpToolset` for a private doc store (your local `mcp-server-filesystem` over a `/docs/` dir is fine for the demo).
    - Output: a structured `ResearchPacket` (Pydantic) with `query`, `findings: list[Finding]`, where `Finding` has `text` + `source_url`.
 
 2. **`Summarizer`** (`LlmAgent`)
@@ -52,7 +52,7 @@ Use the `Workflow` graph primitive (exported as `google.adk.Workflow` from `goog
 ### Tools (≥2)
 
 - **`google_search`** — built-in.
-- **`MCPToolset(StdioServerParameters("npx", ["-y", "@modelcontextprotocol/server-filesystem", "./docs/"]))`** — private docs.
+- **`McpToolset(StdioServerParameters("npx", ["-y", "@modelcontextprotocol/server-filesystem", "./docs/"]))`** — private docs.
 
 ### Persistent state
 

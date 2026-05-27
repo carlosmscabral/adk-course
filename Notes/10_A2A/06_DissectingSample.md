@@ -4,7 +4,7 @@ page: 06_DissectingSample
 title: Dissecting currency-agent — A2A serve + MCP consume + A2A client
 estimated_minutes: 30
 prereqs: [10_A2A/05]
-concepts: [to_a2a, A2AClient, A2ACardResolver, test_client, MCPToolset]
+concepts: [to_a2a, A2AClient, A2ACardResolver, test_client, McpToolset]
 icon: 🧠
 in_production: false
 detours_suggested: []
@@ -22,7 +22,7 @@ The repo runs three processes:
 
 ```
     MCP server (port 8080)  ◄── HTTP/MCP ──  ADK agent (port 10000)  ◄── HTTP/A2A ──  test_client
-    fastmcp + Frankfurter                    LlmAgent + MCPToolset                    a2a-sdk
+    fastmcp + Frankfurter                    LlmAgent + McpToolset                    a2a-sdk
 ```
 
 ## File 1 — `mcp-server/server.py` (already covered in Module 08)
@@ -53,7 +53,7 @@ A FastMCP server. One tool. Runs at `http://localhost:8080/mcp`.
 ```python
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
 
 SYSTEM_INSTRUCTION = (
     "You are a specialized assistant for currency conversions. "
@@ -69,7 +69,7 @@ root_agent = LlmAgent(
     description="An agent that can help with currency conversions",
     instruction=SYSTEM_INSTRUCTION,
     tools=[
-        MCPToolset(
+        McpToolset(
             connection_params=StreamableHTTPConnectionParams(
                 url=os.getenv("MCP_SERVER_URL", "http://localhost:8080/mcp"),
             )
@@ -83,7 +83,7 @@ a2a_app = to_a2a(root_agent, port=10000)
 
 Two things stacked in 25 lines:
 
-- **MCP in back:** the `MCPToolset` points at the FastMCP server.
+- **MCP in back:** the `McpToolset` points at the FastMCP server.
 - **A2A in front:** `to_a2a(root_agent, port=10000)` exposes the whole agent.
 
 Started via:
@@ -92,7 +92,7 @@ Started via:
 uvicorn currency_agent.agent:a2a_app --host localhost --port 10000
 ```
 
-After it boots, the AgentCard is live at `http://localhost:10000/.well-known/agent-card.json`. The card's `skills` list is auto-built and will include `get_exchange_rate` (because the MCPToolset's tools are reflected up into the card).
+After it boots, the AgentCard is live at `http://localhost:10000/.well-known/agent-card.json`. The card's `skills` list is auto-built and will include `get_exchange_rate` (because the McpToolset's tools are reflected up into the card).
 
 ## File 3 — `currency_agent/test_client.py` (the A2A client)
 

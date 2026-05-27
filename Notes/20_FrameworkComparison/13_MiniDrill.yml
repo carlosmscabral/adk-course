@@ -27,7 +27,7 @@ exercise:
     type: llm_judge
     grading_rubric:
       - "Mentions A2A protocol (federated/multi-team boundary)."
-      - "Mentions MCP / MCPToolset (inventory data servers)."
+      - "Mentions MCP / McpToolset (inventory data servers)."
       - "Mentions GCP integration (Vertex / Agent Engine / deployment)."
       - "Mentions long-term memory (VertexAiMemoryBank or RAG memory)."
       - "Mentions evals (AgentEvaluator / built-in eval suite)."

@@ -83,20 +83,20 @@ def summarize_prompt(topic: str) -> str:
     return f"Write a 3-sentence summary of: {topic}"
 ```
 
-The ADK client surfaces all three through `MCPToolset`'s discovery.
+The ADK client surfaces all three through `McpToolset`'s discovery.
 
 ## Wiring the agent
 
 ```python
 from google.adk import Agent
-from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
 
 agent = Agent(
     model="gemini-2.5-flash",
     name="weather_buddy",
     instruction="Answer weather questions using the fetch_weather tool.",
     tools=[
-        MCPToolset(
+        McpToolset(
             connection_params=StreamableHTTPConnectionParams(
                 url="http://localhost:8080/mcp",
             )
@@ -117,7 +117,7 @@ asyncio.run(mcp.run_async(transport="stdio"))       # CLI-style
 
 For a CLI-style server (`uvx your-pkg`), `transport="stdio"` is what you want.
 
-> 🛠 **Have the student run:** copy `weather_server.py`, run it, point an `MCPToolset` at it, ask the agent "what's the weather in Tokyo?" Verify the mock response surfaces.
+> 🛠 **Have the student run:** copy `weather_server.py`, run it, point an `McpToolset` at it, ask the agent "what's the weather in Tokyo?" Verify the mock response surfaces.
 
 > 🧭 **If the student looks stuck:** suggest detour [[FastMCP]] for the deep dive (auth, middleware, mounting, sub-apps).
 

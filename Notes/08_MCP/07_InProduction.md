@@ -33,17 +33,17 @@ Wired as `on_tool_error_callback`. Combine with a `before_tool_callback` that op
 
 ## Auth: per-request tokens beat baked-in secrets
 
-In `antom-payment/`, secrets live in subprocess env — fine because the subprocess is the trust boundary. For HTTP MCP servers, **never bake long-lived keys** into the agent process. The real ADK hook is `MCPToolset(header_provider=...)` — a callable that takes a `ReadonlyContext` and returns a dict of headers, evaluated on every MCP call (see `mcp_toolset.py:112-114` and the merge logic in `mcp_tool.py:386-398`):
+In `antom-payment/`, secrets live in subprocess env — fine because the subprocess is the trust boundary. For HTTP MCP servers, **never bake long-lived keys** into the agent process. The real ADK hook is `McpToolset(header_provider=...)` — a callable that takes a `ReadonlyContext` and returns a dict of headers, evaluated on every MCP call (see `mcp_toolset.py:112-114` and the merge logic in `mcp_tool.py:386-398`):
 
 ```python
-from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
 
 def per_user_headers(ctx):
     # ctx is a ReadonlyContext; reach the live session state via the invocation ctx.
     token = ctx._invocation_context.session.state.get("user:access_token")
     return {"Authorization": f"Bearer {token}"} if token else {}
 
-toolset = MCPToolset(
+toolset = McpToolset(
     connection_params=StreamableHTTPConnectionParams(url="https://mcp.example.com/v3/mcp"),
     header_provider=per_user_headers,
 )
@@ -93,7 +93,7 @@ In a real deployment, ship to your tracing backend ([[15_Observability/00_Overvi
 
 ## Lifecycle (recap)
 
-- **Scripts:** let `Runner.close()` walk the agent tree — it calls `await toolset.close()` on each toolset for you (`runners.py:2094-2144`). `MCPToolset` is not an async context manager.
+- **Scripts:** let `Runner.close()` walk the agent tree — it calls `await toolset.close()` on each toolset for you (`runners.py:2094-2144`). `McpToolset` is not an async context manager.
 - **Servers:** open at startup; rely on the auto-built `Runner`'s shutdown — or, for belt-and-braces, call `await toolset.close()` in `to_a2a(..., lifespan=...)`.
 - **Tests:** mock the toolset, don't spin a real subprocess in CI unless you have to.
 

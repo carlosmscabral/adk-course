@@ -22,7 +22,7 @@ agents/        — agent classes (BaseAgent, LlmAgent, Sequential/Parallel/Loop,
 runners.py     — top-level entry; pumps the event generator and persists events
 sessions/      — Session pydantic model + service backends (InMemory/Sqlite/DB/VertexAi)
 events/        — Event (= LlmResponse + actions + node_info) and EventActions
-tools/         — BaseTool + FunctionTool/AgentTool/MCPToolset; FunctionDeclaration build
+tools/         — BaseTool + FunctionTool/AgentTool/McpToolset; FunctionDeclaration build
 flows/llm_flows/ — the inner LLM loop (preprocess → call → postprocess → handle fn calls)
 workflow/      — graph runtime: Workflow node, scheduler, parallel worker
 models/        — BaseLlm + per-provider impls (Gemini/Claude/LiteLlm/Apigee) + LLMRegistry

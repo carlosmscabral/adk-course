@@ -10,7 +10,7 @@ concepts: [FastMCP, mcp_tool, mcp_resource, mcp_prompt, stdio, sse, streamable_h
 
 [← Back to Map](../../MAP.md)
 
-Triggered from: `08_MCP` (authoring a server you can plug into `MCPToolset`).
+Triggered from: `08_MCP` (authoring a server you can plug into `McpToolset`).
 
 > Take this detour the first time you need to *write* (not just consume) an MCP server. The raw `mcp` SDK works but is verbose; FastMCP is the FastAPI-style decorator layer that 90% of real-world servers use. ~30 min.
 
@@ -26,7 +26,7 @@ Triggered from: `08_MCP` (authoring a server you can plug into `MCPToolset`).
    verbose)         batteries included)
 ```
 
-The raw `mcp` Python SDK gives you handler classes, manual schema dicts, and explicit transport plumbing — useful if you need exotic behavior. **FastMCP** wraps that with decorators that look like FastAPI/Flask, infers schemas from type hints, and handles transport selection with a flag. ADK's `MCPToolset` doesn't care which you used — it just speaks MCP.
+The raw `mcp` Python SDK gives you handler classes, manual schema dicts, and explicit transport plumbing — useful if you need exotic behavior. **FastMCP** wraps that with decorators that look like FastAPI/Flask, infers schemas from type hints, and handles transport selection with a flag. ADK's `McpToolset` doesn't care which you used — it just speaks MCP.
 
 ---
 
@@ -97,7 +97,7 @@ Rule of thumb:
 - **streamable-http** → remote servers, multiple clients, behind a load balancer. The 2026 recommended HTTP transport.
 - **sse** → older HTTP option; only use if you must interop with pre-2025 clients.
 
-ADK points at each one differently — `MCPToolset` accepts a stdio command list or a URL.
+ADK points at each one differently — `McpToolset` accepts a stdio command list or a URL.
 
 ---
 
@@ -156,10 +156,10 @@ Write the 15-line server above into `weather_server.py`, then point ADK at it:
 
 ```python
 # inside an ADK agent file
-from google.adk.tools.mcp_tool import MCPToolset, StdioConnectionParams
+from google.adk.tools.mcp_tool import McpToolset, StdioConnectionParams
 from mcp import StdioServerParameters  # comes from the upstream `mcp` package
 
-mcp_tools = MCPToolset(
+mcp_tools = McpToolset(
     connection_params=StdioConnectionParams(
         server_params=StdioServerParameters(
             command="python",
@@ -177,7 +177,7 @@ root_agent = Agent(
 )
 ```
 
-> ⚠️ `StdioServerParameters` is **not** exported by `google.adk.tools.mcp_tool` — see `google/adk/tools/mcp_tool/__init__.py` (only `SseConnectionParams`, `StdioConnectionParams`, `StreamableHTTPConnectionParams`, `MCPTool`, `MCPToolset` and their alias forms are re-exported). Import `StdioServerParameters` from `mcp` directly.
+> ⚠️ `StdioServerParameters` is **not** exported by `google.adk.tools.mcp_tool` — see `google/adk/tools/mcp_tool/__init__.py` (only `SseConnectionParams`, `StdioConnectionParams`, `StreamableHTTPConnectionParams`, `MCPTool`, `McpToolset` and their alias forms are re-exported). Import `StdioServerParameters` from `mcp` directly.
 >
 > Passing a raw `StdioServerParameters` to `connection_params=` does work (`mcp_session_manager.py:200-204`, `mcp_toolset.py:99-105`), but the recommended pattern is to wrap it in `StdioConnectionParams(server_params=..., timeout=...)` so you get timeout control — `StdioServerParameters` alone has none.
 

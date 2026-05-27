@@ -51,7 +51,7 @@ LlmAgent(
 | `global_instruction` | **DEPRECATED** — instructions for the whole agent tree (only the root agent's value takes effect). Use `GlobalInstructionPlugin` at the App level instead. | `global_instruction="Always reply in French."` |
 | `static_instruction` | Static prompt content (str / `types.Content` / `types.Part` / list) sent literally as system instruction at the front of the request. No interpolation. Intended for context-cache optimization. When set, the regular `instruction` moves into user content. | `static_instruction="You are a helpful assistant."` |
 | `description` | One-line summary used by *other agents* to decide whether to route to this one. Critical for multi-agent — the parent LLM reads this to pick a child. | `description="Answers questions about currencies"` |
-| `tools` | List of `ToolUnion = Union[Callable, BaseTool, BaseToolset]`. (Bare callables auto-wrap to `FunctionTool`; `BaseToolset` includes `MCPToolset`.) | `tools=[get_weather, MCPToolset(...)]` |
+| `tools` | List of `ToolUnion = Union[Callable, BaseTool, BaseToolset]`. (Bare callables auto-wrap to `FunctionTool`; `BaseToolset` includes `McpToolset`.) | `tools=[get_weather, McpToolset(...)]` |
 | `sub_agents` | Composition slot — child agents the LLM can delegate to via `transfer_to_agent`. | `sub_agents=[critic, reviser]` |
 | `output_key` | If set, the final text of each turn is written to `state[output_key]`. Shortcut for the most common state-write pattern. | `output_key="critique"` |
 | `input_schema` / `output_schema` | Pydantic models for structured I/O. When set, the LLM is constrained to the schema. | `output_schema=SearchResult` |

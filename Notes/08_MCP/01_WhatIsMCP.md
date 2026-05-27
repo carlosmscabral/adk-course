@@ -10,7 +10,7 @@ in_production: false
 detours_suggested: []
 ---
 
-[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_MCPToolset →](02_MCPToolset.md)
+[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_McpToolset →](02_McpToolset.md)
 
 You are here: 🗺 Integration Track ▸ 08 MCP ▸ 01 What Is MCP
 
@@ -20,7 +20,7 @@ You are here: 🗺 Integration Track ▸ 08 MCP ▸ 01 What Is MCP
 
 | Primitive   | What it is                                                       | ADK consumer surface       |
 | ----------- | ---------------------------------------------------------------- | -------------------------- |
-| **Tool**    | A callable function the agent can invoke.                       | `MCPToolset` lists & calls. |
+| **Tool**    | A callable function the agent can invoke.                       | `McpToolset` lists & calls. |
 | **Resource**| A read-only blob (file, document, page) the agent can fetch.    | Surfaced as tool-callable. |
 | **Prompt**  | A pre-canned prompt template the agent can request and fill in. | Surfaced as a tool.        |
 
@@ -38,7 +38,7 @@ The protocol is **JSON-RPC** under the hood, and it's **transport-agnostic** —
 
 Before MCP, every agent framework reinvented "how to expose tools" — OpenAI plugins, custom HTTP schemas, RPC bridges. The MCP spec converged on one wire format so a tool server written for one framework runs in any framework. ADK 2.0 ships first-class MCP support both directions:
 
-- **Consume:** `from google.adk.tools.mcp_tool import MCPToolset` — drop an MCP server into your agent's `tools=[...]` list.
+- **Consume:** `from google.adk.tools.mcp_tool import McpToolset` — drop an MCP server into your agent's `tools=[...]` list.
 - **Serve:** ADK does not bundle a server framework; the community standard is **FastMCP** (a single-file decorator API). We use it in 05.
 
 ## What MCP is NOT
@@ -55,4 +55,4 @@ It's not magic. The LLM still needs to be told what tools exist (the toolset ret
 >
 > MCP servers are real network endpoints with real failure modes. Plan for: (1) network timeouts, (2) version skew (the server's tool signatures change), (3) auth token rotation. We cover each in `07_InProduction.md`.
 
-[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_MCPToolset →](02_MCPToolset.md)
+[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_McpToolset →](02_McpToolset.md)

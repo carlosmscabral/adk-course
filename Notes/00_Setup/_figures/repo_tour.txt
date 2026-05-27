@@ -6,7 +6,7 @@
 │       ├── runners.py ── Runner, InMemoryRunner
 │       ├── sessions/  ── InMemorySessionService, DatabaseSessionService,
 │       │                  VertexAiSessionService
-│       ├── tools/    ─── FunctionTool, AgentTool, MCPToolset, google_search,
+│       ├── tools/    ─── FunctionTool, AgentTool, McpToolset, google_search,
 │       │                  load_memory, exit_loop
 │       ├── memory/   ─── InMemoryMemoryService, VertexAiMemoryBankService
 │       ├── events/   ─── Event, EventActions (state_delta, transfer_to_agent…)
@@ -16,7 +16,7 @@
 ├── adk-samples/                      ← YOUR TEXTBOOK (60+ examples)
 │   └── python/agents/
 │       ├── fun-facts/           ← Module 00, 01: one agent + google_search
-│       ├── currency-agent/      ← Module 02, 03: LlmAgent + MCPToolset
+│       ├── currency-agent/      ← Module 02, 03: LlmAgent + McpToolset
 │       ├── academic-research/   ← Module 03, 05: AgentTool composition
 │       ├── llm-auditor/         ← Module 04, 05: SequentialAgent + output_key
 │       ├── workflows-sequential/← Module 06: graph WorkflowAgent

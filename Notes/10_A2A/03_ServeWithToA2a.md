@@ -92,20 +92,20 @@ When your agent has resources to open/close (MCP toolsets, DB pools), use `lifes
 ```python
 from contextlib import asynccontextmanager
 
-toolset = MCPToolset(connection_params=...)
+toolset = McpToolset(connection_params=...)
 agent = Agent(model="gemini-2.5-flash", tools=[toolset])
 
 @asynccontextmanager
 async def lifespan(app):
     # startup
     yield
-    # shutdown — MCPToolset is NOT an async context manager; use .close()
+    # shutdown — McpToolset is NOT an async context manager; use .close()
     await toolset.close()
 
 a2a_app = to_a2a(agent, port=10000, lifespan=lifespan)
 ```
 
-This is the same pattern from `08_MCP/04_LifecycleManagement` — bring it here when your agent has an MCPToolset.
+This is the same pattern from `08_MCP/04_LifecycleManagement` — bring it here when your agent has an McpToolset.
 
 ## Override the AgentCard
 

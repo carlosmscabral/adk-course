@@ -40,14 +40,14 @@ An agent that ingests a Git diff (PR-style), **runs the test suite in a sandbox*
    - Output: list of style issues with line numbers.
 
 4. **`SecurityAgent`** (`LlmAgent`)
-   - Tool: `MCPToolset` to a "security-rules" MCP server (yours; can be `bandit` wrapped).
+   - Tool: `McpToolset` to a "security-rules" MCP server (yours; can be `bandit` wrapped).
    - Output: list of security findings.
 
 ### Tools (≥2)
 
 - `FunctionTool(run_tests)` (Track B's headline tool — wraps `VertexAiCodeExecutor` or `ContainerCodeExecutor`).
 - `FunctionTool(lint)`.
-- `MCPToolset(...)` for security rules.
+- `McpToolset(...)` for security rules.
 
 ### Code execution sandbox (mandatory for this track)
 

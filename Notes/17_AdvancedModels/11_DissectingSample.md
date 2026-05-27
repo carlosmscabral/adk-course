@@ -43,7 +43,7 @@ Open `/home/carloscabral/study/adk-samples/python/agents/gemma-food-tour-guide/f
 ```python
 from google.adk.agents import LlmAgent
 from google.adk.models import Gemini
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams
 ```
 
@@ -60,7 +60,7 @@ Three things to notice:
 **Lines 27-43 — the MCP toolset.**
 
 ```python
-tools = MCPToolset(
+tools = McpToolset(
     connection_params=StreamableHTTPConnectionParams(
         url=MAPS_MCP_URL,
         headers={"X-Goog-Api-Key": maps_api_key},

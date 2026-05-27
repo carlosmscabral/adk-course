@@ -120,7 +120,7 @@ Every defense above is **partial**. New jailbreaks appear weekly. Therefore:
 | `after_model_callback`   | output scan (secrets, exfil patterns)            |
 | `before_tool_callback`   | arg validation; refuse risky tools for risky inputs |
 | `after_tool_callback`    | sanitize tool result before it re-enters context |
-| `MCPToolset` config      | only mount tools the agent actually needs        |
+| `McpToolset` config      | only mount tools the agent actually needs        |
 | `response_schema`        | structured output where possible                 |
 | sub-agent decomposition  | dual-LLM: privileged orchestrator + quarantined reader |
 

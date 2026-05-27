@@ -4,7 +4,7 @@ page: 02_MCPToolset
 title: MCPToolset — the consumer side
 estimated_minutes: 25
 prereqs: [08_MCP/01]
-concepts: [MCPToolset, connection_params, BaseToolset, LlmAgent.tools]
+concepts: [McpToolset, connection_params, BaseToolset, LlmAgent.tools]
 icon: 🛠
 in_production: true
 detours_suggested: [PY_async]
@@ -14,13 +14,15 @@ detours_suggested: [PY_async]
 
 You are here: 🗺 Integration Track ▸ 08 MCP ▸ 02 MCPToolset
 
-# 🛠 Consuming an MCP server with `MCPToolset`
+# 🛠 Consuming an MCP server with `McpToolset`
 
-`MCPToolset` is a `BaseToolset`. From the agent's perspective, it behaves exactly like a list of `FunctionTool`s — but those tools live in an external MCP server.
+> 🪧 **Naming note**: `McpToolset` is the modern class name in ADK 2.0 GA. The old PascalCase `MCPToolset` (`mcp_toolset.py:495-505`) still works as a deprecated subclass alias — it emits `DeprecationWarning` at instantiation but otherwise behaves identically. New code should use `McpToolset`. (This page's filename keeps the historical name for stable cross-links.)
+
+`McpToolset` is a `BaseToolset`. From the agent's perspective, it behaves exactly like a list of `FunctionTool`s — but those tools live in an external MCP server.
 
 ```python
 from google.adk import Agent
-from google.adk.tools.mcp_tool import MCPToolset
+from google.adk.tools.mcp_tool import McpToolset
 from google.adk.tools.mcp_tool import StreamableHTTPConnectionParams
 
 agent = Agent(
@@ -28,7 +30,7 @@ agent = Agent(
     name="currency_agent",
     instruction="Use the exchange-rate tool to answer FX questions.",
     tools=[
-        MCPToolset(
+        McpToolset(
             connection_params=StreamableHTTPConnectionParams(
                 url="http://localhost:8080/mcp",
             )
@@ -43,7 +45,7 @@ That's the whole thing. On the first turn that needs tools, ADK opens a session 
 
 ## What's in the box
 
-When `MCPToolset` connects, the server tells it:
+When `McpToolset` connects, the server tells it:
 
 ```json
 [
@@ -59,7 +61,7 @@ Each entry becomes a tool the LLM sees, with the description as the tool's docst
 A server can expose 30 tools and you only want 3. Use the `tool_filter` arg:
 
 ```python
-MCPToolset(
+McpToolset(
     connection_params=...,
     tool_filter=["get_exchange_rate", "list_currencies"],  # only these
 )
@@ -67,23 +69,14 @@ MCPToolset(
 
 Useful for keeping prompts lean (every tool schema eats context tokens).
 
-## Two name imports, same class
-
-The framework exports both `MCPToolset` and `McpToolset`. Same class, alias. Pick the one your eyes prefer; samples use both.
-
-```python
-from google.adk.tools.mcp_tool import MCPToolset  # uppercase MCP
-from google.adk.tools.mcp_tool import McpToolset  # camel-style
-```
-
 ## Where the LLM call ends up
 
 ```
-LLM  ──function_call──►  MCPToolset  ──JSON-RPC──►  MCP server  ──fn──►  external API
+LLM  ──function_call──►  McpToolset  ──JSON-RPC──►  MCP server  ──fn──►  external API
         ◄──result─────              ◄──result──             ◄────────
 ```
 
-A normal `before_tool_callback` / `after_tool_callback` fires around the MCPToolset call — meaning every guardrail you learned in Module 07 applies unchanged here.
+A normal `before_tool_callback` / `after_tool_callback` fires around the McpToolset call — meaning every guardrail you learned in Module 07 applies unchanged here.
 
 > ⚠️ **Gotcha** — when the MCP server is down or unreachable, the failure surfaces as a tool error. Combine with `on_tool_error_callback` (Module 07) for graceful degradation.
 

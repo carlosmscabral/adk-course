@@ -23,7 +23,7 @@ You are here: 🗺 Production Track ▸ 20 Framework Comparison ▸ 08 Feature M
 | **Graph workflows** | ★★★ | ★★★ | - | ★ (Selector) | - | - | - |
 | **Sequential / linear pipeline** | ★★★ (SequentialAgent) | ★★ | ★★★ | ★★ | ★★ | ★ | - |
 | **Tools (function schema)** | ★★★ | ★★★ | ★★ | ★★ | ★★ | ★★★ | ★★ |
-| **MCP** | ★★★ (MCPToolset) | ★★ (community) | ★★ (community) | ★★ (community) | ★★ | ★ | ★ |
+| **MCP** | ★★★ (McpToolset) | ★★ (community) | ★★ (community) | ★★ (community) | ★★ | ★ | ★ |
 | **A2A protocol** | ★★★ (to_a2a, RemoteA2aAgent) | - | - | - | - | - | - |
 | **Streaming text** | ★★★ | ★★ | ★ | ★★ | ★★ | ★★ | ★★ |
 | **Bidi voice/video (Live)** | ★★★ (Gemini Live) | - | - | - | - | - | - |

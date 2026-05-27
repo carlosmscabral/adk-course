@@ -8,7 +8,7 @@
 - Optional `tool_context: ToolContext` lets the tool read/write session state, set `escalate`, save artifacts. It's hidden from the LLM.
 - Built-in tools: `google_search`, `load_memory`, `exit_loop`, `transfer_to_agent`.
 - **Computer Use** (page 06, preview): `BaseComputer` ABC + `ComputerUseToolset` + screenshot/action loop. You implement `BaseComputer` against Playwright/Chromium (or another driver); the toolset wires every public method into a tool. Flagged `@experimental` in source.
-- **Tool limitations** (page 07): `google_search` and `VertexAiSearchTool` are sole-tool-only on Gemini 1.x; `EnterpriseWebSearchTool` is sole-tool-only always; `VertexAiRagRetrieval` is sole-tool-only on its agent (split into a sub-agent + `AgentTool` to compose). `MCPToolset` is composable but has connection-lifecycle and tool-name-collision gotchas. Practical tool-count ceiling ~15-20 before selection accuracy tanks.
+- **Tool limitations** (page 07): `google_search` and `VertexAiSearchTool` are sole-tool-only on Gemini 1.x; `EnterpriseWebSearchTool` is sole-tool-only always; `VertexAiRagRetrieval` is sole-tool-only on its agent (split into a sub-agent + `AgentTool` to compose). `McpToolset` is composable but has connection-lifecycle and tool-name-collision gotchas. Practical tool-count ceiling ~15-20 before selection accuracy tanks.
 - Preview: `AgentTool` (Module 05) wraps an agent as a tool. `LongRunningFunctionTool` (Module 12) yields progress for slow work.
 - Real-sample shapes: `currency-agent` uses an MCP-served tool; `academic-research` uses `google_search` inside `AgentTool`-wrapped sub-agents.
 
