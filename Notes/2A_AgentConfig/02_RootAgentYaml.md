@@ -77,7 +77,7 @@ output_key: last_reply             # ── if set, the agent's reply is also wr
 
 That is the **entire shape of an LlmAgent in YAML today**. Every field above has a 1:1 Python equivalent.
 
-> ⚠️ **Workflow graphs are not YAML-loadable.** `WorkflowAgent` is not a valid `agent_class:`. The 2.0 discriminator (`agent_config.py:_ADK_AGENT_CLASSES`) only accepts `LlmAgent`, `LoopAgent`, `ParallelAgent`, `SequentialAgent`. Graph workflows live in Python via `from google.adk.workflow import Workflow` — see [Module 06 Graph Workflows](../06_GraphWorkflows/).
+> ⚠️ **Workflow graphs are not YAML-loadable.** `Workflow` (the 2.0 graph class) is not a valid `agent_class:`. The discriminator (`agent_config.py:_ADK_AGENT_CLASSES`) only accepts `LlmAgent`, `LoopAgent`, `ParallelAgent`, `SequentialAgent`. Graph workflows live in Python via `from google.adk.workflow import Workflow` — see [Module 06 Graph Workflows](../06_GraphWorkflows/).
 
 ## 🧠 Quick crib — YAML → Python kwarg map
 

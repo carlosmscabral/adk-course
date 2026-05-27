@@ -47,7 +47,7 @@ It's still the agent loop — just with another agent loop nested inside one of 
 
 ## 🧠 Why preview here?
 
-Because the *shape* is the lesson: from the coordinator's perspective, `AgentTool` is **just a tool**. It joins the `tools=[…]` list, has a name, a description, and a schema. Modules 05 and 06 explore *when* to compose this way (vs. SequentialAgent, ParallelAgent, WorkflowAgent), but the building block is right here.
+Because the *shape* is the lesson: from the coordinator's perspective, `AgentTool` is **just a tool**. It joins the `tools=[…]` list, has a name, a description, and a schema. Modules 05 and 06 explore *when* to compose this way (vs. SequentialAgent, ParallelAgent, Workflow), but the building block is right here.
 
 ## 🧠 Real-sample anchor
 

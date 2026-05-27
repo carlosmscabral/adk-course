@@ -28,7 +28,7 @@ It lives in `google.adk.agents.langgraph_agent` and is **not** re-exported from 
 - You want LangGraph's specific control flow (e.g. its conditional edges + persistence story) inside a larger ADK graph or `sub_agents` tree.
 - You are migrating *from* LangGraph *to* ADK and need a step where both coexist.
 
-If you are starting fresh, prefer ADK's own graph `WorkflowAgent` (module 06) — same shape, no extra dependency, full ADK callback surface.
+If you are starting fresh, prefer ADK's own graph `Workflow` (module 06) — same shape, no extra dependency, full ADK callback surface.
 
 ## 🛠 Runnable example
 

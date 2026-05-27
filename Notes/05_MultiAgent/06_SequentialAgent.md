@@ -68,7 +68,7 @@ We use all three at light depth in module 06 (graph workflows). For now, `Sequen
 
 ## ⚠️ SequentialAgent is *not* recursive control flow
 
-It can't branch on output. It can't skip. It can't loop. Need any of that → use a `LoopAgent` (for repeats with exit), a parent `LlmAgent` with `sub_agents=` (for branching by description), or a `WorkflowAgent` (module 06).
+It can't branch on output. It can't skip. It can't loop. Need any of that → use a `LoopAgent` (for repeats with exit), a parent `LlmAgent` with `sub_agents=` (for branching by description), or a `Workflow` (module 06).
 
 ## 🛠 Quick example
 

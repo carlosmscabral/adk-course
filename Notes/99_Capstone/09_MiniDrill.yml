@@ -47,7 +47,7 @@ exercise:
       - "README contains: architecture diagram, run commands (≤3), extend example (≤20 lines), eval results, limitations."
       - "README contains a 'why ADK / where competitors would do as well or better' paragraph (module 20 self-review)."
       # Track-specific
-      - "Track A: WorkflowAgent graph; McpToolset; critic loop with bounded cycles."
+      - "Track A: Workflow graph (from google.adk.workflow); McpToolset; critic loop with bounded cycles."
       - "Track B: VertexAiCodeExecutor or ContainerCodeExecutor (NOT UnsafeLocal); diff-safety callback present."
       - "Track C: BOTH VertexAiMemoryBankService AND VertexAiRagMemoryService wired; Skills pack with ≥3 .skill files."
 

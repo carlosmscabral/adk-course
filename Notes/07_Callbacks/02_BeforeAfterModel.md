@@ -101,6 +101,6 @@ Both can be `async def`. Both receive a `CallbackContext` — same one you saw i
 
 > 🚀 **In Production**
 >
-> `after_model_callback` is the right place for **deterministic post-processing** — citations, watermarks, JSON repair, output schema validation. If your post-processing is itself an LLM call (e.g., "rewrite politely"), reconsider: that's a job for a second `LlmAgent` or a `WorkflowAgent` step so it shows up in traces.
+> `after_model_callback` is the right place for **deterministic post-processing** — citations, watermarks, JSON repair, output schema validation. If your post-processing is itself an LLM call (e.g., "rewrite politely"), reconsider: that's a job for a second `LlmAgent` or a `Workflow` node so it shows up in traces.
 
 [← Prev: 07_Callbacks/01_WhyCallbacks](01_WhyCallbacks.md)  [↑ Map](../../MAP.md)  [Next: 07_Callbacks/03_BeforeAfterTool →](03_BeforeAfterTool.md)

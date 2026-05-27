@@ -28,7 +28,7 @@ Walk this list when you think you're done. Each item must be **yes** with a poin
 ## Composition
 
 - [ ] **05 MultiAgent** — at least one `sub_agents` relationship OR `transfer_to_agent` action observed.
-- [ ] **06 GraphWorkflows** — at least one `WorkflowAgent` graph (if Track A) OR a clear justification for using sub_agents only (Tracks B/C).
+- [ ] **06 GraphWorkflows** — at least one `Workflow` graph (if Track A) OR a clear justification for using sub_agents only (Tracks B/C).
 
 ## Production primitives
 

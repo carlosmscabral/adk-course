@@ -6,7 +6,7 @@
       │
       │ chat-based ─────────────── AutoGen
       │
-      │ graph + tree (hybrid) ──── ADK (sub_agents + WorkflowAgent)
+      │ graph + tree (hybrid) ──── ADK (sub_agents + Workflow)
       │
       │ state-graph ────────────── LangGraph
       │

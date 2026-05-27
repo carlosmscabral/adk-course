@@ -163,7 +163,7 @@ The root receives the user message, decides which sub-agent to delegate to (base
 | Tools | [Module 2A § 04 Tool References](04_ToolReferences.md) |
 | Callbacks | [Module 2A § 07 Python-Only Features](07_PythonOnlyFeatures.md) |
 | `App(...)` wrapper / plugins | [Module 1A § 01 App vs Runner vs Agent](../1A_AppAndRunner/01_AppVsRunnerVsAgent.md) |
-| `SequentialAgent` / `ParallelAgent` / `LoopAgent` (workflow agents) | [Module 06 Workflow Agents](../06_WorkflowAgents/) |
+| `SequentialAgent` / `ParallelAgent` / `LoopAgent` (template workflows) | [Module 06 Graph Workflows](../06_GraphWorkflows/) |
 | `adk web` UI for this sample | [Module 3A § 05 CLI Expectations](../3A_ProjectStructure/05_AdkCliExpectations.md) |
 
 This sample is intentionally minimal — three files, no tools, no callbacks, no App. It is the *cleanest expression of the YAML multi-agent pattern*. Add complexity from here.

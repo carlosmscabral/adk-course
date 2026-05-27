@@ -4,6 +4,46 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.10] - 2026-05-27
+
+Dogfood Wave 8 — `WorkflowAgent` → `Workflow` class-name sweep across 14 files. The 1.x class `WorkflowAgent` does not exist in ADK 2.0; the canonical 2.0 class is `Workflow` from `google.adk.workflow` (verified at `workflow/_workflow.py:148` and the import sites at `agents/config_agent_utils.py:473`, `cli/agent_test_runner.py:239`). The stale name had survived prior waves because it reads plausibly and is conceptually correct — but a student copy-pasting from any of these sites would hit `ImportError: cannot import name 'WorkflowAgent' from 'google.adk.agents'`.
+
+### Fixed
+
+**Class-name substitutions (12 files)**
+- `Notes/07_Callbacks/02_BeforeAfterModel.md` — "`WorkflowAgent` step" → "`Workflow` node" (also tightened the conceptual unit; `Workflow` graphs have *nodes*, not *steps*).
+- `Notes/03_Tools/08_AgentToolPreview.md` — composition-alternatives list.
+- `Notes/3A_ProjectStructure/05_AdkCliExpectations.md` — `root_agent` valid-types list.
+- `Notes/Updates/2026-05_adk-2.0.md` — two sites (composition headline + agent surface enumeration). Added explicit "Replaces the 1.x `WorkflowAgent` name" hint and qualified the new bullet with the `google.adk.workflow` import path.
+- `Notes/10_A2A/04_ConsumeWithRemoteA2aAgent.md` — RemoteA2aAgent slot-into list.
+- `Notes/05_MultiAgent/08A_LangGraphAgent.md` — "prefer ADK's own graph `Workflow`" recommendation.
+- `Notes/05_MultiAgent/06_SequentialAgent.md` — branching/looping alternatives sentence.
+- `Notes/99_Capstone/04_SharedRequirements.md` — ≥3-agents requirement.
+- `Notes/99_Capstone/06_SelfReviewChecklist.md` — Track A graph requirement.
+- `Notes/99_Capstone/09_MiniDrill.yml` — Track A grading rubric (added qualifying import path for the grader's clarity).
+- `Notes/2A_AgentConfig/02_RootAgentYaml.md` — YAML-not-loadable warning (kept the import-path pointer that was already there).
+- `Notes/20_FrameworkComparison/_figures/landscape.txt` — ASCII landscape diagram.
+
+**Structural fixes (2 files)**
+- `Notes/00_Setup/_figures/repo_tour.txt` — `Workflow` was listed under `agents/`. It actually lives in `workflow/`. Split into two rows: `agents/` keeps its real members; new `workflow/` row lists `Workflow, FunctionNode (graph workflows, 2.0)`. Also fixed the `workflows-sequential/` sample annotation.
+- `Notes/2A_AgentConfig/08_DissectingSample.md:166` — table linked to nonexistent folder `../06_WorkflowAgents/`. Fixed to `../06_GraphWorkflows/` (the real path) and retitled "workflow agents" → "template workflows" to match the live-site nav we adopted in v0.3.9.
+
+### Method
+- Source-of-truth verification: `grep -rn "^class WorkflowAgent\|^class Workflow"` against `adk-python/src/google/adk/workflow/` and `agents/` — `WorkflowAgent` class genuinely doesn't exist anywhere in 2.0.
+- Synchronous edits (~14 files, ~17 lines changed); each site read in context before substitution to verify the sentence reads cleanly post-swap.
+- Intentional disambiguation references at `06_GraphWorkflows/08_DissectingWorkflowSample.md:33` (explaining the 1.x→2.0 rename for sample readers) and the new Updates note are preserved — they explicitly say "1.x `WorkflowAgent`" with the 2.0 contrast.
+
+### Why
+- User: "let's continue" — Wave 8 closes the lone known-defect carried in the v0.3.9 Deferred section. With ~100% dogfood coverage of authored content, individual correctness defects like this are now visible enough to chase one-by-one.
+- This was the highest-impact open item: 14 sites including all three capstone checklists/rubrics, the 2.0 release notes, the 2A AgentConfig dissection, and the framework landscape figure. Anyone learning ADK 2.0 from these pages would form a wrong mental model of the canonical class name.
+
+### Deferred
+- Wave 4 🟡 polish items still open (have been across multiple waves now — most are stylistic).
+- Cheatsheets pedantic 🟡 (intentionally skipped).
+- Next natural wave: a links/anchors integrity sweep across the now-large repo (catch other broken folder/cross-page references like the `06_WorkflowAgents` one this wave caught).
+
+---
+
 ## [0.3.9] - 2026-05-27
 
 Dogfood Wave 7 — the smallest-but-most-overdue surface: `Reference/CheatSheets/`, four milestone drills (M1-M4 + M5 capstone), and `Reference/docs_snapshot.md`. Three parallel read-only verification agents surfaced 5 🔴 + ~22 🟡 across ~1.9K lines. Notable clean bills: M5 capstone fully verified, all 7 cheatsheets with no correctness-breaking errors (~12 🟡 were pedantic abbreviations intentionally left as-is). Synchronous fixes this round — the surface was small enough that direct edits beat fix-agent dispatch overhead. Also landed the 1A `_configs` import-path tail deferred from v0.3.7+v0.3.8.

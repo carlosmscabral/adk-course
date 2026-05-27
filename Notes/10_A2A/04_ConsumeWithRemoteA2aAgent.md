@@ -30,7 +30,7 @@ currency = RemoteA2aAgent(
 
 - Use it as a `sub_agent` in an `LlmAgent`.
 - Pass it to an `AgentTool` (Module 05).
-- Slot it into a `SequentialAgent` / `ParallelAgent` / `WorkflowAgent`.
+- Slot it into a `SequentialAgent` / `ParallelAgent` / `Workflow`.
 
 ## Three ways to specify the remote
 

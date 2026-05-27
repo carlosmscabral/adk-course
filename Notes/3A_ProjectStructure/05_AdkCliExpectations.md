@@ -70,7 +70,7 @@ root_agent = LlmAgent(...)
 ADK's CLI looks for one of these module-level names, in order:
 
 1. `app` — an `App` instance (the 2.0-preferred shape; see [Module 1A](../1A_AppAndRunner/)).
-2. `root_agent` — a plain agent instance (any of `LlmAgent`, `SequentialAgent`, `WorkflowAgent`, …).
+2. `root_agent` — a plain agent instance (any of `LlmAgent`, `SequentialAgent`, `Workflow`, …).
 
 If your variable is named `agent`, `my_agent`, `the_agent`, or anything else, the CLI cannot find it. `fun-facts` uses `app`; `llm-auditor` uses `root_agent`. Both work.
 
