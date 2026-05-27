@@ -66,7 +66,7 @@ Then write a short side-by-side comparison.
 Researcher fan-out:
 
 - **Version A** uses a `ParallelAgent` containing 3 fixed `researcher` instances, each with a different `instruction` that hard-codes "angle 1 of 3" / "angle 2 of 3" / "angle 3 of 3" and reads `state["angles"]`.
-- **Version B** uses `ParallelWorker(researcher)` with the upstream planner-equivalent node yielding the list of 3 angles. (In ADK 2.0 GA, fan-out is achieved by yielding a list from a node — `_ParallelWorker` at `workflow/_parallel_worker.py:35` is the private machinery; you typically don't import it directly.)
+- **Version B** uses the `parallel_worker=True` flag on a `@node`-decorated function (or on an `Agent`/`LlmAgent` registered as a node) with the upstream planner-equivalent node yielding the list of 3 angles. The framework's private `_ParallelWorker` at `workflow/_parallel_worker.py:35` is the machinery driving fan-out; you don't import it directly. See `adk-python/contributing/samples/workflows/parallel_worker/agent.py:44,55` for the canonical 2.0 pattern.
 
 (That difference alone is instructive — graphs let you fan out on a dynamic list.)
 
@@ -98,7 +98,7 @@ START
 planner_node                  (FunctionNode wraps planner LlmAgent OR directly an LlmAgent node)
   │  yields the 3 angles as a list  (Event(state={"angles": ...}); yield ["a1","a2","a3"])
   ▼
-ParallelWorker(researcher)    (fan-out by list)
+researcher (parallel_worker=True)  (fan-out by list)
   │  joins 3 findings into one Content
   ▼
 findings_combiner             (LlmAgent — writes state["findings"])
@@ -116,7 +116,9 @@ reviewer_node                 (FunctionNode that runs the reviewer LlmAgent and 
 The reviewer_node:
 
 ```python
-async def reviewer_node(node_input):
+async def reviewer_node(ctx: Context, node_input):
+    # FunctionNode signature accepts `ctx: Context` and `node_input: Any`
+    # (see workflow/_function_node.py:185 — both are auto-injected).
     # Run an internal LlmAgent or parse the JSON the upstream reviewer emitted.
     result = ... # {"score": 7, "feedback": "..."}
     iterations = ctx.state.get("review_count", 0) + 1

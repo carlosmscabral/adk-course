@@ -22,39 +22,46 @@ The course's modules map to these doc sections. Page references in `05_Dissectin
 | Get Started / Quickstart | [00 Setup](../Notes/00_Setup/) |
 | Foundations / Mental Model | [01 Foundations](../Notes/01_Foundations/) |
 | Agents — `LlmAgent` | [02 First Agent](../Notes/02_FirstAgent/) |
-| Agents — Workflow agents (Sequential/Parallel/Loop) | [06 Graph Workflows](../Notes/06_GraphWorkflows/) (legacy section) |
-| Agents — Graph workflows (2.0) | [06 Graph Workflows](../Notes/06_GraphWorkflows/) |
+| Multi-Agent Workflows — Template workflows (Sequential, Parallel, Loop, Custom) | [06 Graph Workflows](../Notes/06_GraphWorkflows/) |
+| Multi-Agent Workflows — Graph workflows (2.0) | [06 Graph Workflows](../Notes/06_GraphWorkflows/) |
 | Agents — Collaborative agents (2.0) | [05 Multi-Agent](../Notes/05_MultiAgent/) |
 | Agents — Multi-agent (`sub_agents`, transfer) | [05 Multi-Agent](../Notes/05_MultiAgent/) |
 | Agents — `BaseAgent`, custom subclasses | [19 Internals](../Notes/19_Internals/) |
-| Tools — `FunctionTool`, docstring schema | [03 Tools](../Notes/03_Tools/) |
-| Tools — `AgentTool`, built-in tools | [03 Tools](../Notes/03_Tools/), [05 Multi-Agent](../Notes/05_MultiAgent/) |
-| Tools — `LongRunningFunctionTool` | [03 Tools](../Notes/03_Tools/), [18 Streaming & Live](../Notes/18_StreamingLive/) |
+| Custom Tools — `FunctionTool`, docstring schema | [03 Tools](../Notes/03_Tools/) |
+| Custom Tools — `AgentTool`, built-in tools | [03 Tools](../Notes/03_Tools/), [05 Multi-Agent](../Notes/05_MultiAgent/) |
+| Custom Tools — `LongRunningFunctionTool`, action confirmations | [03 Tools](../Notes/03_Tools/), [18 Streaming & Live](../Notes/18_StreamingLive/), [4B Human-in-the-Loop](../Notes/4B_HumanInTheLoop/) |
 | Tools — `McpToolset` | [08 MCP](../Notes/08_MCP/) |
 | Tools — `SkillToolset` | [09 Skills](../Notes/09_Skills/) |
+| Tools — Grounding (Google Search grounding) | [Detours/Grounding.md](../Notes/Detours/Grounding.md), [17 Advanced Models](../Notes/17_AdvancedModels/) |
 | Runtime — `Runner`, `InMemoryRunner` | [02 First Agent](../Notes/02_FirstAgent/) |
-| Runtime — Resume / Cancel (2.0) | [02 First Agent](../Notes/02_FirstAgent/), [06 Graph Workflows](../Notes/06_GraphWorkflows/) |
+| Runtime — Resume / Cancel (2.0) | [02 First Agent](../Notes/02_FirstAgent/), [06 Graph Workflows](../Notes/06_GraphWorkflows/), [4B Human-in-the-Loop](../Notes/4B_HumanInTheLoop/) |
 | Sessions — `SessionService` implementations | [04 Sessions & State](../Notes/04_SessionsState/) |
 | Sessions — rewind / migrate (2.0) | [04 Sessions & State](../Notes/04_SessionsState/) |
 | State — prefixes, deltas, templating | [04 Sessions & State](../Notes/04_SessionsState/) |
 | Events — `actions`, `state_delta`, `artifact_delta` | [04 Sessions & State](../Notes/04_SessionsState/) |
+| Components — Artifacts | [04A Artifacts (Heavy Data)](../Notes/04A_ArtifactsHeavyData/) |
+| Components — Context (caching / compression) | [1A App & Runner](../Notes/1A_AppAndRunner/) |
 | Memory — Memory Bank, RAG memory | [11 Memory](../Notes/11_Memory/) |
 | Callbacks — model / tool / agent / error | [07 Callbacks](../Notes/07_Callbacks/) |
 | Plugins — logging, retry, context filter, BQ analytics | [13 Plugins](../Notes/13_Plugins/) |
 | Skills — `Skill`, `Script`, `Frontmatter`, registry | [09 Skills](../Notes/09_Skills/) |
-| Agent Config (2.0) | [02 First Agent](../Notes/02_FirstAgent/) |
+| Agent Config (2.0) | [2A Agent Config](../Notes/2A_AgentConfig/) |
 | A2A — `AgentCard`, `to_a2a`, `RemoteA2aAgent` | [10 A2A](../Notes/10_A2A/) |
 | Models — Gemini, Claude, Gemma, LiteLlm, registry | [17 Advanced Models](../Notes/17_AdvancedModels/) |
 | Live API — bidi voice/video | [18 Streaming & Live](../Notes/18_StreamingLive/) |
 | Code execution — sandboxed executors | [12 Code Execution](../Notes/12_CodeExecution/) |
-| Evaluation — `EvalCase`, `EvalSet`, judges, trajectory | [14 Evaluation](../Notes/14_Evaluation/) |
+| Evaluation — `EvalCase`, `EvalSet`, judges, trajectory, custom metrics | [14 Evaluation](../Notes/14_Evaluation/) |
+| Evaluation — User simulation / environment simulation / optimization | [14 Evaluation](../Notes/14_Evaluation/) (partial — see deferred notes below) |
 | Vertex AI integration (embeddings, RAG Engine, Memory Bank) | [10A](../Notes/10A_EmbeddingsVectorSearch/) · [10B](../Notes/10B_RAGPipeline/) · [11](../Notes/11_Memory/) |
 | BigQuery integration (data source, vector search, analytics plugin) | [10C BigQuery for Agents](../Notes/10C_BigQueryAgents/) |
 | CLI — `adk run`, `adk eval`, `adk web`, `adk create`, `adk deploy` | [00 Setup](../Notes/00_Setup/), [14 Evaluation](../Notes/14_Evaluation/) |
 | Observability — built-in telemetry, OTel | [15 Observability](../Notes/15_Observability/) |
+| Run Agents — Safety and Security | [16 Production & Security](../Notes/16_ProductionSecurity/) |
 | Auth & credentials — `AuthHandler`, `CredentialManager` | [16 Production & Security](../Notes/16_ProductionSecurity/) |
 | Visual Builder (2.0) | [Detours/VisualBuilder.md](../Notes/Detours/VisualBuilder.md) |
 | Ambient Agents (2.0) | [06 Graph Workflows](../Notes/06_GraphWorkflows/) |
+
+> **Multi-language ADKs (TypeScript, Go, Java, Kotlin)** are intentionally out of scope — this course is Python-only. See [adk.dev](https://adk.dev/) for the other-language tracks.
 
 ---
 

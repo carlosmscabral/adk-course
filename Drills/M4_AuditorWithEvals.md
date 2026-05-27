@@ -50,7 +50,7 @@ A `SequentialAgent` with two sub-agents:
 
 ```
 root: llm_auditor (SequentialAgent)
-├── critic_agent   (LlmAgent, gemini-2.5-pro)
+├── critic_agent   (LlmAgent, gemini-2.5-flash)
 │      tools: [google_search]
 │      after_model_callback: _render_reference   # appends citations
 └── reviser_agent  (LlmAgent, gemini-2.5-flash)
@@ -87,15 +87,19 @@ def _remove_end_of_edit_mark(callback_context, llm_response):
 ### Part 2 — Add the LoggingPlugin
 
 ```python
+from google.adk.apps import App
 from google.adk.runners import Runner
 from google.adk.plugins import LoggingPlugin
 
-runner = Runner(
-    app_name="auditor",
-    agent=llm_auditor,
+app = App(
+    name="auditor",
+    root_agent=llm_auditor,
     plugins=[LoggingPlugin()],
 )
+runner = Runner(app=app, session_service=InMemorySessionService())
 ```
+
+> ⚠ Legacy `Runner(plugins=[...])` still works but is deprecated (`runners.py:219-220, 287-306`) — plugins now live on `App`, and `App` is passed to `Runner` via `app=`. See Module 1A for the full lifecycle story.
 
 Run one auditor turn. Inspect the log output:
 

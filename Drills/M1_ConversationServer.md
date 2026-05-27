@@ -10,7 +10,7 @@ in_production: false
 detours_suggested: []
 ---
 
-[← Prev: 04_SessionsState/10_MiniDrill]  [↑ Map](../MAP.md)  [Next: 05_MultiAgent/00_Overview →]
+[← Prev: 04_SessionsState/14_MiniDrill]  [↑ Map](../MAP.md)  [Next: 05_MultiAgent/00_Overview →]
 
 You are here: 🗺 Drills ▸ 🏁 M1 Conversation Server
 
@@ -203,7 +203,7 @@ If the final-state print shows `'todos': [...]` (no prefix), **fail** — refact
 ## 🌟 Stretch goals
 
 1. **`remove_todo(index: int)`.** Add a third tool that removes a todo by 1-based index. Trains you to think about argument types and validation (what if the LLM passes index 0 or 99?).
-2. **Persist across script runs with SQLite.** Swap `InMemorySessionService` for `DatabaseSessionService(db_url="sqlite:///Work/M1/state.db")`. Re-run the script with a **new** `session_id` but the same `user_id` — turn 1 should see the previous run's todos because `user:todos` is user-scoped, not session-scoped. (Module 04 page 06.)
+2. **Persist across script runs with SQLite.** Swap `InMemorySessionService` for `DatabaseSessionService(db_url="sqlite:///Work/M1/state.db")`. Re-run the script with a **new** `session_id` but the same `user_id` — turn 1 should see the previous run's todos because `user:todos` is user-scoped, not session-scoped. (Module 04 pages 02 + 10.)
 3. **`complete_todo(index: int)`.** Mark a todo as done rather than removing it. Store todos as `{"text": "...", "done": False}` dicts instead of strings. Forces you to confront the reassign-don't-mutate rule when toggling a nested field.
 
 ## 🤖 Tutor notes
@@ -229,4 +229,4 @@ If the final-state print shows `'todos': [...]` (no prefix), **fail** — refact
 
 ---
 
-[← Prev: 04_SessionsState/10_MiniDrill]  [↑ Map](../MAP.md)  [Next: 05_MultiAgent/00_Overview →]
+[← Prev: 04_SessionsState/14_MiniDrill]  [↑ Map](../MAP.md)  [Next: 05_MultiAgent/00_Overview →]

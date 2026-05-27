@@ -4,6 +4,45 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.9] - 2026-05-27
+
+Dogfood Wave 7 — the smallest-but-most-overdue surface: `Reference/CheatSheets/`, four milestone drills (M1-M4 + M5 capstone), and `Reference/docs_snapshot.md`. Three parallel read-only verification agents surfaced 5 🔴 + ~22 🟡 across ~1.9K lines. Notable clean bills: M5 capstone fully verified, all 7 cheatsheets with no correctness-breaking errors (~12 🟡 were pedantic abbreviations intentionally left as-is). Synchronous fixes this round — the surface was small enough that direct edits beat fix-agent dispatch overhead. Also landed the 1A `_configs` import-path tail deferred from v0.3.7+v0.3.8.
+
+### Fixed
+
+**Milestone drills — M1-M4 (4 files / 11 fixes)**
+- `M1_ConversationServer.md`: breadcrumbs (top + bottom) pointed at `04_SessionsState/10_MiniDrill` — actual page is `14_MiniDrill`. Stretch-goal cross-reference said "Module 04 page 06" for state prefixes; correct cite is "Module 04 pages 02 + 10" (prefix definitions + DatabaseSessionService pairing).
+- `M2_WorkflowEditor.md`: Version B fan-out prose described importing private `_ParallelWorker` directly — wrong direction per `workflow/_parallel_worker.py:35` (private machinery, not user-facing). Rewrote to describe the canonical `parallel_worker=True` flag on `@node`-decorated function or `Agent`/`LlmAgent` node, citing `adk-python/contributing/samples/workflows/parallel_worker/agent.py:44,55`. ASCII diagram updated accordingly. `reviewer_node` snippet signature was missing the auto-injected `ctx: Context` parameter — added per `workflow/_function_node.py:185`.
+- `M3_FederatedPlanner.md`: AgentCard URL used legacy `/.well-known/agent.json` — canonical 2.0 path is `/.well-known/agent-card.json` per `a2a/utils/constants.py:3` (legacy still backward-compat served at `starlette_app.py:131-141`). Fixed in both the code snippet (line 288) and the gotcha bullet (line 357). `RemoteA2aAgent.agent_card` tutor note had contradictory wording about return types — cleaned up to cite `llm_agent.py:100-103` (`Optional[dict]` matching tool's result schema). Cross-link `[[07_Callbacks/05_ErrorCallbacks]]` corrected to `08_ErrorCallbacks`.
+- `M4_AuditorWithEvals.md`: critic agent's model listed as `gemini-2.5-pro`; actual `llm-auditor/sub_agents/critic/agent.py:64` uses `gemini-2.5-flash`. Part 2 LoggingPlugin snippet used the deprecated `Runner(plugins=...)` shape — rewrote around `App(plugins=[...])` passed via `app=`, with deprecation banner citing `runners.py:219-220, 287-306`.
+
+**Reference/docs_snapshot.md — section index rewrite**
+- "Agents — Workflow agents (Sequential/Parallel/Loop) (legacy section)" → "Multi-Agent Workflows — Template workflows (Sequential, Parallel, Loop, Custom)" to match the current live-site nav structure.
+- Renamed "Tools" rows to "Custom Tools" where the live site does.
+- Added rows for live-site surfaces that had drifted off the snapshot: Custom Tools — `LongRunningFunctionTool`/action confirmations (→ 03 + 18 + 4B); Tools — Grounding (Google Search grounding) (→ Detours/Grounding + 17); Components — Artifacts (→ 04A); Components — Context caching/compression (→ 1A); Run Agents — Safety and Security (→ 16); expanded Evaluation row to cover custom metrics + user/environment simulation + optimization.
+- Fixed "Agent Config (2.0)" course-module link: `02_FirstAgent` → `2A_AgentConfig`.
+- Added explicit out-of-scope footnote for multi-language ADKs (TypeScript / Go / Java / Kotlin) — this course is Python-only.
+
+**1A `_configs` import-path tail (3 files / 6 edits, carried from v0.3.7)**
+- `Notes/1A_AppAndRunner/04_WiringResumability.md`: `ResumabilityConfig` IS lazily re-exported via `apps/__init__.py:21,26` `__all__` — student-facing imports should use the shallow public path. Consolidated 3 sites (lines 29, 64, 107) from `from google.adk.apps._configs import ResumabilityConfig` to `from google.adk.apps import App, ResumabilityConfig`. Added explanatory parenthetical on the lazy-loader pattern in the student-run snippet.
+- `Notes/1A_AppAndRunner/AGENTS.md` + `Notes/2A_AgentConfig/AGENTS.md`: watch-lists and divergence notes split the warning to distinguish public `ResumabilityConfig` (use shallow) vs private `EventsCompactionConfig` (still requires deep `_configs` import — not in `__all__`).
+
+### Method
+- Three parallel read-only verification agents (Wave 7 dogfood, ~1.9K lines across 12 files) — smaller surface meant fewer agents.
+- Source-of-truth verification spanned `adk-python` source (`workflow/_function_node.py`, `_parallel_worker.py`, `a2a/utils/constants.py`, `remote_a2a_agent.py`, `runners.py`, `apps/__init__.py`) plus a live-site re-fetch of https://adk.dev/ nav for the docs_snapshot section-index drift.
+- Cheatsheets ~12 🟡 (pedantic abbreviations like `tools=[]` shorthand for `Field(default_factory=list)`, model field's `''` default vs resolved `gemini-2.5-flash` fallback) intentionally left as-is — verification agent explicitly noted "no correctness-breaking errors found."
+
+### Why
+- User: "let's go, enxt wave" — closed the last large unreviewed surfaces (drills + cheatsheets + snapshot), bringing dogfood coverage to ~100% of authored content. Drills are the integration test for entire tracks; carrying broken cross-refs and outdated cite paths through to capstone work would compound. Section-index drift in `docs_snapshot.md` would have silently misled the next 4-week refresh diff.
+- 5 🔴 across 4 drills + 0 🔴 across 7 cheatsheets + M5 capstone clean is the strongest "course is converging" signal yet.
+
+### Deferred
+- Cheatsheets pedantic 🟡 items (intentionally skipped — would add footnote density without changing learner outcomes).
+- Wave 4 🟡 polish items still open.
+- `04_SharedRequirements.md` references nonexistent `WorkflowAgent` class (flagged out-of-scope by M5-track agent; M5 itself clean).
+
+---
+
 ## [0.3.8] - 2026-05-27
 
 Dogfood Wave 6 — the deferred `Notes/Detours/` surface: 27 detours (~5K lines) across Python, ADK-deep, ADK-adjacent, cloud-platform, and protocol/transport sidebars. Five parallel read-only verification agents surfaced 16 🔴 + 25 🟡 against `adk-python`, `google/genai`, `fastmcp`, `gcloud`, and the official Slack/Google Chat docs. 12 of 27 detours verified entirely clean (notably all 9 Python detours, GeminiPayload, AudioQuantization, PromptInjection). Five parallel fix agents then corrected 15 files.

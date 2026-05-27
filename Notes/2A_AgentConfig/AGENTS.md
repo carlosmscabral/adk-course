@@ -53,5 +53,5 @@ If the same detour is suggested and declined twice (check `student_profile.md`),
 ## Known divergences from the upstream sources (as of 2.0 GA, 2026-05-27)
 
 - The course taught `EventsCompactionConfig` field name as `events_compaction_config` (correct per `adk-python/src/google/adk/apps/app.py`). The original brief used `context_compaction_config`; the page title still says "Context Compaction" for student clarity, but the YAML/Python field is `events_compaction_config`.
-- The config classes (`ResumabilityConfig`, `EventsCompactionConfig`) import from `google.adk.apps._configs` — the leading underscore module. This may stabilize to `google.adk.apps` in a future release; check on next release sweep.
+- `ResumabilityConfig` is publicly re-exported at `google.adk.apps` (lazy-loaded via `apps/__init__.py:21,26`); use `from google.adk.apps import ResumabilityConfig`. `EventsCompactionConfig` is NOT in `__all__` — must still come from `google.adk.apps._configs`. If a future release lifts `EventsCompactionConfig` into the public surface, update the compaction-related pages.
 - `App` does not expose `on_startup` / `on_shutdown` kwargs. The brief assumed it did. Module 1A page 02 teaches the three real lifecycle patterns (bare asyncio, FastAPI lifespan, `adk api_server`) instead.

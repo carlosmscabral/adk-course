@@ -285,7 +285,7 @@ from google.genai import types
 remote_planner = RemoteA2aAgent(
     name="travel_planner_remote",
     description="Remote travel planner over A2A.",
-    agent_card="http://localhost:10002/.well-known/agent.json",
+    agent_card="http://localhost:10002/.well-known/agent-card.json",
 )
 
 boss = LlmAgent(
@@ -354,10 +354,10 @@ Common pitfalls — call them out before they bite:
 
 - **Forgot to start the MCP server first.** The planner boots fine because the `McpToolset` connects lazily, but the first `search_hotels` call fails with a connection error. Symptom: client final response says "I couldn't reach the hotels system." Fix: always start MCP first, planner second.
 - **Ran planner with `python agent.py` instead of `uvicorn`.** The module defines `a2a_app` but no `if __name__ == "__main__": uvicorn.run(...)` block. Symptom: script exits immediately with no error. Fix: use the uvicorn CLI exactly as written.
-- **`agent_card="http://localhost:10002/"` instead of the full `.well-known/agent.json` path.** `RemoteA2aAgent` does not auto-discover. Symptom: client crashes at startup with "card not found". Fix: include `/.well-known/agent.json` in the URL.
+- **`agent_card="http://localhost:10002/"` instead of the full `.well-known/agent-card.json` path.** `RemoteA2aAgent` does not auto-discover the URL — `agent_card` accepts an AgentCard object, a full URL to a card JSON, or a file path (`remote_a2a_agent.py:145, 219-228`). Symptom: client crashes at startup with "card not found". Fix: include the full `/.well-known/agent-card.json` suffix (canonical). The legacy `/.well-known/agent.json` is still served for backward-compat but new code should use the canonical path.
 - **MCP session not cleaned up.** Symptom: stale sessions accumulate, eventually port 8090 connections refuse. Fix: see [[08_MCP/04_LifecycleManagement]] — wrap the toolset's `__aexit__` properly when running long-lived planners.
 - **Skill frontmatter mismatch.** `name` must be kebab-case ≤ 64 chars and `description` ≤ 1024 chars. If you write `Hotel Booking Flow` you get a validation error at `load_skill_from_dir`. Fix: `name: hotel-booking-flow`.
-- **Callback returns the wrong shape.** `before_tool_callback` returning a string short-circuits the tool — but only if it returns a `dict` (the tool result schema). Returning a bare string usually triggers a downstream parsing error. Fix: return `{"error": "..."}`.
+- **Callback returns the wrong shape.** `before_tool_callback` short-circuits the tool by returning a `dict` matching the tool's result schema (`llm_agent.py:100-103` — return type is `Optional[dict]`). Returning a bare string usually triggers a downstream parsing error. Fix: return `{"error": "..."}`.
 - **Client's `boss` parent agent over-summarizes.** Sometimes the parent strips the confirmation id. Fix: tighten the boss's instruction to "Always include any confirmation ids verbatim in your final response."
 - **One terminal, then debugging hell.** Insist on three terminals OR a tmux split. If they fight you, run the drill in one terminal once just to demonstrate why it's miserable.
 
@@ -375,7 +375,7 @@ Common pitfalls — call them out before they bite:
 > ❓ **After the round-trip works:**
 > 1. Trace one full request in your head: which process did the LLM token at each step originate in? Count the network hops (client → planner; planner → MCP; MCP → planner; planner → client).
 > 2. If you swapped the planner to live on a remote VM (different IP), what changes in `client.py`? (Just the `agent_card` URL.)
-> 3. If the hotels MCP server crashed mid-request, what would the client see? What would you change to make the failure mode less ugly? (`on_tool_error_callback` on `booking_agent`; cross-link [[07_Callbacks/05_ErrorCallbacks]].)
+> 3. If the hotels MCP server crashed mid-request, what would the client see? What would you change to make the failure mode less ugly? (`on_tool_error_callback` on `booking_agent`; cross-link [[07_Callbacks/08_ErrorCallbacks]].)
 > 4. If you scaled the planner to 3 replicas behind a round-robin LB, what breaks? (In-memory session state; sticky sessions or a `DatabaseSessionService` needed — see [[10_A2A/07_InProduction]].)
 
 ## 🔗 Cross-links

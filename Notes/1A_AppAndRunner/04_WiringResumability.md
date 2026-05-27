@@ -25,8 +25,7 @@ Resumability is the 2.0 feature that lets an agent **pause** mid-invocation (typ
 ```python
 # Work/1A_resumability_wiring.py
 from google.adk.agents import LlmAgent
-from google.adk.apps import App
-from google.adk.apps._configs import ResumabilityConfig
+from google.adk.apps import App, ResumabilityConfig
 
 agent = LlmAgent(name="approver", model="gemini-2.5-flash", instruction="Be brief.")
 
@@ -60,8 +59,7 @@ Three things flip on:
 import asyncio
 import uuid
 from google.adk.agents import LlmAgent
-from google.adk.apps import App
-from google.adk.apps._configs import ResumabilityConfig
+from google.adk.apps import App, ResumabilityConfig
 from google.adk.runners import Runner
 from google.adk.sessions import DatabaseSessionService
 from google.adk.tools import LongRunningFunctionTool
@@ -104,7 +102,7 @@ The pieces you can see today: `ResumabilityConfig(is_resumable=True)` on the App
 >
 > Resumability is an `@experimental` feature in ADK 2.0 today (see `from ..utils.feature_decorator import experimental` on the `ResumabilityConfig` class). The API surface and the at-least-once semantics are stable enough for human-approval flows, but check [Notes/Updates/](../Updates/) for the next release delta before pinning a critical workflow on it. The standard mitigation for "I need real durable execution today and can't tolerate API churn" is to combine ADK's resumability with [Temporal or Dapr workflows](../4B_HumanInTheLoop/08_DurableExecution.md) — let ADK handle the agent loop, let Temporal handle the durability.
 
-> 🛠 **Have the student run:** `python -c "from google.adk.apps._configs import ResumabilityConfig; print(ResumabilityConfig(is_resumable=True))"`. Confirm the import path works and the Pydantic repr prints `is_resumable=True`. Just verifying the wiring before they move on.
+> 🛠 **Have the student run:** `python -c "from google.adk.apps import ResumabilityConfig; print(ResumabilityConfig(is_resumable=True))"`. Confirm the import path works and the Pydantic repr prints `is_resumable=True`. Just verifying the wiring before they move on. (`ResumabilityConfig` is in `apps/__init__.py`'s `__all__` and resolves via lazy loader; the deep `apps._configs` path also works but is not the public surface.)
 
 ---
 

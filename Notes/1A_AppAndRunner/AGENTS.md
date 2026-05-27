@@ -21,7 +21,7 @@
 ## Watch for these mistakes
 
 - Importing `App` from `google.adk` instead of `google.adk.apps`. The correct path is `from google.adk.apps import App`.
-- Importing `ResumabilityConfig` / `EventsCompactionConfig` from `google.adk.apps` directly. They live in `google.adk.apps._configs` (note the underscore — that's a divergence to call out; the import path may stabilize in a future release).
+- Importing `EventsCompactionConfig` from `google.adk.apps` directly. It is NOT in `apps/__init__.py`'s `__all__` — must be imported from `google.adk.apps._configs` (underscore module). `ResumabilityConfig` IS in `__all__` (lazy-loaded), so `from google.adk.apps import ResumabilityConfig` is the public surface — use that path. Watch for the split: one is public, one is not.
 - Building a fresh `App(...)` per request. The App holds plugin instances and shared state — must be module-scope.
 - Setting `state["app:foo"]` from inside a user's session. Writes to `app:` from a user session **leak to every other user**. The pattern is read from agents, write from admin tooling.
 - Turning on `ResumabilityConfig(is_resumable=True)` while still on `InMemorySessionService`. Looks like it works in dev, silently breaks across process restarts in prod.
@@ -68,5 +68,5 @@ If the student forgets a prerequisite concept, the tutor should NOT re-teach it 
 ## Divergences from the source
 
 - The authoring brief asked for `on_startup` / `on_shutdown` as App fields. The real `App` class (verified at `/home/carloscabral/study/adk-python/src/google/adk/apps/app.py` on 2026-05-27) does NOT expose those kwargs directly — lifecycle is host-managed (FastAPI `lifespan`, `adk api_server`, etc.). Page 02 teaches the wrapping pattern instead of pretending kwargs exist. If a future release adds them, patch page 02 first.
-- `EventsCompactionConfig` and `ResumabilityConfig` are imported from `google.adk.apps._configs` (underscore module) as of the 2.0 GA snapshot. The pages use that path. If they get re-exported from `google.adk.apps` directly in a later release, update imports.
+- `ResumabilityConfig` is publicly re-exported via `apps/__init__.py:21,26` (lazy loader); pages now use `from google.adk.apps import ResumabilityConfig`. `EventsCompactionConfig` is NOT in `__all__` and the page deliberately keeps the deep `google.adk.apps._configs` path. If a future release adds `EventsCompactionConfig` to the public surface, update the compaction page's import.
 - The brief named the page `06_WiringContextCompaction` and said `context_compaction_config`. The actual field on `App` is `events_compaction_config` (with the `EventsCompactionConfig` class). The page title keeps "Context Compaction" for student-facing clarity but the code uses the correct `events_compaction_config` field name.
