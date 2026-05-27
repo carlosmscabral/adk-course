@@ -112,6 +112,10 @@ adk deploy agent_engine \
     ./research_assistant
 ```
 
+> **⚠️ Deprecation — `--staging_bucket`**
+>
+> `--staging_bucket` is still accepted but emits a deprecation warning ("This argument is no longer required or used" — see `adk-python/src/google/adk/cli/cli_tools_click.py:2256` + the `_deprecate_staging_bucket` callback at L1559). The modern shape in the Python SDK is `client.agent_engines.create(config=...)` — Vertex now manages staging internally. Drop the flag when you can; new scripts shouldn't include it.
+
 What this does:
 
 1. Packages your project into a zip.

@@ -22,7 +22,7 @@ from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
 currency = RemoteA2aAgent(
     name="currency",
     description="Currency conversion agent.",
-    agent_card="http://localhost:10000/.well-known/agent.json",
+    agent_card="http://localhost:10000/.well-known/agent-card.json",
 )
 ```
 
@@ -35,10 +35,10 @@ currency = RemoteA2aAgent(
 ## Three ways to specify the remote
 
 ```python
-# (1) URL to the agent.json
-RemoteA2aAgent(name="x", agent_card="https://example.com/.well-known/agent.json")
+# (1) URL to the agent-card.json
+RemoteA2aAgent(name="x", agent_card="https://example.com/.well-known/agent-card.json")
 
-# (2) Path to a local agent.json file
+# (2) Path to a local agent card JSON file
 RemoteA2aAgent(name="x", agent_card="./remote_cards/x.json")
 
 # (3) Pre-built AgentCard object
@@ -64,11 +64,11 @@ planner = Agent(
     sub_agents=[
         RemoteA2aAgent(
             name="currency",
-            agent_card="http://localhost:10000/.well-known/agent.json",
+            agent_card="http://localhost:10000/.well-known/agent-card.json",
         ),
         RemoteA2aAgent(
             name="weather",
-            agent_card="http://weather.internal/.well-known/agent.json",
+            agent_card="http://weather.internal/.well-known/agent-card.json",
         ),
     ],
 )
@@ -111,7 +111,7 @@ RemoteA2aAgent(
 
 For a server with many remotes, share one `httpx.AsyncClient` across them to pool connections.
 
-> 🛠 **Have the student run:** spawn the currency agent on port 10000 (from page 03). In another script, create a `RemoteA2aAgent(name="cc", agent_card="http://localhost:10000/.well-known/agent.json")` and use it as the sole sub-agent of a parent `Agent`. Ask "convert 50 USD to JPY". Confirm the round-trip works.
+> 🛠 **Have the student run:** spawn the currency agent on port 10000 (from page 03). In another script, create a `RemoteA2aAgent(name="cc", agent_card="http://localhost:10000/.well-known/agent-card.json")` and use it as the sole sub-agent of a parent `Agent`. Ask "convert 50 USD to JPY". Confirm the round-trip works.
 
 > ⚠️ **Gotcha** — `RemoteA2aAgent` resolves the card lazily on first use. If the server is down at startup, you find out at first request. Pair with an `on_tool_error_callback` for graceful UX.
 

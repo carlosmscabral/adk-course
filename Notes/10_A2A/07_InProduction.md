@@ -19,7 +19,7 @@ You are here: 🗺 Integration Track ▸ 10 A2A ▸ 07 In Production
 ## AgentCard is your public contract — version it
 
 - Bump `version` on every change to skills, capabilities, or description semantics.
-- Serve old versions at versioned URLs (`/v1/.well-known/agent.json`) until callers migrate.
+- Serve old versions at versioned URLs (`/v1/.well-known/agent-card.json`) until callers migrate.
 - Treat the AgentCard like an OpenAPI spec: changelog, deprecation notices, sunset dates.
 
 ## Real auth (not just network ACLs)
@@ -30,10 +30,12 @@ The defaults are open. Production needs:
 - **Declare it in the AgentCard's `security_schemes`** so callers know how to authenticate.
 
 ```python
-from a2a.types import SecurityScheme
+from a2a.types import HTTPAuthSecurityScheme
 
-scheme = SecurityScheme(type="http", scheme="bearer", bearerFormat="JWT")
+scheme = HTTPAuthSecurityScheme(scheme="bearer", bearer_format="JWT")
 ```
+
+> 🪧 `SecurityScheme` is a union of 5 concrete classes in `a2a.types` — pick the matching concrete one (`HTTPAuthSecurityScheme`, `APIKeySecurityScheme`, `OAuth2SecurityScheme`, `OpenIdConnectSecurityScheme`, `MutualTLSSecurityScheme`). Fields are snake_case (`bearer_format`, not `bearerFormat`).
 
 Network ACLs are defense in depth, never the only line.
 

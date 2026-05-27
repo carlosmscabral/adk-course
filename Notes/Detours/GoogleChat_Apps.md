@@ -194,6 +194,10 @@ def verify_chat_request(authz_header: str, expected_audience: str):
 
 `expected_audience` matches the value you configured in the app settings (your project ID or your endpoint URL).
 
+> **🪧 Official issuer for service-account-authenticated Chat events**
+>
+> Both the `iss` claim (`chat@system.gserviceaccount.com`) and the X.509 metadata URL above are canonical — see [Verify requests from Chat](https://developers.google.com/workspace/chat/verify-requests-from-chat). ADK's `id_token.verify_token(...)` validates the JWT signature against the public certs published at that metadata URL.
+
 > **🚀 In Production**
 >
 > Never accept an unauthenticated POST to your Chat endpoint. Even on internal Cloud Run with `--no-allow-unauthenticated`, the request still needs to be a Chat one — set the Chat service account as the only invoker, OR verify the audience JWT inside your handler. The two strategies stack.

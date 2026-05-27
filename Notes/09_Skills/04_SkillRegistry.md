@@ -35,7 +35,7 @@ toolset = SkillToolset(
 
 When `registry` is set, the toolset auto-adds a fifth tool:
 
-- `search_skills(query: str)` — semantic / keyword search across the registry.
+- `search_skills(*, query: str) -> list[Frontmatter]` — semantic / keyword search across the registry. Returns L1 frontmatter only (cheap), not full skills (`skill_registry.py:44-54`).
 
 So a 200-skill registry never bloats the prompt. The LLM searches for what it needs, sees only relevant hits, then `load_skill`s.
 
@@ -43,7 +43,7 @@ So a 200-skill registry never bloats the prompt. The LLM searches for what it ne
 
 ```
 User: "Optimize my blog post for SEO and check brand voice."
-LLM:  search_skills("SEO optimization brand voice")
+LLM:  search_skills(query="SEO optimization brand voice")
         ↳ ["seo-checklist", "brand-voice-guide"]
 LLM:  load_skill("seo-checklist")
 LLM:  load_skill("brand-voice-guide")
@@ -59,15 +59,16 @@ You can combine: the local `skills=[...]` are always L1-listed; the registry hit
 Inherit from `SkillRegistry` and implement the abstract methods. The framework calls into your class; you decide where the bytes come from.
 
 ```python
-from google.adk.skills import Skill, SkillRegistry
+from google.adk.skills import Frontmatter, Skill, SkillRegistry
 
 class CorpRegistry(SkillRegistry):
-    async def search_skills(self, query: str) -> list[Skill]: ...
-    async def get_skill(self, name: str) -> Skill | None: ...
+    async def search_skills(self, *, query: str) -> list[Frontmatter]: ...
+    async def get_skill(self, *, name: str) -> Skill: ...
     def search_tool_description(self) -> str | None:
         return "Searches our corporate skill catalog by capability."
-    # ... (implement the rest per the ABC)
 ```
+
+Both abstract methods are **keyword-only** (the `*,` marker) and `search_skills` returns L1 `Frontmatter` — not full `Skill` objects (`skill_registry.py:29-54`). `get_skill` raises on a missing name; it does not return `None`.
 
 This is how you wire a private knowledge platform into an ADK agent without copying every skill into every repo.
 

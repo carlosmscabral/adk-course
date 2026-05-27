@@ -4,6 +4,34 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.3] - 2026-05-27
+
+🟡 second pass after dogfood Wave 2. Four parallel fix agents corrected the imprecise-but-not-broken drift items deferred from 0.3.2. Same source-grounded methodology against `/home/carloscabral/study/adk-python/src/` plus the `a2a-sdk` source for the A2A path/scheme fixes.
+
+### Fixed
+- **A2A well-known path** — modern canonical path is `/.well-known/agent-card.json` (`AGENT_CARD_WELL_KNOWN_PATH` in `a2a/utils/constants.py:3`); `/.well-known/agent.json` is the legacy fallback (`PREV_AGENT_CARD_WELL_KNOWN_PATH`). `RemoteA2aAgent` imports the new path from the a2a-sdk (`remote_a2a_agent.py:51-54`). One 🪧 callout in `02_AgentCard.md` documents the fallback. Note: the on-disk filename `agent.json` for `adk api_server --a2a` directory mode (`fast_api.py:669-694`) is a separate concept and stays as-is. Affected `Notes/10_A2A/01_WhatIsA2A.md`, `02_AgentCard.md`, `03_ServeWithToA2a.md`, `04_ConsumeWithRemoteA2aAgent.md`, `05_A2A_vs_MCP.md`, `06_DissectingSample.md`, `07_InProduction.md`, `08_KnowledgeCheck.yml`, `09_MiniDrill.yml`, `AGENTS.md`.
+- **A2A `SecurityScheme` is a union, not a constructor** — concrete classes: `HTTPAuthSecurityScheme`, `APIKeySecurityScheme`, `OAuth2SecurityScheme`, `OpenIdConnectSecurityScheme`, `MutualTLSSecurityScheme` (`a2a/types.py:1524-1538`). Fields are snake_case (`bearer_format`, not `bearerFormat`); `HTTPAuthSecurityScheme(scheme=, bearer_format=, type='http')` (`a2a/types.py:447-470`). Affected `Notes/10_A2A/02_AgentCard.md`, `07_InProduction.md`.
+- **`SkillRegistry` ABC signatures are keyword-only** — `async def get_skill(self, *, name: str) -> Skill` and `async def search_skills(self, *, query: str) -> list[Frontmatter]` (`skills/skill_registry.py:29-54`). `get_skill` **raises** on missing name, doesn't return `None`. Concrete GCS impl confirms return types (`integrations/skill_registry/gcp_skill_registry.py:51,73`). Call sites updated to keyword form (`registry.search_skills(query=...)`). Affected `Notes/09_Skills/04_SkillRegistry.md`, `02_SkillAnatomy.md`, `07_KnowledgeCheck.yml`.
+- **Skills frontmatter accepts `allowed-tools` alias** — `Frontmatter` Pydantic model uses `ConfigDict(populate_by_name=True)` and `alias="allowed-tools"` / `serialization_alias="allowed-tools"` on the `allowed_tools` field (`skills/models.py:56-69`). Added one-line note in `02_SkillAnatomy.md`.
+- **`VertexAiMemoryBankService.agent_engine_id` expects bare ID** — source `vertex_ai_memory_bank_service.py:220-226` **warns** (not rejects) when the value contains `/`, then concatenates it into `'reasoningEngines/' + agent_engine_id`, producing a double-prefixed malformed path that fails at API call time. Page now shows `agent_engine_id="456"` with an inline `api_resource.name.split('/')[-1]` extraction comment. Affected `Notes/11_Memory/03_VertexAIMemoryBank.md`.
+- **`app_engine_id` typo** → `agent_engine_id` in `Notes/11_Memory/06_DissectingMemoryBank.md` L77.
+- **`--staging_bucket` is deprecated** — `cli_tools_click.py:1559-1569` emits `WARNING: --staging_bucket is deprecated and will be removed`; `:2256-2260` flag help text is `"Deprecated. This argument is no longer required or used."` Modern shape is `client.agent_engines.create(config=...)`. Added ⚠️ deprecation callout adjacent to the use. Affected `Notes/22_DeploymentModels/03_AgentEnginePath.md`.
+- **Google Chat JWT issuer link** — verified `chat@system.gserviceaccount.com` is current via [verify-requests-from-chat docs](https://developers.google.com/workspace/chat/verify-requests-from-chat); no code change, added 🪧 link callout pointing at the official source. Affected `Notes/Detours/GoogleChat_Apps.md`.
+
+### Verified-only (no edits required)
+- `Notes/Detours/a2UI.md` CLI flags were already fixed in 0.3.2 (`--session_service_uri`, `--reload_agents`).
+
+### Method
+- **🟡 fix wave**: 4 parallel agents with non-overlapping file scopes (module 09 / module 10 / module 11 / cross-cutting 22+Detours). Brief was wrong on two items where source contradicted it; agents flagged and followed source:
+  1. `get_skill` raises on missing name (brief implied `-> Skill | None`).
+  2. The `agent_engine_id` validator only **warns** with `/` in the value — does not reject; failure surfaces downstream at the API call.
+- **Out-of-original-scope catch**: Wave 2E agent flagged `Notes/10_A2A/07_InProduction.md` had the same `SecurityScheme` + path drift outside the brief's explicit file list. Picked up post-agent in this bump.
+
+### Why
+- User: "let's go" — dispatch the 🟡 wave deferred at end of 0.3.2. This closes the dogfood Wave 2 cycle (0.3.1 → 0.3.2 → 0.3.3).
+
+---
+
 ## [0.3.2] - 2026-05-27
 
 Dogfood Wave 2. Six parallel verification agents (read-only, `git status` clean post-run) covered the modules 0.3.1 did not sample: 06 Graph Workflows, 07 Callbacks, 08 MCP, 2A Agent Config, 10C BigQuery, 12 Code Execution, 13 Plugins, 14 Evaluation, 16 Production & Security, 17 Advanced Models, 18 Streaming & Live, and the VisualBuilder / a2UI / FastMCP detours. Same severity rubric as 0.3.1 (🔴 wrong shape, won't run / 🟡 drifted / 🟢 verified). Five parallel fix agents then corrected ~51 files surgically against `/home/carloscabral/study/adk-python/src/`. Only the 🔴 wave landed in this bump; 🟡 stays pending for the next pass.

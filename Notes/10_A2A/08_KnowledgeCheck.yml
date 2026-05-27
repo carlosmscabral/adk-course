@@ -7,7 +7,7 @@ questions:
     difficulty: easy
   - id: q2
     prompt: "At what well-known path does an A2A agent publish its AgentCard?"
-    expected_keywords: [".well-known/agent.json"]
+    expected_keywords: [".well-known/agent-card.json"]
     accept_paraphrase: false
     difficulty: easy
   - id: q3

@@ -8,13 +8,13 @@ exercise:
        - Import (or copy) your M1 todo agent.
        - At the bottom: `a2a_app = to_a2a(root_agent, port=10001)`.
        - Run: `uvicorn Work.todo_a2a_server:a2a_app --host localhost --port 10001`.
-       - Verify `curl http://localhost:10001/.well-known/agent.json` returns
+       - Verify `curl http://localhost:10001/.well-known/agent-card.json` returns
          the AgentCard.
 
     2. `Work/todo_a2a_client.py` —
        - Build a parent `LlmAgent(model="gemini-2.5-flash", name="boss")` whose
          sole sub-agent is
-         `RemoteA2aAgent(name="todo", agent_card="http://localhost:10001/.well-known/agent.json")`.
+         `RemoteA2aAgent(name="todo", agent_card="http://localhost:10001/.well-known/agent-card.json")`.
        - Run it against the prompt: "Add 'buy milk' to my list, then list."
        - Print the final response.
 
@@ -32,7 +32,7 @@ exercise:
     expect_run_output_contains: ["buy milk", "todo"]
     grading_rubric:
       - "Server module exposes `a2a_app = to_a2a(root_agent, port=10001)`."
-      - "AgentCard reachable via curl at `/.well-known/agent.json`."
+      - "AgentCard reachable via curl at `/.well-known/agent-card.json`."
       - "Client uses `RemoteA2aAgent` (not raw `A2AClient`) as a sub-agent."
       - "Client's parent agent prints a final response that mentions 'buy milk'."
       - "Student demonstrates the two-process flow (server + client running separately)."
@@ -43,7 +43,7 @@ exercise:
       module declares `a2a_app` but doesn't `uvicorn.run(...)`. Either
       they add a `__main__` block calling `uvicorn.run(...)` or they use
       the CLI.
-    - Forgetting the path `/.well-known/agent.json` and writing just
+    - Forgetting the path `/.well-known/agent-card.json` and writing just
       `http://localhost:10001/` as the agent_card. RemoteA2aAgent expects
       the well-known URL.
     - In-memory state means a server restart drops the todos. That's

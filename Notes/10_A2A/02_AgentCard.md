@@ -20,7 +20,9 @@ You are here: 🗺 Integration Track ▸ 10 A2A ▸ 02 Agent Card
 from a2a.types import AgentCard, AgentSkill, AgentCapabilities
 ```
 
-The `AgentCard` is the manifest. It's what `/.well-known/agent.json` returns. Field tour:
+The `AgentCard` is the manifest. It's what `/.well-known/agent-card.json` returns. Field tour:
+
+> 🪧 **Path note** — the canonical well-known path is `/.well-known/agent-card.json`. The a2a-sdk also keeps the legacy `/.well-known/agent.json` route alive as a fallback for older callers (see `a2a/utils/constants.py:4` — `PREV_AGENT_CARD_WELL_KNOWN_PATH`). New code (and ADK's `to_a2a()`) should publish at and resolve from the new path.
 
 | Field                             | What it carries                                         |
 | --------------------------------- | ------------------------------------------------------- |
@@ -87,21 +89,19 @@ AgentCapabilities(
 A2A inherits OpenAPI-style security schemes:
 
 ```python
-from a2a.types import SecurityScheme
+from a2a.types import HTTPAuthSecurityScheme
 
-scheme = SecurityScheme(
-    type="http", scheme="bearer", bearerFormat="JWT",
-)
+scheme = HTTPAuthSecurityScheme(scheme="bearer", bearer_format="JWT")
 ```
 
-That's how callers learn *how* to authenticate. The actual enforcement is in your server-side middleware.
+`SecurityScheme` in `a2a.types` is a **union** wrapper (`APIKeySecurityScheme | HTTPAuthSecurityScheme | OAuth2SecurityScheme | OpenIdConnectSecurityScheme | MutualTLSSecurityScheme`), not a constructor — you instantiate one of the concrete classes (see `a2a/types.py:447` for `HTTPAuthSecurityScheme`, `:1524` for the union). Fields are snake_case (`bearer_format`, not `bearerFormat`). The `type` field defaults to `'http'` on the HTTP scheme so you don't pass it. That's how callers learn *how* to authenticate. The actual enforcement is in your server-side middleware.
 
 ## The well-known URL
 
-Spec: the AgentCard lives at `{url}/.well-known/agent.json`. ADK's `to_a2a()` wires this route for free.
+Spec: the AgentCard lives at `{url}/.well-known/agent-card.json`. ADK's `to_a2a()` wires this route for free.
 
 ```
-$ curl http://localhost:10000/.well-known/agent.json
+$ curl http://localhost:10000/.well-known/agent-card.json
 {
   "name": "currency_agent",
   "description": "An agent that helps with currency conversions.",
@@ -113,7 +113,7 @@ $ curl http://localhost:10000/.well-known/agent.json
 }
 ```
 
-> 🛠 **Have the student run:** once their currency agent is serving (page 03), `curl /.well-known/agent.json` and read the auto-built card aloud.
+> 🛠 **Have the student run:** once their currency agent is serving (page 03), `curl /.well-known/agent-card.json` and read the auto-built card aloud.
 
 > 🚀 **In Production**
 >

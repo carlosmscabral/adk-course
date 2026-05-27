@@ -24,7 +24,7 @@ a2a_app = to_a2a(root_agent, port=10000)
 
 Done. `a2a_app` is a [Starlette](https://www.starlette.io/) ASGI app with:
 
-- `GET /.well-known/agent.json` returning the auto-built AgentCard.
+- `GET /.well-known/agent-card.json` returning the auto-built AgentCard.
 - `POST /` accepting JSON-RPC messages (`message/send`, `task/get`, …).
 - SSE streaming for long-running tasks.
 
@@ -124,9 +124,9 @@ ADK ships a CLI:
 adk api_server --a2a path/to/agents_dir
 ```
 
-This serves every agent in a directory, each at `/<agent-name>/.well-known/agent.json`. You hand-author an `agent.json` per agent. Use this when you have a fleet to expose.
+This serves every agent in a directory, each at `/<agent-name>/.well-known/agent-card.json`. You hand-author an `agent.json` per agent. Use this when you have a fleet to expose.
 
-> 🛠 **Have the student run:** copy the currency agent's `to_a2a(root_agent, port=10000)` snippet, save as `my_agent.py`, run `uvicorn my_agent:a2a_app --port 10000`. Hit `localhost:10000/.well-known/agent.json` with curl.
+> 🛠 **Have the student run:** copy the currency agent's `to_a2a(root_agent, port=10000)` snippet, save as `my_agent.py`, run `uvicorn my_agent:a2a_app --port 10000`. Hit `localhost:10000/.well-known/agent-card.json` with curl.
 
 > ⚠️ **Gotcha** — `to_a2a()` returns a Starlette app; running `python my_agent.py` without `uvicorn` does nothing. You must run an ASGI server.
 

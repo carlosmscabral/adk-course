@@ -25,7 +25,9 @@ from google.adk.runners import Runner
 memory_service = VertexAiMemoryBankService(
     project="your-gcp-project",
     location="us-central1",
-    agent_engine_id="projects/.../locations/.../reasoningEngines/...",
+    agent_engine_id="456",  # bare numeric ID, NOT the full resource path
+    # If you only have the full path "projects/.../reasoningEngines/456",
+    # extract the ID: id_ = agent_engine.api_resource.name.split('/')[-1]
 )
 
 runner = Runner(
@@ -36,6 +38,8 @@ runner = Runner(
 ```
 
 The `agent_engine_id` is the Reasoning Engine resource that hosts the memory bank for *this* deployed agent. Each Agent Engine resource gets its own memory bank.
+
+> 🪧 **Pass the bare ID, not the full path.** The constructor expects just the ID segment (e.g. `"456"`), not `"projects/.../reasoningEngines/456"`. If you pass the full path, the service logs a warning and the request will end up double-prefixed (`reasoningEngines/projects/...`) and fail at call time. See `vertex_ai_memory_bank_service.py:220-226` (warning) and `:346` / `:424` / `:481` (the `'reasoningEngines/' + self._agent_engine_id` concatenation that breaks). Extract with `agent_engine.api_resource.name.split('/')[-1]`.
 
 ## What gets stored
 

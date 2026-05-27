@@ -31,7 +31,7 @@ This is the comparison everyone gets wrong on the first try. Both protocols let 
 | **Granularity**       | Per-tool (per function).         | Per-agent (whole agent).                  |
 | **What it exposes**   | Tools, resources, prompts.       | An entire agent with skills + sub-agents. |
 | **Caller is**         | Any LLM client.                  | Another agent (or app talking A2A).       |
-| **Discovery**         | `list_tools` RPC.                | `/.well-known/agent.json` AgentCard.      |
+| **Discovery**         | `list_tools` RPC.                | `/.well-known/agent-card.json` AgentCard. |
 | **Statefulness**      | Stateless per call.              | Stateful via `context_id`.                |
 | **Streaming**         | Yes (transport-dep).             | First-class (SSE + push notifications).   |
 | **Auth model**        | Per-request headers.             | OpenAPI `SecurityScheme` in card.         |

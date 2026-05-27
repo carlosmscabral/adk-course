@@ -92,7 +92,7 @@ Started via:
 uvicorn currency_agent.agent:a2a_app --host localhost --port 10000
 ```
 
-After it boots, the AgentCard is live at `http://localhost:10000/.well-known/agent.json`. The card's `skills` list is auto-built and will include `get_exchange_rate` (because the MCPToolset's tools are reflected up into the card).
+After it boots, the AgentCard is live at `http://localhost:10000/.well-known/agent-card.json`. The card's `skills` list is auto-built and will include `get_exchange_rate` (because the MCPToolset's tools are reflected up into the card).
 
 ## File 3 — `currency_agent/test_client.py` (the A2A client)
 
@@ -127,7 +127,7 @@ async def main():
 
 Walk-through:
 
-- **`A2ACardResolver`** fetches `/.well-known/agent.json`. Returns an `AgentCard`.
+- **`A2ACardResolver`** fetches `/.well-known/agent-card.json`. Returns an `AgentCard`.
 - **`A2AClient(httpx_client=..., agent_card=...)`** wraps the RPC URL from the card.
 - **`SendMessageRequest`** carries a `MessageSendParams` carrying the user message. The `messageId` is a uuid so the server can dedupe.
 - The response is a `SendMessageResponse` whose `.root` is either a success (`Task`) or an error.

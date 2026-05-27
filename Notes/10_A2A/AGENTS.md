@@ -17,7 +17,7 @@
 ## Watch for these mistakes
 - Conflating A2A and MCP. Reach for the A2A-vs-MCP figure as soon as it comes up.
 - Forgetting `uvicorn` — they import `a2a_app` and run `python` and see nothing happen.
-- Writing agent_card="http://...:10001/" instead of full `.well-known/agent.json` path.
+- Writing agent_card="http://...:10001/" instead of full `.well-known/agent-card.json` path.
 - Designing for one replica then surprised when sticky sessions don't exist.
 - Skipping AgentCard versioning ("it's just a Python field"). Push back: it's a public contract.
 
@@ -33,5 +33,5 @@
 ## Common follow-up questions
 - "Can I expose just one method instead of the whole agent?" — No; A2A is agent-level. Use MCP for function-level.
 - "Can RemoteA2aAgent stream?" — Yes, via the underlying A2A streaming. ADK adapts the events into the parent's event stream.
-- "Can I have multiple agents on one port?" — Use `adk api_server --a2a path/to/agents_dir` to serve each at `/<name>/.well-known/agent.json`.
+- "Can I have multiple agents on one port?" — Use `adk api_server --a2a path/to/agents_dir` to serve each at `/<name>/.well-known/agent-card.json`.
 - "What's the relationship between A2A and `AgentTool`?" — AgentTool wraps a local Agent as a function; RemoteA2aAgent wraps a remote Agent as a sub_agent. Compose freely.

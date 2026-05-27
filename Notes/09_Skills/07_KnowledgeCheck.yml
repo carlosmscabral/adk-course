@@ -27,7 +27,7 @@ questions:
     difficulty: medium
   - id: q6
     prompt: "What does adding a SkillRegistry to a SkillToolset change?"
-    expected_keywords: [search_skills, semantic search, registry, discovery]
+    expected_keywords: [search_skills, semantic search, registry, discovery, Frontmatter]
     accept_paraphrase: true
     difficulty: medium
   - id: q7

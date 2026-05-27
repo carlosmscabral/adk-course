@@ -36,6 +36,8 @@ class Frontmatter(BaseModel):
     metadata: dict       # client-specific extras (e.g. adk_additional_tools)
 ```
 
+YAML can also write this as `allowed-tools:` (hyphen) — both forms are accepted because the Pydantic field declares `alias="allowed-tools"` with `populate_by_name=True` (`models.py:56-69`). Use whichever reads better in your SKILL.md frontmatter.
+
 Two rules the framework enforces:
 
 - `name` must match `^[a-z0-9]+(-[a-z0-9]+)*$` (kebab-case, no leading/trailing hyphens).

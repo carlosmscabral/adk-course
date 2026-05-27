@@ -18,7 +18,7 @@ You are here: 🗺 Integration Track ▸ 10 A2A ▸ 01 What Is A2A
 
 **A2A** is an open protocol for agent interoperability. It is a community spec (`a2aproject/A2A`) with a Python SDK (`a2a-sdk`) that ADK builds on. The spec's deal:
 
-- Every A2A agent **publishes an AgentCard** at a well-known URL (`/.well-known/agent.json`).
+- Every A2A agent **publishes an AgentCard** at a well-known URL (`/.well-known/agent-card.json`).
 - Callers send messages over **JSON-RPC** (single-shot) and receive **task** objects back.
 - Long-running work uses **streaming events** (Server-Sent Events / WebSockets).
 - Multi-turn conversations carry a **context_id** so the agent can keep state.
@@ -33,7 +33,7 @@ You are here: 🗺 Integration Track ▸ 10 A2A ▸ 01 What Is A2A
 
 ## The discovery flow
 
-1. Caller fetches `GET https://your-agent.example.com/.well-known/agent.json`.
+1. Caller fetches `GET https://your-agent.example.com/.well-known/agent-card.json`.
 2. Server returns the AgentCard (we cover its shape on the next page).
 3. Caller now knows the RPC URL, the agent's skills, the auth, the input/output modes.
 4. Caller sends `POST https://your-agent.example.com/` with a JSON-RPC `message/send` body.
