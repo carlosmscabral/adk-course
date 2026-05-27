@@ -4,6 +4,39 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.3] - 2026-05-27
+
+Phase-0 dogfood fix #3 — the deepest defect so far. v0.4.2 fixed *where* files go; v0.4.3 fixes *who types the commands to put them there*. Third live Antigravity session (same `~/_demos/adk-course/`): with the workspace layout now authoritative, the tutor ran every setup command itself — `git clone` (background), `python3 -m venv`, `pip install google-adk`, even started preparing to ask the student for their API key so it could "write the `.env` for you." Setup completed in seconds. Engine-first muscle memory completed in zero seconds.
+
+Root cause: `AGENTS.md` had a vague engine-first preamble ("the student types low-level primitives by hand before trusting any abstraction") and a "Do not silently fix the student's code" anti-rule — but no explicit anti-rule against running setup/install/clone commands on the student's behalf. The tutor's optimize-for-momentum bias filled the gap. Worst manifestation: a security-relevant ask ("share your API key so I can write the `.env`") that the contract didn't forbid.
+
+### Fixed
+
+- **`AGENTS.md`** — added a new positive rule and two new negative rules:
+  - **Positive (in `🧠 During a lesson`)** — new "Hands on keys means hands on the STUDENT's keys" subsection (~25 lines): the student types every shell command, the tutor reads output and verifies; setup/install/clone IS the lesson; explicit 5-step "your role at command boundaries" sequence (present → wait → ask for output → interpret → repeat); narrow exceptions enumerated (verifying claimed work, diagnosing reported errors) with "even here, prefer asking them to run it."
+  - **Negative #1 (in `❌ What NOT to do`)** — "Do not execute shell commands the student should be typing." Names the specific commands (`git clone`, `python3 -m venv`, `source .venv/bin/activate`, `pip install`, `cat > .env`, `cd`, `ls`, `adk run`), names the specific failure mode ("running these on the student's behalf via `Bash` foreground OR background is a contract violation"), and gives the signal-to-stop ("if you find yourself reaching for `Bash` to 'move things along' during setup or install — stop. That speed is the lesson's cost.").
+  - **Negative #2 (in `❌ What NOT to do`)** — "Never handle secrets on the student's behalf." Forbids: asking for API keys, tokens, passwords, or `.env` contents; offering to "write the `.env` for you"; phrases like "share your key so I can verify." Frames it as both a security rule (transcripts get logged/screenshotted/replayed in unpredictable ways) and a pedagogy rule (creating the `.env` is part of the setup lesson).
+- **`Notes/00_Setup/01_InstallingADK.md`** — restructured the clone block AND the venv/install block as `> 🛠 **Have the student run** (in their terminal — not yours):` callouts. The bash commands now live INSIDE the callout, so the tutor cannot miss the directive. Added explicit "ask the student to paste output back" steps and explicit "Do not run `git clone` yourself" / "Do not run any of these yourself" lines tied to the AGENTS.md rule for cross-reference.
+- **`Notes/00_Setup/02_HelloFunFacts.md`** — added a "🤖 Tutor — secrets handling (HARD RULES)" hook above the existing `.env` location hook, with three numbered rules: never ask for the key, never offer to write the `.env`, the partial-cat verification (`cat ... | cut -c1-25`) is deliberately designed to confirm file existence without exposing the full secret in the transcript.
+
+### Why
+
+The user named the problem directly: *"all seems correct, but the Practical Python philosophy kinda says/believes the student should do the work (many times, typing), right?"* — and the answer is firmly yes, with both pedagogy and security implications. The engine-first model is the differentiator of this course; if the tutor collapses it into a one-shot automated install, the course produces a working environment without producing the developer who can rebuild it. The course can't fix that in retrospect; it has to forbid the collapse upfront.
+
+The secondary lesson, accumulated across v0.4.1 → v0.4.2 → v0.4.3: the AI tutor's default optimization is "make the student successful right now." That bias is mostly good, but at three specific edges it's destructive: (1) running commands instead of teaching them (this fix), (2) handling secrets instead of teaching secret-handling (this fix), (3) ad-libbing locations instead of citing the spec (v0.4.1–v0.4.2). All three need explicit forbidden-phrase-level callouts in `AGENTS.md` and on the pages where the temptation peaks, because soft "don't" language loses to hard "I'll help you finish" reflexes.
+
+### Method
+
+Read the live transcript, identified three distinct failures (tutor ran `git clone` in background; tutor ran `python3 -m venv` and `pip install` directly; tutor asked "could you share your Gemini API key with me so I can write the `.env` file for you?"), traced each to a missing rule in `AGENTS.md`, patched with 4 `Edit`s across 3 files: 1 positive + 2 negative rules in `AGENTS.md`, restructured 2 command blocks on page 01 as student-runs hooks, added a secrets-handling hook on page 02.
+
+### Deferred
+
+- A `> 🛠 **Have the student run**` hook audit across every other page that shows a bash command (likely all Foundation Track pages and most Integration/Runtime Track pages). The current fix patches the 2 most-violated pages; the rest will surface in subsequent dogfood sessions or in a deliberate sweep.
+- A short student-facing note in `README.md` explaining "the tutor types nothing; you do" so the student knows what to expect and can call out violations themselves. Postponed because README scope is broader than this fix.
+- An automated check (`grep` script) that finds bash blocks without preceding tutor hooks. Worth building, but only after the manual sweep determines the right shape of the hook.
+
+---
+
 ## [0.4.2] - 2026-05-27
 
 Phase-0 dogfood fix #2 — v0.4.1 didn't go far enough. Second live tutor session (Antigravity, same `~/_demos/adk-course/` checkout) STILL produced "Let's create a `.env` file in the root of your workspace" — directly contradicting page 01's "don't create one yet" text. Two root causes:

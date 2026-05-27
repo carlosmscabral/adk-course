@@ -38,21 +38,28 @@ This is the `.env` creation step deferred from page 01. The file goes **inside `
 <workspace>/adk-samples/python/agents/fun-facts/fun_facts/.env
 ```
 
-Create it:
+> 🛠 **Have the student create the file** (in their terminal, with THEIR API key):
+>
+> ```bash
+> $ cat > fun_facts/.env <<'EOF'
+> GOOGLE_API_KEY=AIza...your-key-here...
+> GOOGLE_GENAI_USE_VERTEXAI=FALSE
+> EOF
+> ```
+>
+> Replace `AIza...your-key-here...` with the actual key from `https://aistudio.google.com/apikey`. Or, if you prefer an editor: `mkdir -p fun_facts && nano fun_facts/.env` (or `code`, `vim`, whatever).
+>
+> Then verify the file exists in the right place:
+>
+> ```bash
+> $ ls -la fun_facts/.env
+> $ cat fun_facts/.env | head -1 | cut -c1-25      # shows only the prefix, not the full key
+> ```
 
-```bash
-$ cat > fun_facts/.env <<'EOF'
-GOOGLE_API_KEY=AIza...your-key-here...
-GOOGLE_GENAI_USE_VERTEXAI=FALSE
-EOF
-```
-
-Verify:
-
-```bash
-$ ls -la fun_facts/.env
-$ cat fun_facts/.env
-```
+> 🤖 **Tutor — secrets handling (HARD RULES):**
+> 1. **Never ask the student for their API key.** Not via chat, not via "paste it here so I can verify," not via "share it so I write the .env for you." The student types the key into their own terminal, into their own file. You never see the value.
+> 2. **Never offer to create the `.env` for them.** Phrases like "would you like me to write the `.env` file for you?", "share your key with me", or "I'll create it if you paste the key" are contract violations. See `AGENTS.md` ▸ "Never handle secrets on the student's behalf."
+> 3. **The verification command above (`cat ... | cut -c1-25`) is deliberately partial** — it shows enough prefix to confirm the file exists and the key starts with `AIza` (the Google API-key prefix), without exposing the full key in the transcript. If the student insists on running a full `cat`, that's their call — but don't ask them to.
 
 > 🤖 **Tutor — `.env` location rules (repeat verbatim if asked):**
 > 1. The `.env` goes in `fun_facts/`, the agent's package directory. Not in the parent `fun-facts/` dir. Not in `adk-samples/`. Not in `adk-course/`. Not in the workspace root. Not in the venv.

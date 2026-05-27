@@ -31,14 +31,18 @@ Everything in this course assumes three sibling directories on disk:
 
 `<workspace>` can be anywhere; the course assumes `~/study/` and the figures and cross-references will show that path, but `~/code/`, `~/Developer/`, `~/_demos/` all work identically. Pick one and stick to it.
 
-```bash
-$ export ADK_WORKSPACE="$HOME/study"     # or wherever you prefer
-$ mkdir -p "$ADK_WORKSPACE" && cd "$ADK_WORKSPACE"
-$ git clone https://github.com/google/adk-samples.git
-$ git clone https://github.com/google/adk-python.git
-$ ls
-adk-course  adk-python  adk-samples
-```
+> 🛠 **Have the student run** (in their terminal — not yours):
+>
+> ```bash
+> $ export ADK_WORKSPACE="$HOME/study"     # or wherever you prefer
+> $ mkdir -p "$ADK_WORKSPACE" && cd "$ADK_WORKSPACE"
+> $ git clone https://github.com/google/adk-samples.git
+> $ git clone https://github.com/google/adk-python.git
+> $ ls
+> adk-course  adk-python  adk-samples
+> ```
+>
+> Ask them to paste the `ls` output back so you can confirm the three siblings exist. **Do not run `git clone` yourself** — that's a contract violation (see `AGENTS.md` ▸ "Hands on keys means hands on the STUDENT's keys"). The cloning IS the lesson; the wait is part of the muscle memory.
 
 `adk-python` is optional for Modules 00–18; the course only opens it in Module 19. Cloning it now means you won't have to break flow later.
 
@@ -46,23 +50,25 @@ adk-course  adk-python  adk-samples
 
 ## 🛠 Install the package
 
-From your workspace root, pick a fresh virtualenv (don't pollute system Python):
+From your workspace root, pick a fresh virtualenv (don't pollute system Python).
 
-```bash
-$ python3 -m venv .venv && source .venv/bin/activate
-(.venv) $ pip install google-adk
-(.venv) $ adk --version
-adk 2.0.x
-```
-
-Prefer `uv`? Same idea:
-
-```bash
-$ uv venv && source .venv/bin/activate
-$ uv pip install google-adk
-```
-
-> 🛠 **Have the student run:** `adk --version`. If the command isn't found, the venv isn't activated — make them re-source it before moving on.
+> 🛠 **Have the student run** (in their terminal):
+>
+> ```bash
+> $ python3 -m venv .venv && source .venv/bin/activate
+> (.venv) $ pip install google-adk
+> (.venv) $ adk --version
+> adk 2.0.x
+> ```
+>
+> Prefer `uv`? Same idea — same student-types-it rule:
+>
+> ```bash
+> $ uv venv && source .venv/bin/activate
+> $ uv pip install google-adk
+> ```
+>
+> Wait for the `pip install` to finish in the student's terminal. **Do not run any of these yourself.** Ask the student to share the `adk --version` output. If the command isn't found, the venv isn't activated — have THEM re-source it before moving on.
 
 ## 🛠 Get a Gemini API key
 
