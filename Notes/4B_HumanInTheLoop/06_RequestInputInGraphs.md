@@ -35,7 +35,7 @@ async def ask_for_destination(ctx: Context):
     """Pause the workflow and ask the user for a city."""
     yield RequestInput(
         message="Which city should we plan for?",
-        response_schema={"city": str},
+        response_schema={"type": "object", "properties": {"city": {"type": "string"}}},
     )
 ```
 
@@ -72,7 +72,7 @@ class Itinerary(BaseModel):
 async def initial_prompt(ctx: Context):
     yield RequestInput(
         message="City + interests?",
-        response_schema={"user": str},
+        response_schema={"type": "object", "properties": {"user": {"type": "string"}}},
     )
 
 
@@ -87,7 +87,7 @@ async def ask_feedback(node_input: Itinerary):
     yield RequestInput(
         message=f"How's this? {node_input.activities}\nApprove or revise.",
         payload=node_input.model_dump(),
-        response_schema={"feedback": str},
+        response_schema={"type": "object", "properties": {"feedback": {"type": "string"}}},
     )
 
 

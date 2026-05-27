@@ -27,7 +27,7 @@ Typical settings:
 
 ## Wire format — same as audio, different MIME
 
-From `bidi-demo/app/main.py:211-227`:
+From `bidi-demo/app/main.py:214-227`:
 
 ```python
 # Decode base64 image data

@@ -64,7 +64,10 @@ async def generate_memories_callback(ctx: CallbackContext):
 
 root_agent = Agent(
     name="root_agent",
-    model=Gemini(model="gemini-2.5-flash"),
+    model=Gemini(
+        model="gemini-3-flash-preview",
+        retry_options=types.HttpRetryOptions(attempts=3),
+    ),
     instruction="...you remember user preferences across sessions...",
     tools=[get_weather, get_current_time, PreloadMemoryTool()],
     after_agent_callback=generate_memories_callback,

@@ -20,7 +20,7 @@ ADK's artifact API is two halves: a service interface (`BaseArtifactService`) yo
 
 ## 🧠 The interface (engine-first)
 
-`google.adk.artifacts.BaseArtifactService` is an `ABC` with five async methods you almost never call yourself, but should recognise:
+`google.adk.artifacts.BaseArtifactService` is an `ABC` with seven async methods you almost never call yourself, but should recognise:
 
 ```python
 class BaseArtifactService(ABC):
@@ -32,7 +32,13 @@ class BaseArtifactService(ABC):
     async def list_artifact_keys(*, app_name, user_id, session_id=None) -> list[str]: ...
     async def delete_artifact(*, app_name, user_id, filename, session_id=None) -> None: ...
     async def list_versions(*, app_name, user_id, filename, session_id=None) -> list[int]: ...
+    async def list_artifact_versions(*, app_name, user_id, filename,
+                                     session_id=None) -> list[ArtifactVersion]: ...
+    async def get_artifact_version(*, app_name, user_id, filename,
+                                   session_id=None, version=None) -> ArtifactVersion | None: ...
 ```
+
+The last two are the metadata-aware versions of `list_versions` / "get current version": `list_artifact_versions` returns `ArtifactVersion` records (with `create_time`, `mime_type`, `canonical_uri`, `custom_metadata`) instead of plain version ints, and `get_artifact_version` fetches one such record — useful for audit and UI rendering without pulling the bytes.
 
 Note the **scoping keys**: `app_name`, `user_id`, `session_id`. If `session_id` is `None`, the artifact is **user-scoped** — visible across all of that user's sessions. With a `session_id`, it is **session-scoped** — lives and dies with the conversation. (Same model as `user:` vs no-prefix state.) The `filename` parameter is the artifact key. If it starts with `"user:"`, the service treats it as user-scoped regardless of `session_id`.
 

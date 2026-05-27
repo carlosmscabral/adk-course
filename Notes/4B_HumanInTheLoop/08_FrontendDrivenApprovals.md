@@ -59,7 +59,7 @@ import asyncio
 from google.adk.agents import LlmAgent, Context
 from google.adk.runners import InMemoryRunner
 from google.adk.apps.app import App
-from google.adk.apps._configs import ResumabilityConfig
+from google.adk.apps import ResumabilityConfig
 from google.adk.tools.tool_confirmation import ToolConfirmation
 from google.adk.flows.llm_flows.functions import REQUEST_CONFIRMATION_FUNCTION_CALL_NAME
 from google.genai import types
@@ -189,7 +189,7 @@ CREATE TABLE pending_approvals (
 );
 ```
 
-You read this table to render the approval queue UI; on click, you mark `decision` and call `runner.run_async()` with the resume payload above; on `expires_at < now()` a sweeper calls `runner.cancel()` and sets `decision="timeout"`. Page 12 has the full production checklist for this table.
+You read this table to render the approval queue UI; on click, you mark `decision` and call `runner.run_async()` with the resume payload above. On `expires_at < now()`, **don't try to cancel mid-flight — there's no `runner.cancel()`** (see page 04). Instead, the sweeper appends a terminal `Event(author='system', ...)` via `session_service.append_event` and marks the row `decision="timeout"`. Future resume attempts see the terminal event and short-circuit. Page 12 has the full production checklist for this table.
 
 > ❓ **Ask the student:** "Why does the Runner not own the pending-approvals table?" (Because the table is also your audit log, also feeds your monitoring dashboard, also drives your "Slack manager X about expense Y" notification — those are *your* concerns, not the runtime's. The Runner gives you the events; you decide how to queue them.)
 

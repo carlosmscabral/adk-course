@@ -43,7 +43,7 @@ Open `/home/carloscabral/study/adk-samples/python/agents/gemma-food-tour-guide/f
 ```python
 from google.adk.agents import LlmAgent
 from google.adk.models import Gemini
-from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset  # legacy alias still used by this sample; modern code uses McpToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams
 ```
 

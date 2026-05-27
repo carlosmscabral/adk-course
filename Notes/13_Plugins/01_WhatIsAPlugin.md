@@ -24,7 +24,7 @@ It shares almost the entire hook vocabulary with callbacks (`before_model_callba
 |--|--|--|
 | Wired on | one `LlmAgent` | the `Runner` |
 | Scope | only that agent | every agent, every model call, every tool call |
-| Composition | list per hook (per agent) — `Union[Callable, list[Callable]]` per `llm_agent.py:75-87` | a list (runner-wide), fire in order |
+| Composition | list per hook (per agent) — `Union[Callable, list[Callable]]` per `llm_agent.py:75-78,391` (typealias + field) | a list (runner-wide), fire in order |
 | Use for | per-agent specialization | cross-cutting policy |
 
 🗺 Look at the figure:

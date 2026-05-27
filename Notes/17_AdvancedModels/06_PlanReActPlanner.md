@@ -94,15 +94,7 @@ This is the same `thought` field `BuiltInPlanner` uses — so downstream consume
 
 ## 📦 Real sample anchors
 
-`PlanReActPlanner` is the workhorse of the **supply-chain** sample family — seven sub-agents use it:
-
-- `adk-samples/python/agents/supply-chain/supply_chain/agent.py` — root coordinator.
-- `.../sub_agents/ops_insight/agent.py`, `weather_report/agent.py`, `demand_sense/agent.py`, `chart_generator/agent.py`, `market_pulse/agent.py` — each specialist.
-- `adk-samples/python/agents/sdlc-technical-designer/sdlc_technical_designer/agent.py` — designer.
-- `adk-samples/python/agents/swe-benchmark-agent/swe_benchmark_agent/orchestrator.py` — orchestrator.
-- `adk-samples/python/agents/tau2-benchmark-agent/tau2_agent/adk_agent.py` — benchmark agent.
-
-These samples picked Plan-Re-Act over Built-In because the planner output **is** the audit trail — investigators need to see the plan, not just the answer.
+No first-party ADK sample currently instantiates `PlanReActPlanner` in production code (as of `Reference/docs_snapshot.md`'s pin); the closest reference is a doc mention in `adk-samples/python/agents/short-movie-agents/GEMINI.md`. The pattern remains supported and is the right pick when you need an LLM that doesn't expose native thinking tokens (older Gemini, OpenAI via LiteLlm, Gemma local) — the explicit `/*PLANNING*/` … `/*FINAL_ANSWER*/` protocol is the audit trail when the model can't give you one for free.
 
 > 🛠 **Have the student run:** the script above. Then re-run with `planner=None`. Diff the event stream. The planner version should emit visibly tagged reasoning; the bare run should not.
 

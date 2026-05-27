@@ -90,7 +90,13 @@ Compaction shrinks **this session's history**. Memory carries facts **across ses
 
 > **🚀 In Production**
 >
-> Each compaction is an extra LLM call against the summarizer. The cost compounds for chatty agents: a 1000-turn day with `compaction_interval=20` is 50 extra LLM calls just for compaction. Two mitigations: (1) Use a cheap model for the summarizer — set `summarizer=LlmEventSummarizer(model="gemini-2.5-flash-lite")` even if your main agent runs `gemini-2.5-pro`. (2) Tune `compaction_interval` upward for low-stakes chat; downward only when you have evidence of context-window hits. The default ADK ships with may not match your workload — measure before pinning a number.
+> Each compaction is an extra LLM call against the summarizer. The cost compounds for chatty agents: a 1000-turn day with `compaction_interval=20` is 50 extra LLM calls just for compaction. Two mitigations: (1) Use a cheap model for the summarizer — wire it explicitly with
+> ```python
+> from google.adk.models import Gemini
+> from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
+> summarizer = LlmEventSummarizer(llm=Gemini(model="gemini-2.5-flash-lite"))
+> ```
+> even if your main agent runs `gemini-2.5-pro`. Note the signature: `LlmEventSummarizer(llm: BaseLlm, prompt_template: Optional[str] = None)` — it takes an `llm=` BaseLlm instance, NOT a `model=` string. (2) Tune `compaction_interval` upward for low-stakes chat; downward only when you have evidence of context-window hits. The default ADK ships with may not match your workload — measure before pinning a number.
 
 > 🛠 **Have the student do:** without running anything, talk through "if `compaction_interval=20` and `overlap_size=4`, after 25 invocations how many compactions have run and how many raw invocations are still in the session?"
 > *(Answer: one compaction fired at invocation 20, summarizing invocations 1..16; invocations 17..25 are still raw (9 raw events). The next compaction fires at invocation 40.)*

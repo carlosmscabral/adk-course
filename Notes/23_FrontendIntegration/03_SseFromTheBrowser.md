@@ -71,11 +71,14 @@ from google.genai import types as genai_types
 agent = Agent(name="chat", model="gemini-2.5-flash", instruction="be helpful and concise")
 runner = InMemoryRunner(app_name="chat", agent=agent)
 
-@app.post("/run_sse") if False else None  # see next block
-
 app = FastAPI()
 
-@app.post("/run_sse")
+# NOTE: this is a hand-rolled endpoint named `/my_sse` so it can't be confused
+# with ADK's built-in `/run_sse` (Module 21). The built-in takes a
+# `RunAgentRequest` with `new_message: types.Content` and emits full event JSON
+# (see `cli/api_server.py:1499-1506`); the route below uses a simple
+# `body["prompt"]` and yields only `p.text`.
+@app.post("/my_sse")
 async def run_sse(req: Request):
     body = await req.json()
     user_id, session_id, prompt = body["user_id"], body["session_id"], body["prompt"]

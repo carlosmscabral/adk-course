@@ -103,7 +103,7 @@ You will get an error when the *runner* first calls the model, not when you buil
 
 > 🚀 **In Production**
 >
-> Pin your model versions explicitly (`gemini-2.5-flash-002` not `gemini-2.5-flash`). The unqualified alias drifts as the provider rolls out new revisions, and your prompts may regress overnight. See [[17_AdvancedModels/12_InProduction]].
+> Pin your model versions explicitly. For the 2.5+ family the bare name (`gemini-2.5-flash`) **is** the stable pinned alias; dated previews use the `gemini-2.5-flash-preview-MM-YYYY` form. The older `-001/-002` suffix convention applied to 1.5 / 2.0 only — don't paste it onto 2.5 names. Either way, when you bump (e.g., 2.5 → 3.0), re-run your evals before promoting. See [[17_AdvancedModels/12_InProduction]].
 
 ---
 

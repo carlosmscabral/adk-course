@@ -65,6 +65,9 @@ async def start(user_id: str):
     session = await runner.session_service.create_session(app_name="live_demo", user_id=user_id)
     queue = LiveRequestQueue()
     config = RunConfig(streaming_mode="bidi", response_modalities=["TEXT"])
+    # session= is the legacy signature; user_id+session_id is the new preferred form
+    # (runners.py:1519-1527). The realtime-conversational-agent sample still uses
+    # session= too — flagged here for awareness.
     events = runner.run_live(session=session, live_request_queue=queue, run_config=config)
     return events, queue
 

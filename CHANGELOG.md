@@ -4,6 +4,70 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.7] - 2026-05-27
+
+Dogfood Wave 5 — the largest uncovered surface yet: 145 pages across 11 modules (11 Memory, 12 CodeExec, 13 Plugins, 14 Eval, 16 ProdSec, 17 AdvModels, 18 Live, 23 Frontend, side modules 1A/2A/3A/4B/04A). Six parallel read-only verification agents surfaced 13 🔴 + ~32 🟡 against ground-truth `adk-python` source. Five parallel fix agents then corrected 48 files across all 11 modules.
+
+### Fixed
+
+**Module 17 AdvancedModels** (8 files)
+- `PlanReActPlanner` page: replaced fabricated sample-anchors (supply-chain / sdlc / swe-benchmark / tau2) with the verified truth — no first-party sample instantiates `PlanReActPlanner` in production code (`grep` against `adk-samples/`); only doc reference is `short-movie-agents/GEMINI.md`. All four cited samples use `BuiltInPlanner`.
+- `OpenAIModels`: dropped invalid `api_key=` kwarg from `OpenAILlm(...)` (class declares only `model` + `max_tokens` per `_openai_llm.py:349-350`); `OPENAI_API_KEY` read from env via `AsyncOpenAI()` at `:510-511`.
+- `ApigeeLlm`: rewrote constructor snippet with real kwargs (`model="apigee/<provider>/<model_id>"`, `proxy_url`, `custom_headers`) per `apigee_llm.py:88-97`; model-string validation cited from `:138-139`.
+- `ModelSelectionPatterns`: fallback callback fixed — `BaseLlm.generate_content_async` returns `AsyncGenerator[LlmResponse, None]` per `base_llm.py:50-52`, requires `async for` not `await`. New shape: `async for response in FALLBACK.generate_content_async(...): if not response.partial: return response`.
+- Systemic `-002` sweep across pages 01/02/10A/12: replaced every `gemini-2.5-flash-002` / `-lite-002` / `-pro-002` with bare names. Added one-liner explaining the 2.5+ family does not use `-NNN` suffix (that was 1.5/2.0-era convention; dated previews use `-preview-MM-YYYY` form).
+- `MCPToolset` → `McpToolset` alias clarified at `11_DissectingSample.md:46` to match the actual sample import.
+
+**Modules 18 StreamingLive + 13 Plugins** (9 files)
+- `LoggingPlugin._log` uses raw `print()` with ANSI escape codes — NOT Python `logging` module (`logging_plugin.py:284-288`). Dropped `logging.basicConfig` snippet and INFO-filter gotcha; added stdout-capture guidance and pointer to `DebugLoggingPlugin` for structured JSON output.
+- `on_session_end_callback` does NOT exist on `BasePlugin`. Replaced with `after_run_callback(*, invocation_context)` per `base_plugin.py:174`. Distinguished from `close()` (runner shutdown) in custom-plugin scaffolding.
+- `event.turn_complete` is essentially a Live-API control signal (`gemini_llm_connection.py:123,354`, `base_llm_flow.py:1087`). Canonical finality for `run_async` text streaming is `event.is_final_response()` (`events/event.py:220-235`). Swapped across `01_StreamingFundamentals.md`, `03_TextStreaming.md`, `11_MiniDrill_TextStream.yml`.
+- `StreamingMode.BIDI` is NOT consumed by `run_live` per `run_config.py:173-181` docstring — softened the "required" framing to "set by convention".
+- Line citation drifts fixed in `02_GeminiLiveIntro.md` and `06_VideoInput.md`.
+
+**Modules 11 Memory + 14 Evaluation + 12 CodeExec** (8 files)
+- `adk eval` CLI runs each case **exactly once** — there is no `--num_runs` flag. `NUM_RUNS = 2` (`agent_evaluator.py:59`) is the Python-API default only, multiplied via `:577`. Replaced two myth sites with the correct framing.
+- Memory Bank sample alignment: `Gemini(model="gemini-3-flash-preview", retry_options=types.HttpRetryOptions(attempts=3))` per `adk-samples/.../memory-bank/app/agent.py`.
+- `vector_distance_threshold` framework default is 10 (`vertex_ai_rag_memory_service.py:99`) — added inline note.
+- `similarity_top_k` applies to RAG-backed memory service only — clarified across Memory Bank vs RAG memory.
+- `UnsafeLocalCodeExecutor` runs in a **spawned child process** (not your Python process) with timeout via `result_queue.get(timeout=...)` per `:88-107` — no sandboxing; rewrote both intro and In-Production block.
+- `VertexAiCodeExecutor.optimize_data_file` comment corrected to "extracts CSV data files from the request and attaches them to the executor".
+- `AgentEngineSandbox`: added env-var note (`GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` per `:53-103`).
+
+**Side modules 1A/2A/04A + 16 ProductionSecurity** (10 files)
+- `LlmEventSummarizer` real signature: `LlmEventSummarizer(llm: BaseLlm, prompt_template: Optional[str] = None)` per `apps/llm_event_summarizer.py` — NOT `LlmEventSummarizer(model="...")`. Fixed in `06_WiringContextCompaction.md` and `09_InProduction.md` checklist.
+- `runner.close()` (`runners.py:2135-2144`) is the public lifecycle hook — preferred over `runner.plugin_manager.close()` which only handles plugin teardown. Updated `02_OnStartupShutdown.md` patterns 1 & 2, In-Production callout, and `11_MiniDrill.yml` rubric.
+- `BaseArtifactService` has **7** abstract methods (not 5) — bumped count and listed `list_artifact_versions` + `get_artifact_version` in `04A/02_ArtifactServiceShape.md`.
+- `GcsArtifactService` does NOT save `file_data` Parts — `gcs_artifact_service.py:232-236` raises `NotImplementedError`. Added caveat in `04A/05_MultimodalParts.md`.
+- Module 1A `08_DissectingSample.md` aligned to `gemini-3-flash-preview` per sample.
+- `16/03_Authentication.md`: imports `OAuth2` from `fastapi.openapi.models` directly (ADK re-exports it at `auth_schemes.py:22`).
+- `16/08_DissectingSafetyPlugins.md`: added ModelArmor naming-note callout pointing at `main.py:28` alias.
+- `2A/04_ToolReferences.md`: added denylist watch-note for `_BLOCKED_YAML_KEYS = frozenset({"args"})` + `_ENFORCE_DENYLIST = False` at `config_agent_utils.py:490-491`. (Original brief mis-identified `ToolConfig.args` schema; the existing YAML mapping form was actually valid per real `ToolArgsConfig` with `extra="allow"` — agent correctly refused the regression.)
+
+**Side modules 3A/4B + 23 FrontendIntegration** (13 files)
+- `adk web ./agents` — `agents_dir` is a `@click.argument` (positional) per `cli_tools_click.py:1745-1751`, not `--agents_dir`. Fixed in `3A/05_AdkCliExpectations.md`; Rule 2 reframed as env-var ordering (not discovery).
+- `runner.cancel()` does NOT exist. Replaced sweeper in `4B/08_FrontendDrivenApprovals.md` with the abandon pattern: append terminal `Event(author='system', ...)` via `session_service.append_event` and mark `decision='timeout'`.
+- `ResumabilityConfig` is publicly re-exported at `apps/__init__.py:21,26`. Replaced `from google.adk.apps._configs import ResumabilityConfig` with the public path across 6 Module-4B pages + mini-drill. (`EventsCompactionConfig` is NOT in `__all__` — keeps the deep path.)
+- `response_schema: Optional[SchemaType]` per `events/request_input.py:28` accepts pydantic.BaseModel subclass OR JSON-Schema dict, NOT shorthand `{"city": str}`. Three sites in `4B/06_RequestInputInGraphs.md` rewritten to proper `{"type": "object", "properties": {"city": {"type": "string"}}}`.
+- Fun-facts sample uses `gemini-flash-latest` (verified against `fun_facts/agent.py`); updated `3A/09_DissectingSample.md`.
+- `23/03_SseFromTheBrowser.md`: removed stray `if False else None`; renamed custom route to `/my_sse` with note comparing to ADK's built-in `RunAgentRequest.new_message: types.Content` shape.
+- `23/04_WebSocketsFromBrowser.md`: inline deprecation comment for `runner.run_live(session=)` (`runners.py:1519-1527` — prefer `user_id+session_id`).
+- `23/05_CustomSPApattern.md`: artifact POST path corrected — `POST .../sessions/{sid}/artifacts` (no `/{name}`; filename in JSON body `SaveArtifactRequest.filename` per `api_server.py:1249-1268`).
+- `23/08_StreamingPartialResults.md`: added `ADK_ENABLE_PROGRESSIVE_SSE_STREAMING` env-var note (default ON per `run_config.py:104-110`).
+
+### Method
+- Six parallel read-only verification agents (Wave 5 dogfood) → five parallel fix agents (Wave 5 fix), all with non-overlapping scopes. Each fix verified post-edit against canonical `adk-python` source.
+- All ground-truth claims re-verified pre-edit; one brief premise (`ToolConfig.args` schema) was caught as wrong during verification and the agent correctly refused to regress.
+
+### Why
+- User: "lets continue refining." Wave 5 closed the largest unreviewed surface (~145 pages across 11 modules) since the dogfood pattern began. Errors found were severe enough — `runner.cancel()` referenced as if it existed, `await` on async-generators that would raise `TypeError`, plugin hooks named that don't exist on `BasePlugin` — that landing this before any new authoring is necessary.
+
+### Deferred
+- 2 module-1A files (`04_WiringResumability.md` + 2 `AGENTS.md` references) still use the `_configs` import path for `ResumabilityConfig` — Fix-E flagged but out of scope; bundle in next wave.
+- Wave 6 (`Notes/Detours/` — ~23 unreviewed detours) remains the natural next refinement target.
+
+---
+
 ## [0.3.6] - 2026-05-27
 
 The two deferred items from v0.3.5 — `Contents.md` rewrite and the `MCPToolset` → `McpToolset` deprecation sweep — landed together. 50 files modified across two parallel fix agents.

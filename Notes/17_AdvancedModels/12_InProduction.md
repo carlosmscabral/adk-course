@@ -30,10 +30,10 @@ Cross-link page 08 for the patterns and `_figures/model_matrix.txt` for the deci
 
 ### 2. Pin model versions
 
-`gemini-2.5-flash` is an alias. `gemini-2.5-flash-002` is a pinned version. Aliases drift; pinned versions are reproducible.
+The pin convention depends on the family. For 1.5 / 2.0, `gemini-1.5-flash-002` named a specific revision while the bare alias `gemini-1.5-flash` drifted. For **2.5+ the bare name is itself the stable pinned alias** (`gemini-2.5-flash`, `gemini-2.5-pro`); dated previews use the `gemini-2.5-flash-preview-MM-YYYY` form. There is no `gemini-2.5-flash-002`.
 
-- Pin in code or in a config file.
-- Re-run your eval suite (module 14) when you consider bumping.
+- Pin in code or in a config file using the form your model family actually exposes.
+- Re-run your eval suite (module 14) when you consider bumping (e.g., 2.5 → 3.0).
 - Treat a model bump like a dependency upgrade — review, test, ship behind a feature flag.
 
 ### 3. Vendor lock-in is real, even with `LiteLlm`
@@ -95,7 +95,7 @@ Each `LlmAgent` in your codebase should have a comment or doc explaining *why* t
 # Why gemini-2.5-flash-lite: router-only; classifies in < 200ms; quality
 # sufficient because the sub_agent does the heavy lifting. Last benchmarked
 # against gpt-4o-mini on 2026-04-01; flash-lite was 60% cheaper, same accuracy.
-router = LlmAgent(model="gemini-2.5-flash-lite-002", ...)
+router = LlmAgent(model="gemini-2.5-flash-lite", ...)
 ```
 
 > 🤖 **Tutor:** ask the student to draft this comment for *each* model choice in their M4 auditor. If they can't justify it, that is the lesson.

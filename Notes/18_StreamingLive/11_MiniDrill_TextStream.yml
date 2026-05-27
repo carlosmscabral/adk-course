@@ -9,7 +9,9 @@ exercise:
     - Use `InMemoryRunner` + a single `Agent` on `gemini-2.5-flash`.
     - Iterate `runner.run_async(...)` with `async for`.
     - For each event, print `[<elapsed>s <TAG>] <text>` where TAG is
-      "chunk" if the event is partial and "FINAL" if `turn_complete`.
+      "chunk" if `event.partial is True` and "FINAL" if
+      `event.is_final_response()` (NOT `event.turn_complete` — that's the
+      Live-API control signal and is typically `None` here).
     - Send the user prompt "Explain async generators in three sentences."
     - At the end, print the total elapsed seconds.
 
@@ -38,7 +40,7 @@ exercise:
     grading_rubric:
       - "Uses `async for` over `runner.run_async(...)`, not collected into a list"
       - "At least 3 distinct chunk timestamps appear"
-      - "FINAL event is detected via `event.turn_complete is True`, not by position"
+      - "FINAL event is detected via `event.is_final_response()` (or `not event.partial`), not via `event.turn_complete` and not by position"
       - "Handles empty/no-content events without crashing"
   solution_pointer: null
   tutor_notes: |

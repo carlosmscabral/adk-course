@@ -29,7 +29,7 @@ import asyncio, json, os, tempfile
 from google.adk.agents import LlmAgent, Context
 from google.adk.runners import InMemoryRunner
 from google.adk.apps.app import App
-from google.adk.apps._configs import ResumabilityConfig
+from google.adk.apps import ResumabilityConfig
 from google.adk.tools.tool_confirmation import ToolConfirmation
 from google.adk.flows.llm_flows.functions import REQUEST_CONFIRMATION_FUNCTION_CALL_NAME
 from google.genai import types

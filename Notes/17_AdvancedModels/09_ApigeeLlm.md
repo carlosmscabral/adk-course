@@ -29,19 +29,23 @@ The solution is a **gateway**: every LLM call goes through one chokepoint that y
 ## 🛠 Shape
 
 ```python
-from google.adk.models import ApigeeLlm  # if exposed in your ADK version
+import os
+from google.adk.agents import LlmAgent
+from google.adk.models.apigee_llm import ApigeeLlm
 
 agent = LlmAgent(
     model=ApigeeLlm(
-        endpoint="https://api.acme.com/llm-gateway/v1/chat",
-        api_key=os.environ["APIGEE_KEY"],
-        model="enterprise-default",   # the gateway routes this string
+        model="apigee/gemini-2.5-flash",  # or "apigee/vertex_ai/gemini-2.5-flash"
+        proxy_url="https://api.acme.com/llm-gateway",  # or env APIGEE_PROXY_URL
+        custom_headers={"Authorization": f"Bearer {os.environ['APIGEE_KEY']}"},
     ),
     name="...",
 )
 ```
 
-From the agent's view: one endpoint, one auth, one model name. The complexity of *which* upstream provider serves the call lives in the gateway config, not in your code.
+Constructor kwargs are keyword-only: `model`, `proxy_url`, `custom_headers`, `retry_options`, `api_type`, `credentials` (see `adk-python/src/google/adk/models/apigee_llm.py:88-97`). The `custom_headers` dict is the canonical place to attach auth — the docstring at `:122-125` calls out `{'Authorization': f'Bearer {API_KEY}'}` explicitly. The `model` string must match `apigee/[<provider>/][<version>/]<model_id>` (validated at `:138-139`); `enterprise-default` would be rejected.
+
+From the agent's view: one proxy URL, one header dict, one routed model name. The complexity of *which* upstream provider serves the call lives in the gateway config, not in your code.
 
 ## 🏢 What the gateway buys you
 

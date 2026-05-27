@@ -28,18 +28,20 @@ Treat models as **tiers**, not names. Three tiers cover 90% of agents:
 
 | Tier | Default model | Used for |
 |---|---|---|
-| `ROUTER` | `gemini-2.5-flash-lite-002` | classify, dispatch, judge |
-| `WORKER` | `gemini-2.5-flash-002` | tool-calling, drafting |
-| `REASONER` | `gemini-2.5-pro-002` | planning, code, hard synthesis |
+| `ROUTER` | `gemini-2.5-flash-lite` | classify, dispatch, judge |
+| `WORKER` | `gemini-2.5-flash` | tool-calling, drafting |
+| `REASONER` | `gemini-2.5-pro` | planning, code, hard synthesis |
+
+For the 2.5+ family the **bare name is the stable pinned alias**; dated previews use the `gemini-2.5-flash-preview-MM-YYYY` form. The older `-001/-002` suffix convention applied to 1.5 / 2.0 only — do not paste it onto 2.5 names.
 
 Every `LlmAgent` declares its tier; the tier resolves to a model. When you swap providers (or pin a new version) you change *one mapping*, not ten files.
 
 ```python
 # Work/17_AdvancedModels/10A_tiers.py
 TIERS = {
-    "ROUTER":   "gemini-2.5-flash-lite-002",
-    "WORKER":   "gemini-2.5-flash-002",
-    "REASONER": "gemini-2.5-pro-002",
+    "ROUTER":   "gemini-2.5-flash-lite",
+    "WORKER":   "gemini-2.5-flash",
+    "REASONER": "gemini-2.5-pro",
 }
 router   = LlmAgent(name="router",   model=TIERS["ROUTER"],   instruction="...")
 worker   = LlmAgent(name="worker",   model=TIERS["WORKER"],   instruction="...")
@@ -70,7 +72,7 @@ worker = LlmAgent(name="worker", model=settings.model_name, instruction="...")
 router = LlmAgent(name="router", model=settings.router_model, instruction="...")
 ```
 
-Now `AGENT_MODEL_NAME=gemini-2.5-pro-002 uv run python ...` is a model bump *without a code change*. The full discipline (12-factor env, secrets, `.env.example`) lives in [[3A_ProjectStructure/07A_ConfigAndEnvVars]].
+Now `AGENT_MODEL_NAME=gemini-2.5-pro uv run python ...` is a model bump *without a code change*. The full discipline (12-factor env, secrets, `.env.example`) lives in [[3A_ProjectStructure/07A_ConfigAndEnvVars]].
 
 ## 3️⃣ Fallback on 429 / 5xx — `on_model_error_callback`
 
@@ -80,26 +82,30 @@ When the primary provider rate-limits or burps, you don't want the user to see a
 # Work/17_AdvancedModels/10A_fallback.py
 from google.adk.agents import LlmAgent
 from google.adk.models import Gemini
-from google.adk.models.llm_response import LlmResponse
-from google.genai import types
 
-FALLBACK = Gemini(model="gemini-2.5-flash-lite-002")
+FALLBACK = Gemini(model="gemini-2.5-flash-lite")
 
 async def on_model_error(callback_context, llm_request, error):
     msg = str(error).lower()
     if "429" not in msg and "resource_exhausted" not in msg:
         return None  # let other errors propagate
-    # Re-issue against the cheaper model; ADK accepts an LlmResponse.
-    response = await FALLBACK.generate_content_async(llm_request)
-    return LlmResponse(content=response.content)
+    # `BaseLlm.generate_content_async` returns AsyncGenerator[LlmResponse, None]
+    # (adk-python/src/google/adk/models/base_llm.py:50-52). Iterate, don't await.
+    # In non-streaming mode it yields exactly one final response (partial=False).
+    async for response in FALLBACK.generate_content_async(llm_request):
+        if not response.partial:
+            return response
+    return None
 
 agent = LlmAgent(
     name="resilient",
-    model=Gemini(model="gemini-2.5-pro-002"),
+    model=Gemini(model="gemini-2.5-pro"),
     instruction="...",
     on_model_error_callback=on_model_error,
 )
 ```
+
+Callback signature matches the `OnModelErrorCallback` type alias at `adk-python/src/google/adk/agents/llm_agent.py:90-93` — `(CallbackContext, LlmRequest, Exception) -> Optional[LlmResponse]` (sync or async).
 
 This is the standard "model fallback" recipe. Pair with structured logging (module 15) so the fallback shows up in your dashboards as a *signal*, not a silent degradation.
 
@@ -112,7 +118,7 @@ When a turn pulls in a giant RAG context, your Flash quietly stops being cheap. 
 from google.adk.agents import LlmAgent
 from google.adk.models import Gemini
 
-PRO = Gemini(model="gemini-2.5-pro-002")
+PRO = Gemini(model="gemini-2.5-pro")
 LONG_INPUT_TOKENS = 64_000  # threshold
 
 async def before_model(callback_context, llm_request):
@@ -122,7 +128,7 @@ async def before_model(callback_context, llm_request):
         for p in (c.parts or []) if p.text
     ) // 4
     if approx_tokens > LONG_INPUT_TOKENS:
-        llm_request.model = "gemini-2.5-pro-002"  # bump for this call only
+        llm_request.model = "gemini-2.5-pro"  # bump for this call only
     return None  # let the (now bumped) request proceed
 
 agent = LlmAgent(
@@ -152,8 +158,8 @@ async def run_against(model_name: str):
     )
 
 async def main():
-    flash = await run_against("gemini-2.5-flash-002")
-    pro   = await run_against("gemini-2.5-pro-002")
+    flash = await run_against("gemini-2.5-flash")
+    pro   = await run_against("gemini-2.5-pro")
     print(f"flash: pass={flash.pass_rate:.2%}  $/case={flash.cost_per_case:.4f}")
     print(f"pro:   pass={pro.pass_rate:.2%}  $/case={pro.cost_per_case:.4f}")
 
@@ -178,7 +184,7 @@ Settings.model_name  ──┐
 
 Patterns 1-2 are *organisation*. Patterns 3-4 are *runtime resilience*. Pattern 5 is *governance*. None of them are optional in prod.
 
-> 🛠 **Have the student run:** wire the cost-aware callback into their M4 auditor. Force one long input (paste a long doc) and confirm the trace shows `model.name = gemini-2.5-pro-002` for that turn while shorter turns stay on Flash.
+> 🛠 **Have the student run:** wire the cost-aware callback into their M4 auditor. Force one long input (paste a long doc) and confirm the trace shows `model.name = gemini-2.5-pro` for that turn while shorter turns stay on Flash.
 
 > ❓ **Ask the student:** in which pattern does the model **string** change, vs the model **object** change? Why does it matter?
 > *(Answer: patterns 2 & 4 mutate `llm_request.model` or `Settings.model_name` — a string swap. Patterns 3 & 5 hold actual `Gemini(...)` / `LiteLlm(...)` instances. Strings work for same-family swaps; objects are needed when the provider differs or you want a pre-configured client with its own auth.)*

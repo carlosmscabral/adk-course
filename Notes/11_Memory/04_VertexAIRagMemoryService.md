@@ -25,7 +25,7 @@ from google.adk.runners import Runner
 memory_service = VertexAiRagMemoryService(
     rag_corpus="projects/.../locations/.../ragCorpora/12345",
     similarity_top_k=10,
-    vector_distance_threshold=0.5,
+    vector_distance_threshold=0.5,  # tighter than the framework default (10) per vertex_ai_rag_memory_service.py:99
 )
 
 runner = Runner(

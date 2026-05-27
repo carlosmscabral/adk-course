@@ -71,9 +71,15 @@ async def on_startup() -> tuple[Runner, InMemorySessionService]:
 
 
 async def on_shutdown(runner: Runner) -> None:
-    """Close pooled resources. The plugin manager has a close timeout."""
-    print("[shutdown] closing plugins...")
-    await runner.plugin_manager.close()
+    """Close pooled resources via the Runner's lifecycle hook.
+
+    `runner.close()` is the public shutdown path (runners.py:2135-2150). It
+    closes toolsets, then plugins, then flushes the session_service — i.e.
+    the full set of long-lived resources the Runner owns. Prefer it over
+    poking individual subsystems like `runner.plugin_manager.close()`.
+    """
+    print("[shutdown] closing runner (toolsets + plugins + session flush)...")
+    await runner.close()
     print("[shutdown] done.")
 
 
@@ -141,7 +147,9 @@ async def lifespan(app: FastAPI):
     )
     yield                          # ← server runs here
     # ── shutdown ──
-    await _RUNNER.plugin_manager.close()
+    # Prefer the full Runner shutdown (closes toolsets, plugins, flushes
+    # session_service). `plugin_manager.close()` is the plugin-only subset.
+    await _RUNNER.close()
 
 
 api = FastAPI(lifespan=lifespan)
@@ -170,7 +178,7 @@ $ adk api_server my_agent/
 
 > **🚀 In Production**
 >
-> The single most common bug: **forgetting to `await runner.plugin_manager.close()` on shutdown**. Plugins may hold open MCP subprocesses, file handles, gRPC channels. Without close, Cloud Run will SIGKILL them after `plugin_close_timeout` (default 5s) and you leak file descriptors across redeploys. Always wire shutdown — even if "the plugin list is empty today" — because future-you will add a plugin without remembering this rule.
+> The single most common bug: **forgetting to call the Runner's shutdown hook**. Prefer `await runner.close()` (runners.py:2135-2150) — it closes toolsets, then plugins, then flushes `session_service`. `await runner.plugin_manager.close()` is the plugin-only subset and is fine if that is genuinely all you wired, but `runner.close()` is the safer default. Plugins, toolsets, and session stores may hold open MCP subprocesses, file handles, and gRPC channels; without close, Cloud Run will SIGKILL them (plugins after `plugin_close_timeout`, default 5s) and you leak file descriptors across redeploys. Always wire shutdown — even if "the plugin list is empty today" — because future-you will add a plugin or a stateful session backend without remembering this rule.
 
 > 🧭 **If the student looks stuck on async lifespan:** detour [[PY_async]] § "async context managers" — 10 min recap of `@asynccontextmanager` and why FastAPI's lifespan uses it.
 

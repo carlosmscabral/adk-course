@@ -19,12 +19,14 @@ You are here: 🗺 Runtime Track ▸ 13 Plugins ▸ 07 Writing a Custom Plugin
 Subclass `BasePlugin` from `google.adk.plugins.base_plugin`. Override only the hooks you need. The rest are no-ops.
 
 ```python
+from typing import Any
+from google.adk.agents.invocation_context import InvocationContext
 from google.adk.plugins.base_plugin import BasePlugin
 from google.adk.tools.base_tool import BaseTool
 from google.adk.tools.tool_context import ToolContext
 
 class ToolCallCounterPlugin(BasePlugin):
-    """Counts every tool call by name. Prints summary at session end."""
+    """Counts every tool call by name. Prints summary after each invocation."""
 
     def __init__(self) -> None:
         super().__init__(name="tool_call_counter")
@@ -34,17 +36,21 @@ class ToolCallCounterPlugin(BasePlugin):
         self,
         *,
         tool: BaseTool,
-        tool_args: dict,
+        tool_args: dict[str, Any],
         tool_context: ToolContext,
     ) -> None:
         self._counts[tool.name] = self._counts.get(tool.name, 0) + 1
         return None    # don't short-circuit
 
-    async def on_session_end_callback(self, *, session) -> None:
+    async def after_run_callback(
+        self, *, invocation_context: InvocationContext
+    ) -> None:
         print(f"[counter] {self._counts}")
         self._counts.clear()
         return None
 ```
+
+> ⚠️ **There is no `on_session_end_callback` hook.** The per-invocation lifecycle hooks on `BasePlugin` (see `google/adk/plugins/base_plugin.py:174` for the `after_run_callback` signature) are `before_run_callback` / `after_run_callback`. Both take `invocation_context: InvocationContext` as a keyword-only arg. For runner-shutdown cleanup there's a separate `async def close(self) -> None` (no args) at the bottom of `BasePlugin`. Use `after_run_callback` for "summarize what just happened in this turn"; use `close` for "release resources when the Runner shuts down."
 
 Wire it:
 
@@ -66,7 +72,8 @@ runner = Runner(
 
 Look at `safety-plugins/safety_plugins/plugins/agent_as_a_judge.py`. `LlmAsAJudge` overrides:
 
-- `on_user_message_callback` — judges the incoming message; if unsafe, replaces it.
+- `on_user_message_callback` — judges the incoming message; if unsafe, flags it in session state.
+- `before_run_callback` — consumes the flag and halts the runner before the model sees the unsafe prompt (`agent_as_a_judge.py:149`).
 - `before_tool_callback` — judges tool inputs; if unsafe, refuses the tool call.
 - `after_tool_callback` — judges tool outputs.
 - `after_model_callback` — judges model outputs.
@@ -81,7 +88,7 @@ It composes itself across the whole runner. That's the canonical "plugin as poli
 
 > ⚠️ **Gotcha.** A plugin that silently swallows errors (`try/except: pass` inside a hook) creates ghost failures — the runner reports success, but the side effect didn't happen. Re-raise or surface to a metric.
 
-> 🛠 **Have the student run:** Build `ToolCallCounterPlugin` above, wire it to any tool-using agent (e.g. M1 calculator), run five turns. Confirm the counts at session end.
+> 🛠 **Have the student run:** Build `ToolCallCounterPlugin` above, wire it to any tool-using agent (e.g. M1 calculator), run five turns. Confirm the counts print after each run (one `[counter]` line per invocation).
 
 > **🧭 See also**: `safety-plugins` — `/home/carloscabral/study/adk-samples/python/agents/safety-plugins/safety_plugins/plugins/` ships two production-grade custom plugins (`LlmAsAJudge`, `ModelArmorSafetyFilter`). Both are good prior art for "plugin holds an inner LlmAgent / external service + overrides five hooks." Dissected on the next page ([[13_Plugins/08_DissectingSample]]) and re-dissected from the security angle in [[16_ProductionSecurity/08_DissectingSafetyPlugins]].
 

@@ -29,6 +29,8 @@ agent = LlmAgent(
 )
 ```
 
+No-arg form auto-creates an agent engine — requires `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` env vars per `agent_engine_sandbox_code_executor.py:53-103`.
+
 Almost no configuration in code: the sandbox lifecycle (start, isolate, tear down) is managed by Agent Engine. Resource limits, networking, and observability flow from your Agent Engine config, not from kwargs here.
 
 ## When to use it

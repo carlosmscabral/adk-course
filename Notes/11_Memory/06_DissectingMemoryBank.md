@@ -74,7 +74,7 @@ class AgentEngineApp(AdkApp):
         ...
 ```
 
-➜ `AdkApp` (the Agent Engine template) injects the `VertexAiMemoryBankService` automatically because the agent's `agent_engine_id` ties it to the Reasoning Engine resource that owns the Memory Bank. Locally, you'd pass `memory_service=VertexAiMemoryBankService(...)` to a Runner yourself.
+➜ Agent Engine deployment provides a memory backend; the wiring is inside the `AdkApp` framework (`vertexai.agent_engines.templates.adk.AdkApp`), not the sample files. Locally, you'd construct `VertexAiMemoryBankService(agent_engine_id=...)` explicitly and pass it to `Runner`.
 
 ## The whole flow on one turn
 

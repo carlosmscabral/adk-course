@@ -41,13 +41,15 @@ async def main():
         if not event.content or not event.content.parts:
             continue
         text = event.content.parts[0].text or ""
-        tag = "FINAL" if event.turn_complete else "chunk"
+        tag = "FINAL" if event.is_final_response() else "chunk"
         print(f"[{time.time()-t0:5.2f}s {tag}] {text!r}")
 
 asyncio.run(main())
 ```
 
 Run it. You should see several `[chunk]` lines arriving over the course of a second or two, then one `[FINAL]`.
+
+> ⚠️ **`event.turn_complete` is the Live-API marker, not the `run_async` finality marker.** It is set inside `gemini_llm_connection.py:354` and treated as "a pure control event" by `base_llm_flow.py:1087`; for non-Live streams it is usually `None`. The portable check is `event.is_final_response()` (`events/event.py:220`). Equivalently you can use `not event.partial` for the low-level test.
 
 > 🛠 **Have the student run:** the script above. Then have them paste 2-3 lines of the output here so you can confirm the chunk timestamps are *different* (not all the same value within rounding).
 
@@ -114,7 +116,7 @@ async def stream(q: str):
                 if text:
                     # SSE: data lines + blank line separator
                     yield f"data: {text}\n\n"
-            if event.turn_complete:
+            if event.is_final_response():
                 yield "event: done\ndata: ok\n\n"
                 return
 

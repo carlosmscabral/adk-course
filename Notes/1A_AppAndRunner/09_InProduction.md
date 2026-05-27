@@ -34,7 +34,7 @@ The course teaches production-readiness inline (rule #14 in the [authoring brief
 
 ### 2. Lifecycle hooks always include shutdown
 
-- **Risk**: Forgetting `await runner.plugin_manager.close()` on SIGTERM leaks MCP subprocesses, file descriptors, and gRPC channels across redeploys.
+- **Risk**: Forgetting `await runner.close()` on SIGTERM leaks toolset subprocesses (MCP), plugin handles, file descriptors, and gRPC channels, and skips the `session_service.flush()` step — across redeploys. (`runner.close()` at `runners.py:2135-2150` is the public hook; `runner.plugin_manager.close()` is the plugin-only subset.)
 - **Mitigation**: Use FastAPI `lifespan` (or `adk api_server`'s built-in) so the framework guarantees shutdown runs. Treat shutdown as load-bearing even with an empty plugin list — future-you will add plugins.
 - **Inline source**: [02 On Startup / Shutdown § 🚀 In Production](02_OnStartupShutdown.md#-in-production)
 
@@ -59,7 +59,13 @@ The course teaches production-readiness inline (rule #14 in the [authoring brief
 ### 6. Compaction uses a cheap summarizer model
 
 - **Risk**: Each compaction is an extra LLM call. A 1000-turn day with `compaction_interval=20` is 50 extra LLM calls just for summarization. Using your main expensive model for compaction doubles your bill.
-- **Mitigation**: Set `summarizer=LlmEventSummarizer(model="gemini-2.5-flash-lite")` (or similar cheap model) even if the main agent uses `gemini-2.5-pro`. Tune `compaction_interval` upward for low-stakes chat; downward only when you see context-window hits.
+- **Mitigation**: Wire a cheap summarizer explicitly. `LlmEventSummarizer` takes `llm: BaseLlm` (not `model: str`); the correct construction is:
+  ```python
+  from google.adk.models import Gemini
+  from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
+  summarizer = LlmEventSummarizer(llm=Gemini(model="gemini-2.5-flash-lite"))
+  ```
+  even if the main agent uses `gemini-2.5-pro`. Tune `compaction_interval` upward for low-stakes chat; downward only when you see context-window hits.
 - **Inline source**: [06 Wiring Context Compaction § 🚀 In Production](06_WiringContextCompaction.md#-in-production)
 
 ### 7. Modern Runner form over legacy

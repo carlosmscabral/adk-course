@@ -83,7 +83,13 @@ from google.adk.tools.base_authenticated_tool import BaseAuthenticatedTool
 from google.adk.tools.tool_context import ToolContext
 from google.adk.auth.auth_tool import AuthConfig
 from google.adk.auth.auth_credential import AuthCredential
-from google.adk.auth.auth_schemes import OAuth2  # whichever scheme you need
+from fastapi.openapi.models import OAuth2  # the real OAuth2 class
+# Note: `google.adk.auth.auth_schemes` re-exports FastAPI's `OAuth2`
+# (auth_schemes.py:22) — importing it from ADK gives you the FastAPI class,
+# not an ADK-defined one. Import directly from FastAPI to avoid confusion.
+# ADK's own auth-scheme types are `OpenIdConnectWithConfig` (auth_schemes.py:33)
+# for OIDC and `ExtendedOAuth2` (auth_schemes.py:89) for OAuth2 with issuer-URL
+# auto-discovery — reach for those when you need ADK-specific behavior.
 
 class AccessCartTool(BaseAuthenticatedTool):
     def __init__(self, auth_config: AuthConfig):

@@ -40,7 +40,7 @@ Flags you'll reach for (from `cli_tools_click.py`, the `adk eval` command):
 - `--eval_storage_uri` — optional storage URI for evals (e.g. `gs://<bucket>`).
 - `--log_level` — `DEBUG`/`INFO`/`WARNING`/`ERROR` (default `INFO`).
 
-> ⚠️ **No `--num_runs` flag.** It's not CLI-configurable; the CLI path uses the hardcoded `NUM_RUNS = 2` constant in `agent_evaluator.py`. If you need a different number of runs, call the Python API directly: `AgentEvaluator.evaluate(..., num_runs=5)`. There is no `--output_dir` or `--config_path` either — use `--config_file_path` and let `--print_detailed_results` (or your own pytest harness) handle output.
+> ⚠️ **No `--num_runs` flag.** The CLI runs each case **exactly once**; there is no `--num_runs` flag. For repeated runs, call the Python API directly: `AgentEvaluator.evaluate(..., num_runs=N)` (default `NUM_RUNS = 2` per `agent_evaluator.py:59`; multiplies inferences via `agent_evaluator.py:577`). There is no `--output_dir` or `--config_path` either — use `--config_file_path` and let `--print_detailed_results` (or your own pytest harness) handle output.
 
 (Run `adk eval --help` on your install to confirm — flags can grow between minor versions.)
 
@@ -92,7 +92,7 @@ For a one-off "did my prompt change break anything":
 $ adk eval ./my_agent eval/data/case_i_care_about.test.json --print_detailed_results
 ```
 
-Faster than running pytest, useful for tight feedback loops. Note: uses the hardcoded `NUM_RUNS = 2` default — for a single-run smoke test, call the Python API.
+Faster than running pytest, useful for tight feedback loops. Note: the CLI runs each case **exactly once**; there is no `--num_runs` flag. For repeated runs, call the Python API directly: `AgentEvaluator.evaluate(..., num_runs=N)` (default `NUM_RUNS = 2` per `agent_evaluator.py:59`; multiplies inferences via `agent_evaluator.py:577`).
 
 > ⚠️ **Gotcha.** `adk eval` and `pytest test_eval.py` should agree. If they don't, check that the module path, data path, and test_config.json are the same in both.
 

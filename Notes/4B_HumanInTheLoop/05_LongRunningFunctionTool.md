@@ -60,7 +60,7 @@ from google.adk.agents import LlmAgent
 from google.adk.runners import InMemoryRunner
 from google.adk.tools import LongRunningFunctionTool
 from google.adk.apps.app import App
-from google.adk.apps._configs import ResumabilityConfig
+from google.adk.apps import ResumabilityConfig
 from google.genai import types
 
 

@@ -152,6 +152,8 @@ When you `save_artifact(name, part)` where `part` carries `file_data`, the artif
 
 This is the foundation of the signed-URL handoff pattern (page 07): a tool uploads bytes to GCS, then saves a Part with `file_data` pointing at the upload. Downstream agents `load_artifact` and get the URI — no bytes ever sit in state or in the event stream.
 
+> ⚠️ **Heads up — `GcsArtifactService` does NOT yet support `file_data`.** `gcs_artifact_service.py:232-236` raises `NotImplementedError("Saving artifact with file_data is not supported yet in GcsArtifactService.")`. Only `InMemoryArtifactService` and `FileArtifactService` walk the `is_artifact_ref` path today. So for the URI-reference pattern, wire `InMemoryArtifactService` or `FileArtifactService`; if you must use `GcsArtifactService`, save the bytes inline via `inline_data` instead. Track the GCS gap on upgrades — when it lands, the snippet on page 07 will work uniformly.
+
 ## ⚠️ Common stumbles
 
 - **Wrong `mime_type`.** Gemini routes on MIME — `image/png` vs `application/pdf` vs `video/mp4` trigger different pipelines. Sniffing extension is not enough; set the MIME explicitly.

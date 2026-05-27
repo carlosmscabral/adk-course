@@ -114,7 +114,7 @@ That's the entire client. Two `fetch` calls, a Readable stream reader for SSE, a
 | `GET /apps/{app}/users/{user}/sessions/{sid}` | Fetch one session's events (replay) |
 | `POST /run` | One-shot, return full response |
 | `POST /run_sse` | Stream events as SSE |
-| `POST /apps/{app}/users/{user}/sessions/{sid}/artifacts/{name}` | Upload artifact |
+| `POST /apps/{app}/users/{user}/sessions/{sid}/artifacts` | Upload artifact (filename in JSON body via `SaveArtifactRequest.filename`) |
 | `GET /apps/{app}/users/{user}/sessions/{sid}/artifacts/{name}` | Fetch artifact |
 
 Full reference: module [21_ApiSurface](../21_ApiSurface/).

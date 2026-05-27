@@ -92,7 +92,7 @@ Patterns to name:
 
 ## Identify in your head
 
-> ❓ **Ask the student:** "Without looking at the file, what hooks does `LlmAsAJudge` override on `BasePlugin`?" *(Expected: roughly `on_user_message_callback`, `before_tool_callback`, `after_tool_callback`, `after_model_callback` — one per JudgeOn variant.)*
+> ❓ **Ask the student:** "Without looking at the file, what hooks does `LlmAsAJudge` override on `BasePlugin`?" *(Expected: `on_user_message_callback`, `before_run_callback`, `before_tool_callback`, `after_tool_callback`, `after_model_callback` — one per JudgeOn variant, plus `before_run_callback` which consumes the "unsafe user prompt" flag set by `on_user_message_callback` and halts the runner. See `safety-plugins/safety_plugins/plugins/agent_as_a_judge.py:149-167`.)*
 
 > ❓ **Ask the student:** "If you ran this with BOTH `LlmAsAJudge` and `ModelArmorSafetyFilter`, would they conflict? Which would you put first?" *(Expected: not necessarily conflict — ModelArmor is a fast deterministic filter, judge is slower LLM analysis. Put ModelArmor first to short-circuit obvious cases; judge runs only on what survives.)*
 

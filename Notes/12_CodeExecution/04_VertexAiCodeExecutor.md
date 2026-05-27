@@ -27,7 +27,7 @@ analytics_agent = Agent(
     name="analytics_agent",
     instruction="Generate Python (pandas/numpy/matplotlib) to answer the user's data question.",
     code_executor=VertexAiCodeExecutor(
-        optimize_data_file=True,  # uploaded data files persist between executions
+        optimize_data_file=True,  # extracts CSV data files from the request and attaches them to the executor
         stateful=True,            # variables persist across calls in one session
     ),
 )

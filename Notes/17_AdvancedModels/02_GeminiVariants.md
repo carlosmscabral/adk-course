@@ -72,7 +72,7 @@ Use RAG (module 10B) to find the relevant 5k tokens instead.
 
 > 🚀 **In Production**
 >
-> Pin the version suffix: `gemini-2.5-flash-002`. Aliases drift; pinned versions are stable. Schedule a quarterly *model bump review* where you re-run your evals against the next version and decide whether to promote.
+> Pin the version. For the 2.5+ family the **bare name** (`gemini-2.5-flash`) is itself the stable pinned alias; dated previews use the `gemini-2.5-flash-preview-MM-YYYY` form. The `-001 / -002` suffix convention belonged to 1.5 / 2.0 — don't graft it onto 2.5 names. Schedule a quarterly *model bump review* where you re-run your evals against the next family (2.5 → 3.0, etc.) and decide whether to promote.
 
 ---
 

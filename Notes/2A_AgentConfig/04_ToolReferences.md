@@ -66,7 +66,9 @@ tools:
         url: http://localhost:8080/mcp
 ```
 
-`ToolConfig` is intentionally minimal (two fields: `name`, `args`). YAML has to express *constructor kwargs* under `args:`. Use Python if this gets hairy — the line between "declarative" and "manually serializing Python" is exactly here. See [Module 08 MCP](../08_MCP/) for the in-depth coverage.
+`ToolConfig` is intentionally minimal (two fields: `name`, `args`). `args:` is typed as `ToolArgsConfig` (a Pydantic model with `extra="allow"`, i.e. a free-form mapping), so any nested kwarg-shape is accepted. Use Python if this gets hairy — the line between "declarative" and "manually serializing Python" is exactly here. See [Module 08 MCP](../08_MCP/) for the in-depth coverage.
+
+> ⚠️ **Watch this in future releases:** `config_agent_utils.py` defines `_BLOCKED_YAML_KEYS = frozenset({"args"})` (line 490) — i.e. `args` is on a YAML denylist. Enforcement is gated by `_ENFORCE_DENYLIST = False` (line 491) in the current snapshot, so `args:` still works today. If a future release flips that flag, every Form-3 YAML on this page becomes a hard error and these toolset references will have to migrate to Python. Pin the ADK version and re-check `_ENFORCE_DENYLIST` when upgrading.
 
 ## 🛠 End-to-end — YAML agent + Python tools
 

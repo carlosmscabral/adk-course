@@ -4,7 +4,7 @@ page: 01_StreamingFundamentals
 title: Streaming fundamentals — async generators, partials, backpressure
 estimated_minutes: 30
 prereqs: [18_StreamingLive/00]
-concepts: [async-for, async-generator, partial-event, turn_complete, backpressure]
+concepts: [async-for, async-generator, partial-event, is_final_response, backpressure]
 icon: 🧠
 in_production: false
 detours_suggested: [PY_async, PY_generators]
@@ -63,14 +63,16 @@ from google.adk.agents.run_config import RunConfig, StreamingMode
 run_config = RunConfig(streaming_mode=StreamingMode.SSE)
 async for event in runner.run_async(..., run_config=run_config):
     is_partial = event.partial is True            # incremental chunk
-    is_final   = event.turn_complete is True      # turn is over
+    is_final   = event.is_final_response()        # consolidated end-of-turn
     text = event.content.parts[0].text if event.content and event.content.parts else ""
     print(("...", "==")[is_final], repr(text))
 ```
 
-The **partial events carry deltas** (just the new tokens since the last event). The **final event carries the consolidated turn** (or sometimes is empty if `turn_complete` is the only thing being signaled). You generally want to render partials live and use the final to "commit" the turn to your transcript.
+The **partial events carry deltas** (just the new tokens since the last event). The **final event carries the consolidated turn**. You generally want to render partials live and use the final to "commit" the turn to your transcript.
 
-> ❓ **Ask the student:** If you only ever read `event.turn_complete` events, what do you lose? (Answer: live token-by-token UX; you wait for the whole turn.)
+> ⚠️ **Don't use `event.turn_complete` for `run_async`.** `turn_complete` is a Live-API control signal (set in `gemini_llm_connection.py:354` and described as "a pure control event" in `base_llm_flow.py:1087`); for non-Live streaming it is typically `None`. The universal finality check is `event.is_final_response()` (`events/event.py:220`), which collapses "no function calls pending, no trailing code execution, not partial" into a single boolean. Use `not event.partial` if you want the lower-level test.
+
+> ❓ **Ask the student:** If you only ever read `event.is_final_response()` events, what do you lose? (Answer: live token-by-token UX; you wait for the whole turn.)
 
 ## Backpressure — the gotcha
 

@@ -58,6 +58,8 @@ runner = InMemoryRunner(
 )
 ```
 
+> **Naming note:** the real class is `ModelArmorSafetyFilterPlugin`. `main.py:28` aliases it for brevity (`ModelArmorSafetyFilter = model_armor.ModelArmorSafetyFilterPlugin`), which is why this snippet (and the rest of this page) uses the shorter `ModelArmorSafetyFilter` name. Both refer to the same class — when you write your own wiring against ADK, import `ModelArmorSafetyFilterPlugin` directly.
+
 The plugin is constructor-injected into the runner. That is the canonical pattern for app-wide guardrails: not per-agent, not per-tool — *at the runner*, so nothing escapes.
 
 ### 3. `plugins/agent_as_a_judge.py` — LlmAsAJudge

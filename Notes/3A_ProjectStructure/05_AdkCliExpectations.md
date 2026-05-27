@@ -45,24 +45,20 @@ adk run my_agent
 
 > ⚠️ Running `adk web` from inside `my_agent/` will show an empty list. The student will assume their agent is broken; it's just the wrong directory.
 
-You can also pass `--agents_dir <path>` explicitly to point at the parent — that's what `adk web --agents_dir ./agents` does. We show this in [06 Deployment](06_DeploymentExpectations.md) for Cloud Run.
+You can also pass the parent directory explicitly as a positional argument — `adk web ./agents`. `agents_dir` is positional in `adk web` / `adk run` / `adk api_server` (see `cli/cli_tools_click.py:1745-1751`); defaults to cwd if omitted. We show this in [06 Deployment](06_DeploymentExpectations.md) for Cloud Run.
 
-### Rule 2 — `__init__.py` must `from . import agent`
+### Rule 2 — `__init__.py` typically does `from . import agent` for env-var ordering
 
 ```python
 # my_agent/__init__.py
 from . import agent
 ```
 
-ADK's discovery is roughly:
+Samples typically include `from . import agent` in `__init__.py` so that package-level side effects (like `dotenv.load_dotenv()`) run before agent construction. ADK's loader will find the agent without this import — `cli/utils/agent_loader.py:155-204` calls `importlib.import_module(f"{agent_name}.agent")` directly, so an empty `__init__.py` works for discovery. The requirement is environmental setup, not discovery.
 
-1. Find packages (directories with `__init__.py`) under CWD.
-2. `import` each candidate package.
-3. Look for `root_agent` (or `app`) inside the resulting module namespace.
+**Why samples still do it**: `travel_concierge/__init__.py` sets `GOOGLE_CLOUD_PROJECT` / `GOOGLE_GENAI_USE_VERTEXAI` and then `from . import agent`, guaranteeing the env vars are present when `agent.py` constructs its Gemini clients at import time. `fun-facts` achieves the same end by calling `load_dotenv()` inside `agent.py` itself; both are valid.
 
-If `__init__.py` is **empty**, step 2 succeeds but step 3 fails — Python doesn't auto-execute submodules. The `from . import agent` line is what makes `agent.py` actually run, which is what attaches `root_agent` to the namespace.
-
-**Symptom of forgetting it**: the agent appears in the picklist but the events panel shows "agent not found" or never responds.
+**Symptom of getting it wrong**: not "agent not found" — discovery still works — but `agent.py` constructs a client before your env vars are set, and you get a confusing auth/config error at first model call.
 
 ### Rule 3 — the variable must be named `root_agent` (or `app`)
 
@@ -110,7 +106,7 @@ When the student says "my agent doesn't show up":
 > ```bash
 > pwd                          # are we in the parent of the agent package?
 > ls                           # is `my_agent/` a child here?
-> cat my_agent/__init__.py     # does it say `from . import agent`?
+> cat my_agent/__init__.py     # if env vars are needed, is `from . import agent` (or `load_dotenv()`) wired before construction?
 > grep -n root_agent my_agent/agent.py    # is there a `root_agent =` line?
 > ```
 >

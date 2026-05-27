@@ -60,7 +60,7 @@ Trade-off:
 | `load_memory` (on-demand) | LLM decides relevance | only when called | +1 LLM round-trip when used |
 | `PreloadMemoryTool` (always) | every turn | every turn | retrieval is parallel-ish |
 
-> ⚠️ **Gotcha.** `PreloadMemoryTool` injects *all* matched memories into the system instruction. With a noisy memory bank, you bloat context every turn. Throttle with the service's `similarity_top_k` knob (see 04) or switch to `load_memory`.
+> ⚠️ **Gotcha.** `PreloadMemoryTool` injects *all* matched memories into the system instruction. With a noisy memory bank, you bloat context every turn. The `similarity_top_k` knob only exists on `VertexAiRagMemoryService` (see 04, `vertex_ai_rag_memory_service.py:98`); for `VertexAiMemoryBankService`, tune retrieval via the underlying RAG corpus or via prompt-level instructions to `load_memory`. Or switch to `load_memory` entirely.
 
 ## Putting reads and writes together
 

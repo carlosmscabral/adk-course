@@ -25,6 +25,8 @@ Every ADK event your frontend receives has two booleans your render code cares a
 
 **Concretely** — Gemini sends a stream of partials (`partial=true`) and then one *consolidated* final event (`partial=false`) containing the full text. If you naively append every event's text, you'll double-print the final.
 
+This partial/final pairing is governed by `ADK_ENABLE_PROGRESSIVE_SSE_STREAMING` (default ON; see `agents/run_config.py:104-110`). Setting it to OFF disables the partial stream and you'll only see the final aggregated event.
+
 ## The naive bug
 
 ```javascript

@@ -59,7 +59,7 @@ import asyncio
 from google.adk.agents import LlmAgent, Context
 from google.adk.runners import InMemoryRunner
 from google.adk.apps.app import App
-from google.adk.apps._configs import ResumabilityConfig
+from google.adk.apps import ResumabilityConfig
 from google.genai import types
 
 

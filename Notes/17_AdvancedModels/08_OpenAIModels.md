@@ -22,11 +22,13 @@ ADK 2.0 lets you use OpenAI models two ways:
 
 ### Path A — `OpenAILlm` (if exposed)
 
+Set `OPENAI_API_KEY` in env first — `OpenAILlm` doesn't accept it as a constructor kwarg. The class declares only `model` and `max_tokens` (`adk-python/src/google/adk/labs/openai/_openai_llm.py:349-350`); the underlying `AsyncOpenAI()` reads the key from env.
+
 ```python
-from google.adk.models import OpenAILlm  # availability depends on ADK minor version
+from google.adk.models import OpenAILlm  # lazy re-export; canonical home is google.adk.labs.openai
 
 agent = LlmAgent(
-    model=OpenAILlm(model="gpt-4o", api_key=os.environ["OPENAI_API_KEY"]),
+    model=OpenAILlm(model="gpt-4o"),
     name="researcher",
 )
 ```

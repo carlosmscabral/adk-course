@@ -34,7 +34,7 @@ Compare with the request/response model you've used so far:
 
 ## Two model families
 
-ADK's bidi-demo highlights the distinction (see `bidi-demo/app/main.py:105-156`):
+ADK's bidi-demo highlights the distinction (see `bidi-demo/app/main.py:100-156`):
 
 - **Native audio** models (e.g. `gemini-2.5-flash-native-audio-preview-12-2025`, `gemini-live-2.5-flash-native-audio`): speech-to-speech end-to-end. **Audio response modality only.** Support proactivity, affective dialog, transcription.
 - **Half-cascade** models (e.g. `gemini-2.0-flash-live`): TTS is bolted on. **Text response modality is faster** for non-voice use. Audio is also supported but goes through a cascade.
@@ -51,8 +51,8 @@ from google.adk.agents.run_config import RunConfig, StreamingMode
 
 queue = LiveRequestQueue()
 run_config = RunConfig(
-    streaming_mode=StreamingMode.BIDI,
-    response_modalities=["AUDIO"],   # or ["TEXT"]
+    streaming_mode=StreamingMode.BIDI,   # set by convention; run_live ignores it
+    response_modalities=["AUDIO"],       # or ["TEXT"]
 )
 
 async for event in runner.run_live(
@@ -71,7 +71,7 @@ The dials you'll actually touch:
 
 ```python
 RunConfig(
-    streaming_mode=StreamingMode.BIDI,         # required for Live
+    streaming_mode=StreamingMode.BIDI,         # conventionally set, but run_live doesn't consume it (see run_config.py:173-181)
     response_modalities=["AUDIO"],             # or ["TEXT"]
     input_audio_transcription=types.AudioTranscriptionConfig(),    # ASR transcript of user
     output_audio_transcription=types.AudioTranscriptionConfig(),   # transcript of model TTS
@@ -91,7 +91,7 @@ RunConfig(
 )
 ```
 
-The full reference is in `bidi-demo/app/main.py:115-145` and `realtime-conversational-agent/server/main.py:41-63`.
+The full reference is in `bidi-demo/app/main.py:113-145` and `realtime-conversational-agent/server/main.py:41-63`.
 
 > 🚀 **In Production**
 >
