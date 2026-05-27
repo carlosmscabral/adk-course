@@ -1,0 +1,26 @@
+SANDBOX-BYPASS MATRIX — what each executor actually defends
+============================================================
+
+                         |  Filesystem |  Env vars  |  Network  |  Priv-esc
+                         |  isolation  |  isolation |  egress   |  defense
+-------------------------+-------------+------------+-----------+----------
+ UnsafeLocal             |   ❌ NO     |   ❌ NO    |  ❌ FULL  |   N/A
+ BuiltIn (Gemini)        |   ✅ YES    |   ✅ YES   |  ✅ NONE  |   ✅ YES
+ VertexAi Code Exec      |   ✅ YES    |   ✅ YES   |  ◐ PART. |   ✅ YES
+ Container (yours)       |   ◐ DEP.   |   ◐ DEP.  |  ◐ DEP.  |   ◐ DEP.
+ GKE job (default)       |   ✅ YES    |   ✅ YES   |  ◐ DEP.  |   ✅ YES (gVisor)
+ AgentEngineSandbox      |   ✅ YES    |   ✅ YES   |  ◐ PART. |   ✅ YES
+
+  ◐ DEP.  = depends on your config (image / NetworkPolicy / daemon flags)
+  ◐ PART. = vendor-managed allow-list, not yours to set
+  ❌ FULL = no isolation; the model's code runs with your process's privileges
+
+How to read a row:
+  - YES   = framework or vendor enforces this; you don't have to think about it
+  - DEP.  = framework provides the seam; YOUR config decides yes-or-no
+  - PART. = somebody upstream sets the policy; you can't override
+  - NO    = no defense at all in this dimension
+  - N/A   = not meaningful for this executor
+
+The first thing to do for each executor your team ships:
+  walk the four columns and replace every "DEP." with "YES" or "NO" in writing.

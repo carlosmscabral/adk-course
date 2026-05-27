@@ -2,7 +2,8 @@ module: 12_CodeExecution
 exercise:
   id: 12_CodeExecution_mini
   prompt: |
-    Build a "math homework solver" agent.
+    Build a "math homework solver" agent — and use it to feel the executor
+    differences with your own eyes.
 
     Step 1 — UnsafeLocalCodeExecutor:
       1. Create an LlmAgent (gemini-2.5-flash) with code_executor=UnsafeLocalCodeExecutor().
@@ -15,44 +16,106 @@ exercise:
          Confirm the executor ran Python (you'll see executable_code and
          code_execution_result parts in the event log).
 
-    Step 2 — Swap the executor:
+    Step 2 — Inspect the event stream:
+      1. Iterate runner.run_async(...) and for each event, print:
+           - role (event.content.role)
+           - any executable_code part (event.content.parts[*].executable_code)
+           - any code_execution_result part (event.content.parts[*].code_execution_result)
+      2. For one problem, confirm you see the round trip we drew in
+         _figures/code_exec_event_flow.txt:
+           model → executable_code → runtime → code_execution_result → model → text
+      3. Note (in a comment): which part field carries the stdout the model
+         eventually reads in its next turn? (Hint: `code_execution_result.output`.)
+
+    Step 3 — Swap the executor:
       1. Swap UnsafeLocal for BuiltInCodeExecutor OR VertexAiCodeExecutor
          (whichever is available in your environment).
       2. Re-run the 3 problems. Verify same answers.
       3. Note (in a comment): what changed in your event log / trace?
+         (For BuiltIn: you may not see executable_code on YOUR side — execution
+         happened Google-side. For Vertex: you still see both parts.)
 
-    Step 3 — Disable and forget UnsafeLocal exists for prod work.
+    Step 4 — Sandbox-bypass demonstration (the safe version):
+      With UnsafeLocal still wired (Step 1), ask the agent:
+        "List the first 5 entries of sys.path, print os.uname(), and the current
+         process id."
+      Observe that the snippet returns YOUR host's sys.path, YOUR host's uname,
+      and a real pid in YOUR process tree. This is the visceral demonstration of
+      page 02A's "filesystem isolation = NO, env isolation = NO." We chose
+      os.uname/sys.path/getpid deliberately — they prove the breach without
+      reading anything sensitive. Do NOT escalate to reading $HOME or env vars.
+
+      Then re-run the exact same prompt with the Step 3 executor (BuiltIn or
+      Vertex) and observe a different (sandboxed) os.uname / sys.path / pid.
+      Write a one-line comment naming what's different and why.
+
+    Step 5 — Stateful bonus (skip if using BuiltIn):
+      With VertexAiCodeExecutor(stateful=True):
+        Turn 1: "Compute x = factorial(20). Print it."
+        Turn 2: "Now compute x // 1000000. Print it."
+      Confirm turn 2 references `x` directly — no re-computation, no
+      re-definition. This is the cost asymmetry from page 04: cheap on the
+      Vertex side, accumulates context on your side.
+
+    Step 6 — Then disable and forget UnsafeLocal exists for any prod work.
 
   scaffolding_hint: |
-    Start from Work/_template_run.py. To see the executable_code parts in the
-    event stream, iterate runner.run_async(...) and print
-    `[(p.executable_code, p.code_execution_result) for p in event.content.parts]`
-    for every event.
+    Start from Work/_template_run.py. To see the parts cleanly:
 
-  estimated_minutes: 45
+      async for event in runner.run_async(user_id=..., session_id=..., new_message=...):
+          role = event.content.role if event.content else None
+          parts = event.content.parts if event.content else []
+          for p in parts:
+              if getattr(p, "executable_code", None):
+                  print(f"[{role}] EXEC: {p.executable_code.code[:120]}")
+              if getattr(p, "code_execution_result", None):
+                  print(f"[{role}] RESULT: {p.code_execution_result.output[:120]}")
+              if getattr(p, "text", None):
+                  print(f"[{role}] TEXT: {p.text[:200]}")
+
+  estimated_minutes: 75
 
   verification:
     type: script_output
     expect_files: [Work/12_code_execution/math_solver.py]
-    expect_run_output_contains: ["x = 5", "5.1873", "6.0"]
+    expect_run_output_contains: ["x = 5", "5.1873", "6.0", "EXEC:", "RESULT:"]
     grading_rubric:
       - "Agent has code_executor attached (not a tool wrapper)"
       - "Three algebra problems all yield correct numerical answers"
-      - "Step 2 swaps the executor cleanly — only one line changes"
-      - "Student names a trade-off they observed between the two executors"
+      - "Step 2 event inspection prints executable_code AND code_execution_result parts"
+      - "Step 3 swaps the executor cleanly — only the code_executor= line changes"
+      - "Step 4 captures the host-vs-sandbox difference for os.uname/sys.path/getpid"
+      - "Stretch (Step 5): stateful=True demonstrated by reusing a variable across turns"
+      - "Student names one observable trade-off between any two executors they tried"
 
   solution_pointer: null
 
   tutor_notes: |
-    Common pitfalls:
+    Common pitfalls and adaptive moves:
+
       - Student writes a `calculator(a, b, op)` tool instead of using
         code execution. Push them to use the code path — that's the lesson.
+        If they resist ("a tool is cleaner"), great — that's the right
+        instinct for *known* arithmetic. Code execution earns its place for
+        the *unknown* arithmetic the model can't enumerate as tools.
       - Student forgets the instruction line telling the model to *use* code.
-        Without it, gemini-2.5-flash may try to answer arithmetically. Diagnostic:
-        if no executable_code part appears, the instruction is too weak.
-      - Step 2: if VertexAi requires credentials and the student is in a pure-local
-        env, BuiltIn is the right swap. Both prove the point.
-      - Stretch: have the student ask "compute the SHA-256 of 'hello world'."
-        With UnsafeLocal: trivial. With BuiltIn: depends on allowlist. With
-        VertexAi sandbox: should work. Discuss why the executor's package
-        environment is part of the design choice.
+        Without it, gemini-2.5-flash may try to answer arithmetically.
+        Diagnostic: if no executable_code part appears in Step 2's inspection,
+        the instruction is too weak.
+      - Step 3: if VertexAi requires credentials and the student is in a pure-local
+        env, BuiltIn is the right swap. Both prove the point — but the trace shape
+        differs (request-side vs response-side mutation, per page 03), and the
+        student should name that difference.
+      - Step 4 safety: this is intentionally a tame demonstration — sys.path,
+        uname, getpid. If the student volunteers to escalate ("can I print
+        $HOME?"), redirect: the point is to feel the boundary, not to exfil.
+        The page-02 prose is explicit; the drill is meant to make it real,
+        not to teach exploitation craft.
+      - Step 5: if the student uses BuiltIn, skip — BuiltIn doesn't expose
+        stateful=True. If they use Vertex and see no state reuse, they
+        probably forgot stateful=True OR are starting a new session per turn.
+      - Stretch (any executor): have the student ask "compute the SHA-256 of
+        'hello world'." UnsafeLocal: trivial. BuiltIn: depends on allowlist.
+        Vertex: should work. Discuss why the executor's package environment
+        is part of the design choice (page 04's _IMPORTED_LIBRARIES vs the
+        prompt's "do not pip install" rule).

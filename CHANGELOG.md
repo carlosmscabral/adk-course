@@ -4,6 +4,86 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.0] - 2026-05-27
+
+Module 12 (Code Execution) — content-depth pass. Net new ≈ 1100 lines across 11 lesson pages, 2 YAML files, 1 AGENTS.md, and 2 figures, plus a structural split. Backlog-closer of the type 0.3.13's "next natural work is content depth" line called out: this is the first content-depth pass, executed against the highest-value module that was running thin (504 lines pre-pass for 6 executors + a sample dissection — page 02 alone needed 80 more lines to land the "in-process is not a sandbox" point with primary sources). Plan file at `.claude/plans/module-12-code-execution-depth-pass.md`.
+
+### Added
+
+**New page — `02A_SandboxBypassClasses.md` (108 lines)**
+- Executor-agnostic threat model: four bypass classes (filesystem isolation, environment leakage, network egress, privilege escalation) with per-executor verdict (NO/YES/PART./DEP./FULL/N/A) and source-anchor citations. Lets pages 03-06 forward-link instead of re-stating.
+- Embedded the matrix from `_figures/bypass_matrix.txt` inline; explains the "DEPENDS as TODO not verdict" framing for Container/GKE rows.
+- Prompt-injection multiplier section — connects sandbox-class threats to the upstream prompt-injection story in [[16_ProductionSecurity/02_PromptInjectionDefense]].
+
+**New page — `05A_GkeCodeExecutor.md` (126 lines, split from `05_ContainerAndGke.md`)**
+- Hardened pod spec table direct from `gke_code_executor.py:_create_job_manifest` (`:265-336`): `run_as_non_root=True`, `run_as_user=1001`, `allow_privilege_escalation=False`, `read_only_root_filesystem=True`, `capabilities=drop(["ALL"])`, `runtime_class_name="gvisor"`, plus job-level `backoff_limit=0` + `ttl_seconds_after_finished=600`.
+- `executor_type="job"` vs `"sandbox"` discussion with `_check_sandbox_dependency` reference at `:166-175`.
+- Gotcha: `service_account=` is NOT a kwarg (raises Pydantic ValidationError); identity binding happens at the cluster level via Workload Identity (gcloud + kubectl annotate, snippet included).
+
+**New figures — `_figures/code_exec_event_flow.txt` (52 lines) and `_figures/bypass_matrix.txt` (26 lines)**
+- Event-flow ASCII anchored to `flows/llm_flows/_code_execution.py:151-169` (`_CodeExecutionResponseProcessor`), `code_execution_utils.py:113-172` (extraction), `:189-221` (result envelope), `_code_execution.py:435-470` (`_post_process_code_execution_result`). Closing paragraph distinguishes BuiltIn (request-side) from response-side executors.
+- Bypass matrix as a standalone figure for cross-page reference from 02A, 03, 04, 05, 05A, 06, 08.
+
+### Changed
+
+**`00_Overview.md` (59→75)** — "Why this module gets extra depth" paragraph; "The event shape, in one paragraph" sketch; "Where this slots into the runtime" callout; expanded module map with `02A` and `05A` rows. Frontmatter: `prereqs: [03_Tools/01, 04_SessionsState/02]`, expanded `concepts:` list.
+
+**`01_WhyCodeExecution.md` (76→114)** — strengthened the ASCII trace with actual Part field names (`ExecutableCode(language='PYTHON', code=...)`, `CodeExecutionResult(outcome='OUTCOME_OK', output='Code execution result:\n…')`) and source refs to `code_execution_utils.py:184-187, :202-205, :218-221`. Added "The cost lens" paragraph and a tool-vs-code-exec triage ASCII flowchart.
+
+**`02_UnsafeLocalCodeExecutor.md` (76→106)** — added "What this executor actually does" mechanics block with five source-anchored bullets: `_execute_in_process` at `:37-48`, `_prepare_globals` at `:51-54`, multiprocessing `spawn` at `:88-107` ("spawn is not a sandbox"), frozen Field ValueError at `:69-74`. Added "Sandbox-bypass classes (executor-agnostic)" intro forward-linking to 02A. **Fixed broken cross-ref**: callout previously pointed at non-existent `16_ProductionSecurity/02_CodeExecSafety.md`; repointed to `[[16_ProductionSecurity/02_PromptInjectionDefense]]` and `[[16_ProductionSecurity/05_GuardrailsCookbook]] Recipe 6`. Added third tutor question on `stateful=True` ValueError.
+
+**`03_BuiltInCodeExecutor.md` (67→101)** — added "Mechanics: a request-side mutation, not a response-side handler" (with `execute_code` no-op at `:36-42` and `process_llm_request` mutating `llm_request.config.tools` at `:44-57`); "Model compatibility" with `is_gemini_eap_or_2_or_above` check; "What this means for tracing" calling out absence of `executable_code` parts on YOUR wire; trade-off table row for "Where on the wire"; bypass posture forward-link to 02A.
+
+**`04_VertexAiCodeExecutor.md` (69→116)** — "Under the hood" block with three source-anchored bullets: extension load-or-create at `:88-104` with env-var side effect at `:101-103`, `_IMPORTED_LIBRARIES` at `:36-85`, `_execute_code_interpreter` at `:200-227`. "Stateful execution: what it actually costs" with illustrative numbers (Turn 1 ≈ 480 output tokens / ~400 context, Turn 5 ≈ 2000 extra input tokens, Turn 20 ≈ 10000 — flagged as illustrative, verify against price card). "`optimize_data_file=True` mechanics" with text/csv-only constraint and `processed_input_files` cache reference (`code_executor_context.py:78-96`). Bypass posture forward-link.
+
+**`05_ContainerCodeExecutor.md` (NEW file, 92 lines; split from `05_ContainerAndGke.md`)** — "Mechanics: long-lived container, exec-per-snippet" with three bullets including the critical "**state leaks between executions inside one `ContainerCodeExecutor`**" finding (writable `/tmp` and background processes persist across `exec_run` calls even though Python globals reset). Bypass posture explains why every Container cell reads DEPENDS. Two gotchas (`--privileged` collapse, state-leak). Tutor question on cross-execution `nc -l 4444` → `/proc/net/tcp` example.
+
+**`06_AgentEngineSandbox.md` (62→113)** — "Mechanics: three init modes + per-session sandboxes" surfacing the hidden auto-create cost (`:79-103`) and the per-session sandbox lifecycle (`:131-173`) backed by `state['sandbox_name']`. Names the **14-day kernel state-loss window** from the in-line comment at `:163-170` — separate from the sandbox resource's 1-year TTL — as a product surface, not just an infra detail. "Output handling" section explains the JSON/file mime-type split at `:196-227`. Comparison table with `VertexAiCodeExecutor` includes sandbox-per-what / auto-create-posture / state-loss-boundary rows.
+
+**`07_DissectingSample.md` (104→233)** — re-structured as a file-by-file walk: `analytics/agent.py` (32 lines), `analytics/prompts.py:40-79` (statefulness + imports + output-protocol contract), `tools.py:59-126` (`call_analytics_agent` wrapper using `AgentTool` + state-passing), `data_science/agent.py:177-204` (root constructor). Made the **prompt-executor coupling** explicit: `stateful=True` ↔ "variables stay in the environment"; `_IMPORTED_LIBRARIES` constant ↔ "ALREADY imported" block in prompt. Added wire-trace ASCII for one user→answer execution (4 LLM calls, 2 tool invocations, 1 sandbox round trip). Added migration table covering the same workload across all 5 sandbox-class executors.
+
+**`08_InProduction.md` (75→106)** — recast from "five non-negotiables" prose to Risk/Mitigation/Source 10-item structure. New items: bypass-matrix completion as launch gate (item 2), explicit `timeout_seconds=` discipline with the retry-math interaction (item 3), `error_retry_attempts` pinning (item 4), audit-logging via `_CODE_EXECUTION_RESULTS_KEY` from `code_executor_context.py:167-191` (item 6), prompt-executor coupling version-control (item 7), `stateful=True` context-bloat cost with turns-per-session heuristic (item 8), egress + input filtering (item 9). Launch-gate checklist expanded from 6 to 10 items.
+
+**`09_KnowledgeCheck.yml` (37→57; 7→11 questions)** — q3 updated to test request-side-vs-response-side distinction (BuiltIn vs Vertex); 4 new questions: q8 (four bypass classes with defense + anti-defense pairs), q9 (retry math: `error_retry_attempts=2` × `timeout_seconds=60` = 3 min worst case + interactive-vs-batch tradeoff), q10 (`stateful=True` cost asymmetry + turns-per-session heuristic), q11 (prompt-executor coupling failure mode in the data-science sample).
+
+**`10_MiniDrill.yml` (58→121; estimated_minutes 45→75)** — added Step 2 event-stream inspection (print `executable_code` / `code_execution_result` parts), Step 4 sandbox-bypass demonstration using safer enumeration (`os.uname()` / `sys.path` / `getpid()` — chosen deliberately to prove the breach without reading anything sensitive; tutor_notes explicitly redirects escalation attempts), Step 5 stateful bonus reusing `x = factorial(20)` across turns, Step 6 "disable and forget UnsafeLocal." `tutor_notes` expanded with adaptive moves for each step.
+
+**`AGENTS.md` (39→55)** — added pacing-trap note on page 07's 200+ line dissection (two-sitting consumption); new constructor-vs-first-call error catalog (AgentEngineSandbox lazy create, GkeCodeExecutor `service_account=` ValidationError, Vertex frozen-Field path); page-02A reading note ("hold the four classes in your head before pages 03-06 make sense"); Step-4 safety redirect for the bypass drill.
+
+### Deleted
+
+- `Notes/12_CodeExecution/05_ContainerAndGke.md` — split into `05_ContainerCodeExecutor.md` + `05A_GkeCodeExecutor.md`. External cross-refs unaffected: nothing in the repo linked to the deleted file (verified via grep against the deleted-file path).
+
+### Fixed
+
+- `Contents.md:331` — stale link to deleted `05_ContainerAndGke.md`; replaced with two entries (05 + 05A) and inserted the new `02A` row between 02 and 03.
+- `02_UnsafeLocalCodeExecutor.md` (pre-existing): callout pointed at non-existent `16_ProductionSecurity/02_CodeExecSafety.md`; repointed to the two actual targets (`02_PromptInjectionDefense` + `05_GuardrailsCookbook` Recipe 6). The wrong link had been present since v0.3.4 but was only surfaced when the depth pass re-read the page.
+
+### Method
+
+- **Source verification first**: ran a verification pass against `adk-python/src/google/adk/code_executors/*.py` and `adk-python/src/google/adk/flows/llm_flows/_code_execution.py` before any prose change, confirming every line ref the plan cited is still accurate at the cited offset (`_create_job_manifest` `:265-336`, security context `:281-307`, `runtime_class_name="gvisor"` `:307`, `_execute_in_process` `:37-48`, `error_retry_attempts: int = 2` `:59`, etc.).
+- **Source verification of the sample**: re-read `adk-samples/python/agents/data-science/data_science/{agent.py,tools.py,sub_agents/analytics/{agent.py,prompts.py}}` end-to-end for the page-07 dissection; every line-ref in the new prose is anchored to the actual file (e.g., `tools.py:99-100` for the state read, `:104-118` for the question-with-data string, `:120-124` for the `AgentTool.run_async` call).
+- **No invented security claims**: every defense and every bypass-class verdict in 02A and 02 is sourced either from a kwarg/field on a real ADK class or from a documented behavior. The few illustrative numbers (page 04's stateful cost example) are explicitly labeled "illustrative, verify against your model's price card."
+- **Re-ran the v0.3.13 audit toolkit** post-pass:
+  - `audit_yaml.py`: 0 schema issues; module 12's 2 YAML files parse cleanly.
+  - `audit_anchors.py`: 0 broken across the repo (47/47 resolve; module 12's new anchors all match GitHub slugger).
+  - `audit_figures.py`: 0 orphan figures on real content; the 2 new figures (`code_exec_event_flow.txt`, `bypass_matrix.txt`) are referenced from multiple module pages.
+  - Custom check: `grep -rn "12_CodeExecution" --include="*.md"` outside the module — confirmed every external cross-ref still resolves (13_Plugins/00_Overview, 16_ProductionSecurity/{05,09,10}, 99_Capstone/00_Overview).
+
+### Why
+
+- User: "let's go with your recommended approaches for everything." — single forward-going approval of all six recommendations from the planning thread (page-02 single-page, page-05 split, safer bypass demo, illustrative cost numbers, broken-cross-ref repoint to `PromptInjectionDefense` + `GuardrailsCookbook` Recipe 6, defer SandboxIsolationPrimitives detour).
+- v0.3.13's CHANGELOG explicitly named content depth as the next natural work after the dogfood backlog closed. Module 12 was the highest-leverage choice: 504 pre-pass lines for the *security-most-load-bearing* module in the course, with page 02 (UnsafeLocal) the canonical "if the student doesn't internalize this they'll ship UnsafeLocal in prod" page running 76 lines without naming the multiprocessing-spawn-is-not-a-sandbox fact from the actual source.
+- Minor version bump (0.3.x → 0.4.0): the cadence on 0.3.x has been patch-bumping (dogfood waves, audit additions, small fixes). A ~1100-line content addition spanning the structural split of a page, two new pages, and a new YAML question class is the largest single content addition in the course's history — warrants the minor bump.
+
+### Deferred
+
+- `Notes/Detours/SandboxIsolationPrimitives.md` — namespaces / cgroups / seccomp / gVisor primer. Useful for a student who wants to understand WHY a hardened pod spec resists CVE-class escapes. Not blocking module completion; deferred to a future detour pass when student feedback shows the page-02A treatment isn't enough.
+- Module 11 (Memory) and Module 16 (ProductionSecurity) cross-link audit — both modules forward-link into 12, but neither was re-read end-to-end in this pass. If a future depth pass on 11 or 16 surfaces structural changes that affect the forward-links, fix at that time.
+- A "v0.4.1" companion pass to add a sample for `AgentEngineSandboxCodeExecutor` — currently page 06 references the `memory-bank` sample for the Agent Engine deploy shape, but `adk-samples` doesn't have a code-execution-specific Agent Engine sample to dissect. Wait for the canonical sample to exist rather than fabricating one.
+
+---
+
 ## [0.3.13] - 2026-05-27
 
 Dogfood Wave 10 — three independent defect classes the v0.3.12 closure missed, all surfaced by widening the auditor toolkit beyond links. Built three new programmatic audits (anchor-resolution, YAML-schema, orphan-figure) and ran them against the whole course. 56 fixes across 14 files; 0 schema issues remaining; 47/47 anchors resolve; 0 orphan figures on real content. Wave 10 closes the dogfood backlog completely — every audit class the toolkit can express is now green.

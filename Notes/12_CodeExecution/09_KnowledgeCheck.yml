@@ -11,8 +11,8 @@ questions:
     accept_paraphrase: true
     difficulty: easy
   - id: q3
-    prompt: "What's the difference between BuiltInCodeExecutor and VertexAiCodeExecutor?"
-    expected_keywords: [model-side, sandbox, allowlist, runtime-side, package control, custom data]
+    prompt: "What's the difference between BuiltInCodeExecutor and VertexAiCodeExecutor in terms of where on the request/response cycle they live?"
+    expected_keywords: [request-side, mutation, tools, response-side, handler, sandbox]
     accept_paraphrase: true
     difficulty: medium
   - id: q4
@@ -22,7 +22,7 @@ questions:
     difficulty: medium
   - id: q5
     prompt: "When do you reach for `GkeCodeExecutor` over `ContainerCodeExecutor`?"
-    expected_keywords: [scale, cluster, autoscale, per-pod, on GKE already]
+    expected_keywords: [scale, cluster, autoscale, per-pod, on GKE already, hardened defaults]
     accept_paraphrase: true
     difficulty: medium
   - id: q6
@@ -35,3 +35,23 @@ questions:
     expected_keywords: [agent, LlmAgent, parallel mechanism, not a tool]
     accept_paraphrase: true
     difficulty: easy
+  - id: q8
+    prompt: "Name the four sandbox-bypass classes from page 02A. For each, name one defense AND one common anti-defense (a thing teams think defends but doesn't)."
+    expected_keywords: [filesystem, environment, network egress, privilege escalation, chroot, NetworkPolicy, non-root, run_as_user, spawn, try-except]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q9
+    prompt: "`BaseCodeExecutor.error_retry_attempts` defaults to 2. Combined with a `timeout_seconds=60`, what's the worst-case wall time before a stuck snippet surfaces an error to the user? Why does this matter for interactive UX vs batch?"
+    expected_keywords: [180, 3 minutes, three submissions, interactive, lower, batch, transient]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q10
+    prompt: "Explain the cost asymmetry of `stateful=True`: where is it cheap, where is it expensive, and what's the heuristic for deciding to flip it off?"
+    expected_keywords: [Vertex side, kernel, free, model side, context, tool_outputs, accumulate, turns per session, three, average]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q11
+    prompt: "The `data-science` sample has `code_executor=VertexAiCodeExecutor(stateful=True)` AND a prompt that says 'variables stay in the environment'. What's the failure mode if a future engineer flips `stateful=False` and forgets the prompt?"
+    expected_keywords: [coupled, NameError, references variables, multi-turn, silent, wrong answers, edit both]
+    accept_paraphrase: true
+    difficulty: medium

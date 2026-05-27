@@ -1,0 +1,52 @@
+CODE-EXECUTION WIRE FLOW — one round trip, runtime-side executor
+=================================================================
+
+┌─ Caller's runtime ────────────────────────────────────────────┐
+│                                                               │
+│   user prompt                                                 │
+│      │                                                        │
+│      ▼                                                        │
+│   Runner.run_async(...)                                       │
+│      │                                                        │
+│      ▼                                                        │
+│   LLM emits Content with parts:                               │
+│     [ Part(text="I'll compute the average delay..."),         │
+│       Part(executable_code=ExecutableCode(                    │
+│         language='PYTHON',                                    │
+│         code='df.groupby("airline")["delay"].mean()')) ]      │
+│      │                                                        │
+│      ▼                                                        │
+│   _CodeExecutionResponseProcessor                             │
+│     flows/llm_flows/_code_execution.py:151-169                │
+│     extracts code via                                         │
+│     CodeExecutionUtils.extract_code_and_truncate_content      │
+│     code_execution_utils.py:113-172                           │
+│      │                                                        │
+│      ▼                                                        │
+│   code_executor.execute_code(                                 │
+│     invocation_context,                                       │
+│     CodeExecutionInput(code=..., input_files=...,             │
+│                        execution_id=...))                     │
+│      │                                                        │
+│      ▼  (sandbox runs; returns CodeExecutionResult)           │
+│      │                                                        │
+│   _post_process_code_execution_result                         │
+│     _code_execution.py:435-470 builds:                        │
+│     Part(code_execution_result=CodeExecutionResult(           │
+│       outcome='OUTCOME_OK', output='Code execution result:\n…'│
+│     ))                                                        │
+│      │                                                        │
+│      ▼                                                        │
+│   Event yielded to caller (role='model')                      │
+│      │                                                        │
+│      ▼                                                        │
+│   Next LLM turn sees the result Part in history,              │
+│   emits final-text Part.                                      │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+
+BuiltInCodeExecutor is different: there is no _CodeExecutionResponse
+step. The pre-processor adds Tool(code_execution=ToolCodeExecution())
+to the request (built_in_code_executor.py:44-57); Gemini runs the code
+server-side and folds the result into its own response. No
+executable_code Part reaches your runtime.
