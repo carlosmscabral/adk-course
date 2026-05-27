@@ -1,0 +1,37 @@
+module: 06_GraphWorkflows
+questions:
+  - id: q1
+    prompt: "Name the three legacy workflow templates from ADK 1.x that still ship in 2.0."
+    expected_keywords: [SequentialAgent, ParallelAgent, LoopAgent]
+    accept_paraphrase: false
+    difficulty: easy
+  - id: q2
+    prompt: "What ends a LoopAgent before max_iterations is hit?"
+    expected_keywords: [exit_loop, escalate, actions]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Give two things templates can't easily express that graphs can."
+    expected_keywords: [conditional, routing, HITL, joins, retries, cycles]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "Inside an `edges=[(START, A, B, C)]` tuple, what's the relationship between A, B, C?"
+    expected_keywords: [chain, sequential, A-then-B-then-C]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q5
+    prompt: "How does a FunctionNode signal which branch to take?"
+    expected_keywords: [Event, route, yield, label]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "What does `ParallelWorker(agent)` do when the upstream node yields a list of 4 items?"
+    expected_keywords: [fan-out, parallel, four-copies, concurrent]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Why mark an expensive LLM node `rerun_on_resume=False` in a HITL workflow?"
+    expected_keywords: [cost, checkpoint, replay, side-effect, paid]
+    accept_paraphrase: true
+    difficulty: hard

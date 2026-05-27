@@ -1,0 +1,37 @@
+module: 10C_BigQueryAgents
+questions:
+  - id: q1
+    prompt: "When is BigQuery the wrong backend for an agent's data needs?"
+    expected_keywords: [OLTP, sessions, low latency, per-row, CRUD, state]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What does NL2SQL mean and what are the three responsibilities in the pattern?"
+    expected_keywords: [natural language, SQL, LLM generates, execute, format]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Why is dry_run a better cost guard than just adding LIMIT to every generated SQL?"
+    expected_keywords: [bytes scanned, LIMIT, rows only, dry_run, estimate, before]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What's the WriteMode default you want for a read-only NL2SQL agent?"
+    expected_keywords: [BLOCKED, BigQueryToolConfig, WriteMode]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q5
+    prompt: "When should you use BigQuery VECTOR_SEARCH instead of Vertex AI Vector Search?"
+    expected_keywords: [analytical, SQL, join, OLAP, data already in BQ, batch]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Name two mitigations against LLM-generated SQL exfiltrating sensitive data."
+    expected_keywords: [IAM, narrow service account, authorized views, row_access_policy, VPC, audit log]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Why must the schema block in the prompt include partition information?"
+    expected_keywords: [partition pruning, bytes scanned, cost, predicate, _PARTITIONDATE]
+    accept_paraphrase: true
+    difficulty: medium

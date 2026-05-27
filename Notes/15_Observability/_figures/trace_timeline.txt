@@ -1,0 +1,20 @@
+One Runner.run_async() invocation → one trace → many spans
+
+trace_id: 7af3...c1
+└─ span: runner.run_async                                                    [█████████████████████████████████████████████] 4820ms
+   ├─ span: agent.root_agent (LlmAgent)                                      [████████████████████████████████████████████]  4790ms
+   │  ├─ span: llm.gemini-2.5-flash (call #1)                                [█████████]                                       820ms
+   │  │  attrs: { tokens.in=412, tokens.out=78, finish_reason=tool_call }
+   │  ├─ span: tool.search_places                                            [          ████████████]                          1110ms
+   │  │  attrs: { tool.args={q:"ramen Toronto"}, status="ok" }
+   │  ├─ span: tool.compute_routes                                           [                      ███████]                    640ms
+   │  │  attrs: { status="ok" }
+   │  └─ span: llm.gemini-2.5-flash (call #2)                                [                             ████████████████]  1490ms
+   │     attrs: { tokens.in=1860, tokens.out=412, finish_reason=stop }
+   └─ span: runner.finalize                                                  [                                              █]   30ms
+
+  time ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────►
+       0ms                                                                                                              4820ms
+
+Read this top-down: every span has a parent. The runner span wraps everything.
+Read this left-right: every span has start/end timestamps. Slow tools stand out.

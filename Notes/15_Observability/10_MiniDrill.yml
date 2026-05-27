@@ -1,0 +1,54 @@
+module: 15_Observability
+exercise:
+  id: 15_Observability_mini
+  prompt: |
+    Take your M4 auditor (the critic + reviser agent with eval cases from
+    module 14). Wire OpenTelemetry into it using the ConsoleSpanExporter
+    (or any local collector — Jaeger via Docker also fine).
+
+    Send one prompt that triggers at least one tool call. Capture the trace.
+
+    Verify the trace contains:
+    - one outer runner span
+    - one agent span per sub_agent that was invoked (critic AND reviser)
+    - at least one tool span
+    - at least one model-call span per sub_agent
+
+    Then bolt on a `LoggingPlugin` and confirm that the JSON log lines
+    carry the same `session.id` as the trace's span attributes.
+  scaffolding_hint: |
+    Start from your M4 auditor directory. Add to it:
+      - opentelemetry-sdk, opentelemetry-exporter-otlp (or just stdout)
+      - LoggingPlugin from google.adk.plugins.logging_plugin
+    Wire the TracerProvider BEFORE creating the App (so ADK picks it up).
+  estimated_minutes: 60
+  verification:
+    type: script_output
+    expect_files:
+      - Work/15_Observability/observable_auditor.py
+      - Work/15_Observability/trace_sample.txt
+    expect_run_output_contains:
+      - "runner"
+      - "critic"
+      - "reviser"
+      - "tool"
+    grading_rubric:
+      - "TracerProvider configured before the App is created."
+      - "trace_sample.txt shows nested spans (parent_span_id populated, not all None)."
+      - "Both sub_agent spans appear with author=critic and author=reviser (or equivalent agent.name attribute)."
+      - "LoggingPlugin lines carry the same session.id seen in the trace."
+      - "No PII in the captured trace (or student explicitly redacts before exporting)."
+  solution_pointer: null  # not a gate-keeper; expect the student to fumble OTel boilerplate and learn
+  tutor_notes: |
+    Common mistakes:
+    - Calling trace.set_tracer_provider AFTER App() — spans go to noop. Reorder.
+    - Using SimpleSpanProcessor (synchronous) in a notebook — works, but flag
+      that prod must use BatchSpanProcessor.
+    - Forgetting that sub_agent transfer creates a child span — the student
+      may not see the reviser span if the critic never escalated. Have them
+      use a prompt that forces both sub_agents to run.
+    - Confusing trace_id with session.id. They are *different* IDs that should
+      be cross-linked.
+    Stretch goal: have them add a custom attribute (request.id) to the root
+    span from a `before_agent_callback`. This is exactly the correlation pattern
+    from page 08 § 5.

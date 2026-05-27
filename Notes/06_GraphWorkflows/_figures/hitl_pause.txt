@@ -1,0 +1,60 @@
+HITL pause / resume lifecycle
+
+──────────────────────────────────────────────────────────────────────────
+
+  application                  WorkflowAgent                      user
+    │                              │                               │
+    │  runner.run_async(input)     │                               │
+    │─────────────────────────────▶│                               │
+    │                              │                               │
+    │                              │   node A runs                 │
+    │                              │   node B runs                 │
+    │                              │   node C yields:              │
+    │                              │     RequestInput(             │
+    │                              │       message="...",          │
+    │                              │       response_schema={...},  │
+    │                              │     )                         │
+    │                              │                               │
+    │   RequestInput event +       │                               │
+    │   resume_token               │                               │
+    │◀─────────────────────────────│   ← workflow SUSPENDED        │
+    │                                  state checkpointed          │
+    │                                                              │
+    │ ── render message ──────────────────────────────────────────▶│
+    │                                                              │
+    │                                                              │   user
+    │                                                              │   types
+    │                                                              │   response
+    │                                                              │
+    │ ◀─── {"city": "Paris"} ──────────────────────────────────────│
+    │                                                              │
+    │  runner.resume(             │                                │
+    │    invocation_id=token,     │                                │
+    │    user_input={"city": ...},│                                │
+    │  )                          │                                │
+    │─────────────────────────────▶│                               │
+    │                              │   node C re-runs              │
+    │                              │   (because                    │
+    │                              │   rerun_on_resume=True)       │
+    │                              │   with response as node_input │
+    │                              │                               │
+    │                              │   node D, E, ... continue     │
+    │                              │                               │
+    │   final result               │                               │
+    │◀─────────────────────────────│                               │
+
+──────────────────────────────────────────────────────────────────────────
+key invariants
+──────────────────────────────────────────────────────────────────────────
+- The resume_token uniquely identifies the suspension point. Treat as
+  sensitive; bind to user identity before honoring.
+- Session state must be in a DURABLE backend if pause can exceed process
+  lifetime. InMemorySessionService loses everything on restart — use
+  DatabaseSessionService or VertexAiSessionService.
+- `rerun_on_resume` is per-node:
+    True  for cheap pure functions (router, parser)
+    False for expensive LLM calls and side-effecting nodes
+- On resume, nodes UPSTREAM of the suspension point are NOT re-paid —
+  their outputs replay from the checkpoint.
+- runner.cancel(invocation_id) is the dual: tear down a suspended
+  workflow cleanly (timeout, user abandon, admin override).

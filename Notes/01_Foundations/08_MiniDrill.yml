@@ -1,0 +1,58 @@
+module: 01_Foundations
+exercise:
+  id: 01_Foundations_mini
+  prompt: |
+    PAPER EXERCISE. Do not write code.
+
+    Draw the data flow for ONE user turn of the `fun-facts` agent where
+    the LLM invokes `google_search` exactly once before replying. Your
+    diagram must include and label:
+
+      - the User
+      - the Runner
+      - the Session (with a callout for "event log" and "state dict")
+      - the LlmAgent config (with model + instruction + tools)
+      - the Gemini API
+      - the `google_search` tool
+      - every arrow, labeled with what's being passed (e.g., "new user
+        message", "history + tools schema", "tool call: google_search('whales')",
+        "tool result", "final reply text")
+      - every Event that gets appended to the Session, in order
+
+    Sketch on paper or a whiteboard, then transcribe it as ASCII into
+    Work/01_Foundations_sketch.txt for the tutor to grade.
+  scaffolding_hint: |
+    Use Notes/01_Foundations/_figures/runtime_timeline.txt as the
+    skeleton. Add the tool-call branch (which that figure shows in the
+    bottom half).
+  estimated_minutes: 30
+  verification:
+    type: code_review
+    expect_files: [Work/01_Foundations_sketch.txt]
+    expect_run_output_contains: []
+    grading_rubric:
+      - "Diagram identifies User, Runner, Session, LlmAgent, Gemini API, and the tool as distinct nodes"
+      - "Arrow labels include the user message, the LLM prompt with tool schema, the tool call, the tool result, the final reply"
+      - "Session is shown accumulating ≥4 events for the tool-using turn"
+      - "Student correctly places the system prompt ('instruction=') as part of the LlmAgent config, NOT in the Session"
+      - "Student articulates that the Runner re-sends the full session history + instruction on EACH iteration of the loop"
+  solution_pointer: null
+  tutor_notes: |
+    Common mistakes to probe for:
+
+    1. Drawing the instruction string as living in the Session. It
+       doesn't — it's a property of the LlmAgent and is sent on every
+       LLM call by the Runner.
+
+    2. Missing the tool-call and tool-result as separate events. Many
+       students collapse them into one arrow, which obscures that the
+       LLM has to be re-called after the tool completes.
+
+    3. Treating the Runner as part of the LlmAgent. Runner is separate
+       and reusable across many turns/sessions.
+
+    If the student's drawing has all six nodes and ≥4 labeled events,
+    pass. Push back on anything missing rather than rewriting it for
+    them — the act of revising the drawing is the learning.
+
+    Discourage drawing tools. Pencil and paper. The friction is the point.

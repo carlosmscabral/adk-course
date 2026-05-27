@@ -1,0 +1,42 @@
+                              A2A Topology
+
+   Caller-side process                            Server-side process
+   ┌──────────────────────────┐                  ┌──────────────────────────┐
+   │  Some app / agent        │                  │  Your ADK agent          │
+   │                          │                  │                          │
+   │  RemoteA2aAgent(         │                  │  root_agent = Agent(...) │
+   │    name="currency",      │                  │                          │
+   │    agent_card=URL        │  ─── HTTP ───►   │  a2a_app = to_a2a(       │
+   │  )                       │  JSON-RPC + SSE  │      root_agent,         │
+   │                          │  ◄────────────   │      port=10000,         │
+   │  use it as a sub_agent   │                  │  )                       │
+   │  in your own LlmAgent    │                  │                          │
+   └──────────────────────────┘                  │  uvicorn module:a2a_app  │
+                  ▲                              └──────────────────────────┘
+                  │
+        ┌─────────┴─────────┐
+        │  Discovery flow   │
+        │                   │
+        │  1. GET {url}/.well-known/agent.json
+        │     → AgentCard JSON
+        │  2. POST {url}/  with JSON-RPC SendMessage / GetTask
+        └───────────────────┘
+
+
+    Agent Card (the manifest the server publishes)
+
+        {
+          "name": "currency_agent",
+          "description": "An agent that helps with currency conversions",
+          "url": "http://localhost:10000/",
+          "version": "0.1.0",
+          "capabilities": { ... },
+          "skills": [
+            { "id": "get_exchange_rate",
+              "name": "get_exchange_rate",
+              "description": "Use this to get current exchange rate",
+              ... }
+          ],
+          "default_input_modes":  ["text/plain"],
+          "default_output_modes": ["text/plain"]
+        }

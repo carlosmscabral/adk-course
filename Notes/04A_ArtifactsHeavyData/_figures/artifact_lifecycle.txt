@@ -1,0 +1,60 @@
+                    HOW AN ARTIFACT FLOWS THROUGH ADK
+                    ─────────────────────────────────
+
+   ┌────────────────────────────────────────────────────────────────────┐
+   │  Tool runs inside the agent loop:                                  │
+   │     part = types.Part(inline_data=types.Blob(                      │
+   │         data=pdf_bytes, mime_type="application/pdf"))              │
+   │     version = await tool_context.save_artifact("report.pdf", part) │
+   └─────────────────────────────┬──────────────────────────────────────┘
+                                 │
+                                 ▼
+   ┌────────────────────────────────────────────────────────────────────┐
+   │  ToolContext forwards to the configured ArtifactService:           │
+   │                                                                    │
+   │    artifact_service.save_artifact(                                 │
+   │        app_name="presentation_agent",                              │
+   │        user_id="carlos",                                           │
+   │        session_id="s-42",                                          │
+   │        filename="report.pdf",                                      │
+   │        artifact=part,                                              │
+   │    ) -> version=0                                                  │
+   └─────────────────────────────┬──────────────────────────────────────┘
+                                 │
+                                 ▼
+   ┌────────────────────────────────────────────────────────────────────┐
+   │  Bytes land in the backing store:                                  │
+   │                                                                    │
+   │     InMemoryArtifactService → process-local dict                   │
+   │     GcsArtifactService      → gs://<bucket>/<app>/<user>/<sess>/   │
+   │                                report.pdf/0                        │
+   │     FileArtifactService     → ./artifacts/<app>/<user>/<sess>/...  │
+   └─────────────────────────────┬──────────────────────────────────────┘
+                                 │
+                                 ▼
+   ┌────────────────────────────────────────────────────────────────────┐
+   │  ADK records an `artifact_delta` on the tool-result Event:         │
+   │                                                                    │
+   │     Event(                                                         │
+   │       author="myagent",                                            │
+   │       content=Content(parts=[Part(function_response=...)]),        │
+   │       actions=EventActions(                                        │
+   │         artifact_delta={"report.pdf": 0},   ← filename → version   │
+   │       ),                                                           │
+   │     )                                                              │
+   └─────────────────────────────┬──────────────────────────────────────┘
+                                 │
+                                 ▼
+   ┌────────────────────────────────────────────────────────────────────┐
+   │  Runner appends Event to Session. Next agent / tool reads it:      │
+   │                                                                    │
+   │     part = await tool_context.load_artifact("report.pdf")          │
+   │     # or pinned: load_artifact("report.pdf", version=0)            │
+   │                                                                    │
+   │  State stays small (just the filename + version). Bytes live in    │
+   │  the artifact store, not in the session.                           │
+   └────────────────────────────────────────────────────────────────────┘
+
+  Key insight: state and artifacts are TWO STORES with ONE event log.
+  State holds small key-values; artifacts hold the heavy bytes.
+  The event log threads them together so every write is auditable.

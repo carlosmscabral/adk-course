@@ -1,0 +1,37 @@
+module: 10A_EmbeddingsVectorSearch
+questions:
+  - id: q1
+    prompt: "What is an embedding, in one sentence?"
+    expected_keywords: [dense vector, meaning, similarity, fixed-length]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What's the #1 task-type gotcha with Vertex AI text embeddings?"
+    expected_keywords: [RETRIEVAL_QUERY, RETRIEVAL_DOCUMENT, asymmetric, recall]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Why are an Index and an IndexEndpoint two separate resources in Vertex AI Vector Search?"
+    expected_keywords: [storage, serving, deploy, scale, separately]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "Name one situation where you should NOT use ANN (TreeAH) and would prefer BruteForce."
+    expected_keywords: [small N, exact recall, legal, medical, baseline]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What is the side-store problem in Vector Search and how do you solve it?"
+    expected_keywords: [IDs, not text, KV, BigQuery, Firestore, lookup]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "What does changing the embedding model (e.g. text-embedding-005 → 006) force you to do?"
+    expected_keywords: [re-embed, corpus, incompatible, new index]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q7
+    prompt: "Approximately how long does the first deploy of a Vertex AI Vector Search index take?"
+    expected_keywords: [20, 40, minutes]
+    accept_paraphrase: true
+    difficulty: easy

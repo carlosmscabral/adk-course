@@ -1,0 +1,52 @@
+                       ADK Callback Lifecycle (per Invocation)
+
+  User message
+       │
+       ▼
+  ┌────────────────────────┐
+  │  before_agent_callback │  ──► may return Content (skip the agent entirely)
+  └────────────────────────┘
+       │
+       ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │                    Agent loop (per LLM turn)                │
+  │                                                             │
+  │   ┌────────────────────────┐                                │
+  │   │  before_model_callback │  ──► may return LlmResponse    │
+  │   └────────────────────────┘     (short-circuit the LLM)    │
+  │            │                                                │
+  │            ▼                                                │
+  │       [ LLM call ]  ──fail──►  on_model_error_callback      │
+  │            │                                                │
+  │            ▼                                                │
+  │   ┌────────────────────────┐                                │
+  │   │  after_model_callback  │  ──► may return LlmResponse    │
+  │   └────────────────────────┘     (replace the LLM output)   │
+  │            │                                                │
+  │            ▼                                                │
+  │     tool calls?                                             │
+  │      │      │                                               │
+  │     yes     no                                              │
+  │      │      └──► back to user / next agent                  │
+  │      ▼                                                      │
+  │   ┌────────────────────────┐                                │
+  │   │  before_tool_callback  │  ──► may return dict           │
+  │   └────────────────────────┘     (block the tool call)      │
+  │            │                                                │
+  │            ▼                                                │
+  │       [ tool call ]  ──fail──►  on_tool_error_callback      │
+  │            │                                                │
+  │            ▼                                                │
+  │   ┌────────────────────────┐                                │
+  │   │  after_tool_callback   │  ──► may return dict           │
+  │   └────────────────────────┘     (replace the tool result)  │
+  │                                                             │
+  └─────────────────────────────────────────────────────────────┘
+       │
+       ▼
+  ┌────────────────────────┐
+  │  after_agent_callback  │  ──► may persist / cleanup
+  └────────────────────────┘
+       │
+       ▼
+  Final reply

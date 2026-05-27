@@ -1,0 +1,52 @@
+module: 16_ProductionSecurity
+questions:
+  - id: q1
+    prompt: "Name three distinct prompt-injection classes and one defense for each."
+    expected_keywords: [direct, indirect, jailbreak, exfiltration, input filter, output filter, structured, dual-LLM, least tools]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q2
+    prompt: "Why does enforcing authorization in the system instruction fail?"
+    expected_keywords: [model, trick, jailbreak, prompt, weakest, not deterministic]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "What does session-poisoning protection in safety-plugins actually do, mechanically?"
+    expected_keywords: [replace, state flag, before_run, persist, removed, canned]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q4
+    prompt: "How is policy-as-code's approach more robust than LlmAsAJudge for *deterministic* rules?"
+    expected_keywords: [AST, restricted, exec, sandbox, code, deterministic, drift]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What is the difference between fail-closed and fail-open, and which is correct for safety vs telemetry?"
+    expected_keywords: [closed, safety, refuse, open, telemetry, drop span, never block]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Why is regex PII redaction insufficient on its own?"
+    expected_keywords: [meaning, names, semantic, structured, miss, layer, defense in depth]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Why must guardrail decisions themselves be logged?"
+    expected_keywords: [audit, regulator, trail, prove, incident, debug, accountability]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q8
+    prompt: "When an agent on Cloud Run calls a tool that reads a per-user resource, whose IAM applies, and what additional check is required?"
+    expected_keywords: [service account, SA, user, tool, authz, owner, IDOR, state, auth_sub]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q9
+    prompt: "Name the three patterns for handling the agent-vs-user identity split, and one resource type each is right for."
+    expected_keywords: [SA with authz, user token, OIDC, Firebase, impersonation, token exchange, OAuth, refresh, Drive, multi-tenant, STS]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q10
+    prompt: "Why does the default LlmAsAJudge plugin use Gemini Flash Lite instead of the main agent's model, and which two `JudgeOn` hooks are enabled by default?"
+    expected_keywords: [cheap, cost, single-purpose, USER_MESSAGE, TOOL_OUTPUT, untrusted, boundary, smaller, separate]
+    accept_paraphrase: true
+    difficulty: medium

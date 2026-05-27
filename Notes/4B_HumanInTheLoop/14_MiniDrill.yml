@@ -1,0 +1,100 @@
+# Mini-drill for Module 4B — HITL & Resume/Cancel
+# The student builds a delete_file tool with confirmation, then drives the
+# approve/reject loop from a CLI. This is the gate-keeper drill for HITL —
+# the student must walk a complete pause/resume cycle by hand at least once.
+
+module: 4B_HumanInTheLoop
+page: 14_MiniDrill
+
+exercise:
+  id: 4B_HumanInTheLoop_mini
+  prompt: |
+    Build a `delete_file` tool that ALWAYS requests confirmation before
+    deleting (no allow-list bypass). Wire it into an LlmAgent. Write a
+    small CLI driver in the same script that:
+
+      1. Creates two temp files (call them A and B).
+      2. Sends the agent the message: "Delete A and B".
+      3. The agent should request two confirmations (one per file).
+      4. The CLI prints each pending hint and prompts the user:
+         "Approve? (y/n) " for each.
+      5. The CLI builds the resume payload (one ToolConfirmation per
+         function_call_id) and re-calls runner.run_async with
+         invocation_id + a function_response message per pending fc.
+      6. The CLI prints the agent's final summary.
+
+    Verify by running it twice:
+      run 1: approve A, reject B  → A is deleted, B still exists, final
+             summary mentions both outcomes.
+      run 2: approve both         → both files deleted.
+
+    Place the file at `Work/4B_delete_with_hitl.py`.
+
+  scaffolding_hint: |
+    The page-08 client script is your template — strip the LlmAgent down
+    to `delete_file` only, and replace `fake_ui` with a real input() prompt.
+
+    Key imports you'll need:
+      from google.adk.agents import LlmAgent, Context
+      from google.adk.runners import InMemoryRunner
+      from google.adk.apps.app import App
+      from google.adk.apps._configs import ResumabilityConfig
+      from google.adk.tools.tool_confirmation import ToolConfirmation
+      from google.adk.flows.llm_flows.functions import REQUEST_CONFIRMATION_FUNCTION_CALL_NAME
+
+    The resume payload for multiple pending confirmations is ONE
+    types.Content with MULTIPLE function_response Parts — one per
+    function_call_id.
+
+  estimated_minutes: 60
+
+  verification:
+    type: script_output
+    expect_files:
+      - Work/4B_delete_with_hitl.py
+    expect_run_output_contains:
+      - "Approve?"
+      - "deleted"
+    grading_rubric:
+      - "delete_file branches on ctx.tool_confirmation; first branch only calls request_confirmation + returns"
+      - "App is constructed with resumability_config=ResumabilityConfig(is_resumable=True)"
+      - "Driver collects ALL pending confirmations in a turn before prompting (handles the 2-files-in-one-turn case)"
+      - "Resume payload uses REQUEST_CONFIRMATION_FUNCTION_CALL_NAME as the function_response.name"
+      - "Reject path returns a no-side-effect result and the agent reports it correctly in the final summary"
+
+  # This IS a gate-keeper — first time the student wires a complete pause/resume
+  # cycle. The solution lives at Solutions/4B_HumanInTheLoop/.
+  solution_pointer: Solutions/4B_HumanInTheLoop/delete_with_hitl.py
+
+  tutor_notes: |
+    Most common failure modes, ranked by frequency:
+
+    1. Side-effect in the pre-confirm branch — student calls os.remove()
+       before checking ctx.tool_confirmation. Symptom: file deleted on
+       the first turn, no pause. Have them re-read page 02 § In Production.
+
+    2. Function-response.name wrong (e.g. "delete_file" instead of
+       REQUEST_CONFIRMATION_FUNCTION_CALL_NAME). Symptom: resume doesn't
+       reach the tool body; the agent just talks. The constant import is
+       in page 04.
+
+    3. Forgetting invocation_id= on the resume run_async call.
+       Symptom: a fresh invocation starts instead of resuming. The agent
+       responds as if turn 1 — it has forgotten the pending tool calls.
+
+    4. Building ONE function_response per resume call instead of one per
+       pending function_call_id in a SINGLE message. Symptom: only the
+       first confirmation registers; the second pause never resumes.
+
+    5. No resumability_config. Symptom: passing invocation_id raises.
+
+    Edge case to probe after the drill passes:
+      Ask the student: "What happens if the user types 'y' for file A,
+      and the deletion crashes (filesystem permission denied)? Does B's
+      approval still go through?" (Answer: depends on how they wrote
+      the loop. The robust pattern is to capture per-file outcomes
+      independently and continue, not abort on first error.)
+
+    Stretch: have them swap input() for a tiny FastAPI endpoint and
+    POST the approvals from curl. That's a real client-driven approval
+    flow (page 08), in 30 more lines.

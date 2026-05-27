@@ -1,0 +1,37 @@
+module: 14_Evaluation
+questions:
+  - id: q1
+    prompt: "What's the difference between a test and an eval?"
+    expected_keywords: [test code deterministic, eval behavior scored, LLM non-deterministic, both matter]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What are the three main fields in an EvalCase?"
+    expected_keywords: [user_content, final_response, intermediate_data, tool_uses, session_input]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q3
+    prompt: "What does `num_runs` control in AgentEvaluator.evaluate?"
+    expected_keywords: [how many times each case runs, variance, cost, signal stability]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q4
+    prompt: "When would you use LlmAsJudge over FinalResponseMatchV1?"
+    expected_keywords: [paraphrase, meaning, freeform, semantic, open-ended]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What does TrajectoryEvaluator catch that response-match metrics miss?"
+    expected_keywords: [right answer wrong path, tool sequence, multi-agent, faking, didnt call tool]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Why is the same model a bad judge for itself?"
+    expected_keywords: [shared blind spots, biased, different stronger judge, gemini pro]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Name two production failure modes specific to evals."
+    expected_keywords: [flakiness, cost, drift, golden set rot, ambiguous cases, threshold tuning]
+    accept_paraphrase: true
+    difficulty: hard

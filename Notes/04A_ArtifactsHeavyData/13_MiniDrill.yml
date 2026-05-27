@@ -1,0 +1,114 @@
+# Mini-drill for Module 04A — Artifacts & Heavy Data
+# Tutor reads this, asks the student to perform `prompt`, then grades against
+# `verification`. For `type: script_output` the tutor runs `expect_files[0]` and
+# checks stdout. For `type: code_review` the tutor walks the rubric items
+# against the student's diff aloud.
+
+module: 04A_ArtifactsHeavyData
+page: 13_MiniDrill
+
+exercise:
+  id: 04A_ArtifactsHeavyData_mini
+  prompt: |
+    Write `Work/pdf_summariser.py`. It must:
+
+      1. Build a `SequentialAgent` with TWO sub-agents:
+         - `uploader` — takes user text, calls a tool `stash_text(text)` that
+           wraps the text into `types.Part(inline_data=types.Blob(data=...,
+           mime_type="text/markdown"))` and calls
+           `tool_context.save_artifact("report.md", part)`. The tool returns
+           the filename string. Wire `output_key="report_file"` on the agent so
+           that filename lands in `state["report_file"]`.
+         - `summariser` — reads `{report_file}` from state, calls a tool
+           `fetch_text(filename)` that does `tool_context.load_artifact(filename)`
+           and returns the decoded text, then produces a one-sentence summary.
+
+      2. Wire the Runner with `InMemoryArtifactService()` (page 02).
+
+      3. In `main()`, run ONE turn with the user message:
+            "Save and summarise: Q1 revenue grew 14% YoY led by enterprise renewals."
+
+         Print, for every event:
+           - the author
+           - any `artifact_delta`
+           - any `state_delta`
+           - the final reply if present
+
+    Expected stdout substrings:
+        - "artifact_delta: {'report.md': 0}"  (uploader saved the file)
+        - "state_delta: {'report_file': 'report.md'}"  (output_key fired)
+        - One sentence containing "revenue" or "14" (the summariser's answer)
+
+    Bonus: add a SECOND turn ("Re-summarise it.") and confirm NO new
+    artifact_delta appears — the artifact is already there; only load_artifact
+    runs.
+
+  scaffolding_hint: |
+    - Start from `Work/09_handoff.py` (which has the exact two-agent skeleton).
+    - The tool function MUST take `tool_context: ToolContext` as a parameter.
+    - Use `gemini-2.5-flash` for both sub-agents.
+    - `InMemoryArtifactService` must be passed to `Runner(... artifact_service=...)`.
+
+  estimated_minutes: 35
+
+  verification:
+    type: script_output
+
+    expect_files:
+      - Work/pdf_summariser.py
+
+    expect_run_output_contains:
+      - "artifact_delta"
+      - "report.md"
+      - "report_file"
+
+    grading_rubric:
+      - "Two sub-agents wired into a SequentialAgent (uploader, summariser)"
+      - "Tool function takes `tool_context: ToolContext` and calls `save_artifact` with a `types.Part(inline_data=Blob(...))`"
+      - "Uploader has `output_key='report_file'` so the filename flows into state"
+      - "Summariser's instruction interpolates `{report_file}` and calls a load tool"
+      - "Runner is constructed with `artifact_service=InMemoryArtifactService()`"
+      - "Final printed reply contains a coherent one-sentence summary of the input"
+      - "Bonus (if attempted): second turn produces NO new artifact_delta"
+
+  # No solution pointer — this drill is NOT a gate-keeper. Students have
+  # Work/09_handoff.py to crib from; the drill is to internalise the pattern.
+
+  tutor_notes: |
+    The most common failure modes (in order of frequency):
+
+    1. **Forgetting `tool_context` parameter on the tool.** Symptom:
+       `AttributeError: 'NoneType' object has no attribute 'save_artifact'`
+       when ADK can't inject the context. Fix: add the parameter; ADK uses
+       reflection on the signature.
+
+    2. **Returning the bytes from the tool instead of a short string.** The
+       LLM gets the full text in the next prompt, blows up tokens. The
+       uploader's tool should return only the filename ("report.md"); the
+       summariser's tool returns the loaded text only because the agent
+       needs it for summarisation.
+
+    3. **`output_key` set wrong.** If they put `output_key` on the
+       summariser instead of the uploader, `{report_file}` won't be in
+       state when the summariser tries to use it. Fix: output_key fires
+       on the agent whose REPLY should be captured — that's the uploader.
+
+    4. **Forgetting `artifact_service=` on Runner.** Symptom:
+       `ValueError: Artifact service is not initialized.` Page 02's
+       gotcha #1.
+
+    5. **Required vs optional template var.** `{report_file}` is required;
+       it works here because the SequentialAgent guarantees the uploader
+       runs first. If they swap to ParallelAgent (probing in the edge case
+       below), they need `{report_file?}` AND the design breaks anyway.
+
+    After they pass, ask the edge case: "what happens if you swap
+    SequentialAgent for ParallelAgent?" *(The two sub-agents run
+    simultaneously; the summariser tries to load_artifact before the
+    uploader has saved it; load_artifact returns None; tool returns
+    "(no artifact ...)". This is page 09's failure-mode #3 made real.
+    Sequential or graph workflows are required for artifact handoffs.)*
+
+    Pass = stdout contains the three expected substrings AND the final
+    reply is a coherent one-sentence summary (LlmAsJudge if the keywords
+    fail but the sentence is clearly correct).

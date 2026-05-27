@@ -1,0 +1,54 @@
+adk-python/src/google/adk/
+├── agents/                     ← BaseAgent, LlmAgent, Sequential/Parallel/Loop, RemoteA2a
+│   ├── base_agent.py             - BaseAgent: run_async wrapper, _run_async_impl contract
+│   ├── llm_agent.py              - LlmAgent: model, instruction, tools, _llm_flow plumb
+│   ├── invocation_context.py     - InvocationContext: session, branch, state, pause flags
+│   ├── callback_context.py       - CallbackContext: state-delta capture for callbacks
+│   └── llm/                      - task-mode helpers (delegation, finish_task)
+├── runners.py                  ← Runner, InMemoryRunner, run_async, run_live, rewind
+├── sessions/                   ← Session model + service impls
+│   ├── session.py                - Session: id/app/user/state/events (pydantic)
+│   ├── base_session_service.py   - append_event → applies state_delta to state
+│   ├── in_memory_session_service.py
+│   ├── database_session_service.py
+│   ├── sqlite_session_service.py
+│   └── vertex_ai_session_service.py
+├── events/
+│   ├── event.py                  - Event(LlmResponse): author, content, actions, node_info
+│   └── event_actions.py          - EventActions: state_delta, transfer_to_agent, escalate
+├── tools/
+│   ├── base_tool.py              - BaseTool: _get_declaration, run_async, process_llm_request
+│   ├── function_tool.py          - FunctionTool: docstring/types → FunctionDeclaration
+│   ├── agent_tool.py             - AgentTool: wrap an agent as a tool
+│   ├── tool_context.py           - ToolContext: state, actions, artifacts
+│   └── mcp_tool/                 - MCPToolset
+├── flows/llm_flows/            ← The "loop": preprocess → LLM call → postprocess → fn calls
+│   ├── base_llm_flow.py          - BaseLlmFlow.run_async + _run_one_step_async
+│   ├── single_flow.py            - SingleFlow: tools, no transfer
+│   ├── auto_flow.py              - AutoFlow(SingleFlow) + agent_transfer
+│   ├── functions.py              - Function call dispatch + execution
+│   ├── contents.py               - Build LLM request contents from session events
+│   └── instructions.py           - Resolve {placeholders} in instruction strings
+├── workflow/                   ← Graph workflow runtime (2.0 primary)
+│   ├── _workflow.py              - Workflow(BaseNode): graph definition + scheduler entry
+│   ├── _node.py / _base_node.py  - Node base classes
+│   ├── _node_runner.py           - Runs a node within the graph
+│   ├── _dynamic_node_scheduler.py- Schedules dynamic (data-dependent) nodes
+│   └── _llm_agent_wrapper.py     - Adapts LlmAgent as a graph node
+├── models/
+│   ├── base_llm.py               - BaseLlm: generate_content_async, supported_models
+│   ├── registry.py               - LLMRegistry: register + resolve (lazy import)
+│   ├── google_llm.py             - Gemini
+│   ├── anthropic_llm.py          - Claude
+│   ├── lite_llm.py               - LiteLlm (provider gateway)
+│   └── ...
+├── memory/                     ← Memory services
+├── callbacks/                  ← (callbacks live on the agent itself, see callback_context)
+├── plugins/                    ← Plugin base + built-ins (LoggingPlugin, etc.)
+├── skills/                     ← Skills feature: Skill, SkillToolset, SkillRegistry
+├── a2a/                        ← AgentCard, to_a2a, RemoteA2aAgent server bits
+├── code_executors/             ← Built-in/Container/VertexAi/GKE/AgentEngineSandbox
+├── evaluation/                 ← AgentEvaluator, EvalSet/Case, judges
+├── telemetry/                  ← OpenTelemetry tracing wrappers
+├── cli/                        ← `adk` command line
+└── platform/                   ← time, uuid, thread shims (test injection points)

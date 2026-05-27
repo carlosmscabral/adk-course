@@ -1,0 +1,34 @@
+              ┌─────────────────────────────────────────┐
+              │            THE AGENT LOOP               │
+              └─────────────────────────────────────────┘
+
+   user msg
+       │
+       ▼
+   ┌─────────┐
+   │  LLM    │  ── reads instruction + history + tool catalog
+   │ (Gemini)│
+   └────┬────┘
+        │
+        │   produces ONE of:
+        │
+   ┌────┴──────────────────────────┐
+   │                               │
+   ▼                               ▼
+  TEXT REPLY                  TOOL CALL  ←─────┐
+  (done with this turn)            │           │
+   │                               ▼           │
+   │                          ┌─────────┐      │
+   │                          │  TOOL   │      │
+   │                          │ (Python)│      │
+   │                          └────┬────┘      │
+   │                               │           │
+   │                               ▼           │
+   │                          tool result      │
+   │                               │           │
+   │                               └─loop back─┘
+   │                          (LLM sees the result,
+   │                           may call another tool,
+   │                           or finally reply)
+   ▼
+  user

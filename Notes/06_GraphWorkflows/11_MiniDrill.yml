@@ -1,0 +1,71 @@
+module: 06_GraphWorkflows
+exercise:
+  id: 06_GraphWorkflows_mini
+  prompt: |
+    Build a 3-node graph workflow:
+
+      START → router → (expert_A | expert_B) → merger
+
+    Routing rule: count the words in the user's input.
+      - ≤ 10 words → route="SHORT" → expert_A
+      - >  10 words → route="LONG"  → expert_B
+
+    expert_A is an LlmAgent specialized in *concise* answers (short
+    facts). expert_B is an LlmAgent specialized in *in-depth* answers
+    (multi-paragraph explanations).
+
+    The merger node simply prepends a label ("SHORT-ANSWER:" or
+    "LONG-ANSWER:") and yields the final text.
+
+    Place the file at `Work/router_graph.py`. Run it against THREE
+    inputs and confirm each lands in the right expert:
+
+      1. "What is Python?"                         → expert_A
+      2. "Define recursion."                       → expert_A
+      3. "Explain how Python's GIL works and the trade-offs against free-threaded builds." → expert_B
+
+  scaffolding_hint: |
+    Imports you need:
+      from google.adk.agents import LlmAgent
+      from google.adk.agents.workflow.workflow_agent import WorkflowAgent
+      from google.adk.agents.workflow.base_node import START
+      from google.adk.agents.workflow.function_node import FunctionNode
+      from google.adk.agents.workflow.events.event import Event
+
+    The router is a `FunctionNode` wrapping an async generator. It must
+    yield (a) the user's text (to pass along) and (b) `Event(route="SHORT")`
+    or `Event(route="LONG")`.
+
+    Print the resulting model text. Also print the route taken (the
+    router can put it in state via `Event(state={"route": route})` for
+    easy verification).
+  estimated_minutes: 75
+  verification:
+    type: script_output
+    expect_files: [Work/router_graph.py]
+    expect_run_output_contains: ["SHORT-ANSWER", "LONG-ANSWER"]
+    grading_rubric:
+      - "Router is a FunctionNode (not an LlmAgent)"
+      - "Edges declare two routes (\"SHORT\" and \"LONG\") with matching labels"
+      - "Each expert is an independent LlmAgent with a distinct instruction"
+      - "Merger prepends the correct label depending on which expert ran"
+      - "All 3 sample inputs route to the expected expert (verified by log/state)"
+  solution_pointer: Solutions/06_GraphWorkflows/router_graph.py
+  tutor_notes: |
+    Gate-keeper solution is provided because this is the student's
+    first WorkflowAgent — they need a reference for the imports and
+    tuple shape.
+
+    Common mistakes:
+      - Using `LlmAgent` for the router: the LLM might or might not
+        yield Event(route=...) and you can't easily teach it the right
+        format. Use a FunctionNode.
+      - Forgetting to yield the content *before* the route Event —
+        downstream nodes get None.
+      - Typo in route label ("Short" vs "SHORT").
+      - Trying to put the merger AFTER both experts with one tuple:
+        `(START, router, expert_A, merger)` and `(START, router, expert_B, merger)`
+        is correct. Drawing this on paper helps.
+
+    Stretch: add a third route "MEDIUM" (11-20 words) → expert_C.
+    Reinforces that route labels are open-ended.

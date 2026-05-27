@@ -1,0 +1,37 @@
+module: 10B_RAGPipeline
+questions:
+  - id: q1
+    prompt: "Name the 7 stages of the RAG loop in order."
+    expected_keywords: [ingest, chunk, embed, store, retrieve, augment, generate]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Which RAG stages run offline (per-document) vs online (per-query)?"
+    expected_keywords: [offline, ingest, chunk, embed, store, online, retrieve, augment, generate]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "What's the chunk-size trade-off in one sentence?"
+    expected_keywords: [small, precision, large, context, vectors]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q4
+    prompt: "Name two situations where you'd prefer raw Vector Search over Vertex AI RAG Engine."
+    expected_keywords: [custom chunker, exotic, metadata, restricts, re-rank, batch, volume]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What is the 'lost in the middle' problem and one mitigation?"
+    expected_keywords: [attention, middle, start, end, position, re-rank, smaller top-k]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Why is query rewriting useful for chat agents (turn-2 and beyond)?"
+    expected_keywords: [context, self-contained, references, prior turn, ambiguous]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "If you have a Vertex AI RAG Memory Service AND a VertexAiRagRetrieval tool pointing at the same corpus, what's the bug?"
+    expected_keywords: [duplicate, double inject, context, tokens, pick one]
+    accept_paraphrase: true
+    difficulty: hard

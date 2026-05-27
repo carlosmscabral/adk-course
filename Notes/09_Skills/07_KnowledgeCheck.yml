@@ -1,0 +1,37 @@
+module: 09_Skills
+questions:
+  - id: q1
+    prompt: "What's the difference between L1, L2, and L3 skill content?"
+    expected_keywords: [frontmatter, instructions, resources, progressive, disclosure]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Name the three tools that SkillToolset auto-exposes to the LLM."
+    expected_keywords: [list_skills, load_skill, load_skill_resource]
+    accept_paraphrase: false
+    difficulty: easy
+  - id: q3
+    prompt: "What format must a skill's `name` field follow, and where else must that name appear?"
+    expected_keywords: [kebab-case, directory, name, match]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "Name the four invocation patterns covered in this module."
+    expected_keywords: [inline, file-based, external, GCS, meta]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q5
+    prompt: "When would you choose a skill over a regular FunctionTool?"
+    expected_keywords: [behavior, on-demand, instructions, shareable, no side effects, bundle]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "What does adding a SkillRegistry to a SkillToolset change?"
+    expected_keywords: [search_skills, semantic search, registry, discovery]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Why is the frontmatter description a security surface in a shared registry?"
+    expected_keywords: [LLM, decide, load, hijack, malicious, governance]
+    accept_paraphrase: true
+    difficulty: hard

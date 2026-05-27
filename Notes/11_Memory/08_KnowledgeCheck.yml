@@ -1,0 +1,37 @@
+module: 11_Memory
+questions:
+  - id: q1
+    prompt: "What's the difference between session state and memory?"
+    expected_keywords: [session, conversation, memory, cross-session, lifetime]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Which two built-in tools surface memory to the LLM, and how do they differ?"
+    expected_keywords: [load_memory, PreloadMemoryTool, on-demand, automatic, system instruction]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q3
+    prompt: "Which MemoryService should you never deploy to production, and why?"
+    expected_keywords: [InMemoryMemoryService, dev, process, dict, ephemeral]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q4
+    prompt: "When would you pick VertexAiRagMemoryService over VertexAiMemoryBankService?"
+    expected_keywords: [chunking, control, RAG corpus, Vector Search, deterministic, verbatim]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "How does a session's content actually become a memory item?"
+    expected_keywords: [callback, add_session_to_memory, after_agent_callback, explicit, never automatic]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Name two production failure modes specific to memory."
+    expected_keywords: [bloat, PII, TTL, redaction, cost, retention]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q7
+    prompt: "Why is `user:`-prefixed state often a better choice than memory for a known key like 'favorite_language'?"
+    expected_keywords: [structured, key lookup, deterministic, cheap, no embedding]
+    accept_paraphrase: true
+    difficulty: medium

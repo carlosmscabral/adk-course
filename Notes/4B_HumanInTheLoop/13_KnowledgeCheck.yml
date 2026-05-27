@@ -1,0 +1,48 @@
+# Knowledge check for Module 4B — HITL & Resume/Cancel
+# Tutor reads this file and asks ONE question at a time.
+
+module: 4B_HumanInTheLoop
+page: 13_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "Name the three canonical reasons a production agent should pause for a human."
+    expected_keywords: [irreversible, ambiguous, policy, compliance, gate]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "Inside a tool function, which Context method requests human confirmation, and which Context attribute holds the answer on resume?"
+    expected_keywords: [request_confirmation, tool_confirmation, confirmed]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "What field on EventActions surfaces a pending tool approval, and what is the key into that dict?"
+    expected_keywords: [requested_tool_confirmations, function_call_id]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "Which Runner method resumes a paused invocation, and what two arguments distinguish a resume from a fresh call?"
+    expected_keywords: [run_async, invocation_id, function_response]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "Why must a side-effecting tool be idempotent when used with resumable invocations?"
+    expected_keywords: [at-least-once, retry, replay, twice]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "What is the difference between ctx.request_confirmation, LongRunningFunctionTool, and RequestInput as HITL primitives?"
+    expected_keywords: [tool, opinionated, external, workflow, node, graph]
+    accept_paraphrase: true
+    difficulty: hard
+
+  - id: q7
+    prompt: "Why does an ambient (Pub/Sub-triggered) agent that needs human approval have to pause-then-resume, not block inline?"
+    expected_keywords: [10-minute, ack, deadline, redelivery, Pub/Sub]
+    accept_paraphrase: true
+    difficulty: hard

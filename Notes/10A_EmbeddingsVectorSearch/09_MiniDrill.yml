@@ -1,0 +1,57 @@
+module: 10A_EmbeddingsVectorSearch
+exercise:
+  id: 10A_EmbeddingsVectorSearch_mini
+  prompt: |
+    Build a tiny semantic-search pipeline end-to-end on GCP.
+
+    1. Generate 100 short documents (1-3 sentences each) on three topics:
+       Python (30), cooking (30), astronomy (40). Hard-code them in a list — no scraping.
+    2. Embed all 100 with `text-embedding-005` using `task_type="RETRIEVAL_DOCUMENT"`.
+       Store the (id, text, vector) triples — either in-memory dict (mock path) or
+       upsert to Vertex AI Vector Search (real path).
+    3. Write two helper functions: `embed_query(text)` (task_type=RETRIEVAL_QUERY)
+       and `embed_query_wrong(text)` (task_type=RETRIEVAL_DOCUMENT — the WRONG type).
+    4. For three sample questions, run BOTH configurations and compare top-5:
+       - "How do I write a function?"
+       - "What spices go with chicken?"
+       - "How far is the nearest star?"
+    5. Print a side-by-side: id, score, first 60 chars of text — for the two
+       configurations. The asymmetric (correct) setup should retrieve more
+       on-topic docs.
+
+    Two paths:
+    - REAL: deploys an index (allow 30-40 min for first deploy). Use TreeAH, 768 dims.
+    - MOCK: keep vectors in memory; implement cosine search by hand. Same logic,
+      no GCP cost. Document both paths in the script as a CLI flag.
+
+  scaffolding_hint: |
+    Start from Work/_template_run.py. Add a `--mock` flag (defaults to True for
+    cost safety). Use `from google.cloud import aiplatform` for the real path
+    and a plain dict + the cosine helper from page 01 for the mock path.
+
+  estimated_minutes: 90
+  verification:
+    type: script_output
+    expect_files: [Work/10A_embed_drill.py, Work/10A_outputs.txt]
+    expect_run_output_contains:
+      - "asymmetric"
+      - "wrong-type"
+      - "python"
+      - "cooking"
+      - "astronomy"
+    grading_rubric:
+      - "Used text-embedding-005 (or a documented alternative)"
+      - "Two distinct embed functions: one RETRIEVAL_QUERY, one with the wrong type"
+      - "Side-by-side output for all 3 sample questions"
+      - "Student can articulate which config retrieved more on-topic results"
+      - "Either real path OR mock path runs end-to-end without manual edits"
+  solution_pointer: null  # NOT a gate-keeper drill; student should be able to compose from pages 01-05
+  tutor_notes: |
+    Common mistakes:
+    - Forgetting task_type entirely (default behavior is fuzzy).
+    - Embedding all 100 docs one at a time instead of batching → 100x quota use.
+    - On the REAL path: trying to query the Index instead of the Endpoint.
+    - Calling `find_neighbors` before the deploy completed.
+    The KEY learning is the side-by-side comparison. If the wrong-type config
+    shows visibly worse retrieval (it usually does on these contrived topics),
+    the lesson lands.

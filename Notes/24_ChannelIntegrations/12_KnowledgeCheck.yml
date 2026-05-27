@@ -1,0 +1,48 @@
+# Knowledge check for Module 24 — Channel Integrations
+# The tutor reads this file and asks ONE question at a time, never the whole list.
+
+module: 24_ChannelIntegrations
+page: 12_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "Name the five steps of the universal webhook→Runner adapter."
+    expected_keywords: [verify signature, parse, resolve user_id, invoke runner, post back]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "Why must your webhook handler ACK in under 3 seconds, and what's the standard workaround?"
+    expected_keywords: [retry, duplicate, BackgroundTasks, Pub/Sub, defer]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "Why namespace `user_id = f'{channel}:{event.user_id}'` instead of using the raw channel user id?"
+    expected_keywords: [collision, cross-channel, namespacing, separate users]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "What's the trade-off between scenario A (bot acts as itself) and scenario C (bot acts AS the user) for channel auth?"
+    expected_keywords: [shared, OAuth, per-user, refresh token, complexity, linkage table]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "For Discord, what does responding with `{\"type\": 5}` (DEFERRED) mean, and why do ADK bots almost always use it?"
+    expected_keywords: [thinking spinner, follow-up, interaction token, 15 min, slow LLM]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "In the ambient-expense-agent, why does the FastAPI middleware rewrite the Pub/Sub subscription name?"
+    expected_keywords: [user_id, normalize, short name, resource path, clean session]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q7
+    prompt: "What's the production reason an ambient agent's session service can't be `InMemorySessionService`?"
+    expected_keywords: [HITL, paused, persist, days, restart, multi-replica]
+    accept_paraphrase: true
+    difficulty: hard

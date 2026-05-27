@@ -1,0 +1,96 @@
+module: 18_StreamingLive
+exercise:
+  id: 18_StreamingLive_voice_live
+  prompt: |
+    Build a local Python script that opens a Gemini Live session, captures
+    your microphone, plays the model's audio back, and supports barge-in.
+
+    Requirements:
+    - Model: `gemini-2.5-flash-native-audio-preview-12-2025` (Gemini API)
+      or `gemini-live-2.5-flash-native-audio` (Vertex AI).
+    - Use `runner.run_live(...)` with `streaming_mode=StreamingMode.BIDI`
+      and `response_modalities=["AUDIO"]`.
+    - Mic capture at 16 kHz mono int16 (`sounddevice.InputStream`).
+    - Speaker playback at 24 kHz mono int16 (`sounddevice.OutputStream`).
+    - When you see `event.interrupted == True`, drop any queued playback
+      audio immediately.
+    - Enable `session_resumption=types.SessionResumptionConfig(transparent=True)`.
+
+    Acceptance:
+    - Speaking "Hello, who are you?" produces an audible audio reply.
+    - Speaking over the reply causes the reply to stop within ~250 ms
+      (i.e. barge-in works).
+    - Session reconnects automatically if you unplug WiFi briefly.
+
+  scaffolding_hint: |
+    Use `Work/_template_live.py` if it exists; otherwise crib from the
+    `bidi-demo` upstream/downstream task pattern, swapping the WebSocket
+    layer for direct `sounddevice` streams.
+
+    Sketch:
+      live_q = LiveRequestQueue()
+      mic_q  = queue.Queue()      # bytes pushed from audio callback
+      play_q = collections.deque()  # bytes to play, dropped on interrupt
+
+      def on_audio(indata, frames, ti, st):
+          pcm16 = (indata[:,0] * 32767).astype(np.int16).tobytes()
+          mic_q.put(pcm16)
+
+      async def mic_pump():
+          while True:
+              chunk = await asyncio.to_thread(mic_q.get)
+              live_q.send_realtime(types.Blob(
+                  mime_type="audio/pcm;rate=16000", data=chunk))
+
+      async def event_loop():
+          async for event in runner.run_live(...):
+              if event.interrupted:
+                  play_q.clear()
+                  continue
+              # extract PCM blobs from event.content.parts and append to play_q
+
+      async def speaker_pump():
+          with sd.OutputStream(samplerate=24000, channels=1, dtype="int16") as out:
+              while True:
+                  if play_q:
+                      out.write(np.frombuffer(play_q.popleft(), dtype=np.int16))
+                  else:
+                      await asyncio.sleep(0.01)
+
+  estimated_minutes: 60
+  verification:
+    type: code_review
+    expect_files: [Work/18_voice_live.py]
+    grading_rubric:
+      - "Uses `runner.run_live(...)` with BIDI streaming mode"
+      - "Mic input at exactly 16 kHz, mono, int16 PCM bytes"
+      - "Speaker output at 24 kHz, mono, int16"
+      - "Honors `event.interrupted` by clearing the play queue"
+      - "Closes `live_request_queue` in a finally block"
+      - "Session resumption configured"
+  solution_pointer: null
+  tutor_notes: |
+    CRITICAL PREREQUISITE: confirm the student has a working mic BEFORE
+    starting this drill. Run:
+        python -c "import sounddevice as sd; print(sd.query_devices())"
+    If there's no input device, SKIP THIS DRILL and have them do
+    13_MiniDrill_SSEWeb instead. Voice-Live without a mic is impossible
+    and frustrating.
+
+    Most common blockers (in order):
+      1. `OSError: PortAudio library not found` — install libportaudio2
+         (`sudo apt install libportaudio2` on Debian/Ubuntu;
+          `brew install portaudio` on macOS).
+      2. Mic permission not granted (macOS Sys Prefs > Privacy > Mic).
+      3. No default input device — `sd.query_devices()` shows none.
+         Connect a USB headset and retry.
+      4. Audio gets clipped (squarewave-y) — they forgot the `* 32767`
+         conversion and `dtype="float32"` got sent as bytes.
+      5. Barge-in "doesn't work" — they're appending to play_q AFTER
+         seeing `interrupted`. Re-read the pseudo-code; clear comes
+         FIRST, and you must skip ALL audio events between the interrupt
+         and the next user turn.
+
+    Have the student record a 30-second clip of the interaction
+    (screen + speaker capture) and paste a description of what happens
+    on barge-in.

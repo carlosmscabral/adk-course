@@ -1,0 +1,67 @@
+module: 10B_RAGPipeline
+exercise:
+  id: 10B_RAGPipeline_mini
+  prompt: |
+    Build a personal RAG agent over your own notes.
+
+    Corpus: every `.md` file under `/home/carloscabral/study/practical-python/Notes/`
+    (the pedagogical reference repo — ~hundreds of small files of Python content).
+
+    Steps:
+    1. Walk the directory, collect all `.md` files, read their text.
+    2. Chunk each file using `chunk_sentences(max_chars=600)` from page 02.
+       Tag each chunk with metadata: source_file (relative path), chunk_index_in_file.
+    3. Embed all chunks with `text-embedding-005`, `task_type=RETRIEVAL_DOCUMENT`.
+       Choose ONE path:
+         - REAL: upsert to a Vertex AI Vector Search index (see 10A/04). Tag the
+           source_file in `restricts` so you can filter later.
+         - MANAGED: ingest into a `RagCorpus` (page 04). source_uri carries the
+           filename for citation.
+    4. Build an ADK Agent with a retrieval tool (page 05, path a — either your
+       FunctionTool or VertexAiRagRetrieval).
+    5. System prompt must demand citations of source_file + a short snippet.
+    6. Ask: "What's the difference between a list and a tuple?"
+    7. Verify the agent's answer:
+         - Cites at least one actual file from the corpus (a real path that exists).
+         - Answer is substantive (mentions mutability, both types named).
+    8. Bonus: also ask one chatty question ("hi, what's your job?") and confirm
+       the agent does NOT call the retrieval tool (tool-selection discipline).
+
+  scaffolding_hint: |
+    Start from Work/_template_run.py. You'll need pypdf? No — these are MD files.
+    Just read with `open(path).read()`. Use `pathlib.Path.glob("**/*.md")` to walk.
+    Reuse the helpers from 10A's drill (`embed_documents`, `embed_query`) and
+    page 03 (chunk_sentences, retrieve, answer).
+
+  estimated_minutes: 120
+  verification:
+    type: script_output
+    expect_files:
+      - Work/10B_rag_agent.py
+      - Work/10B_run_questions.py
+      - Work/10B_outputs.txt
+    expect_run_output_contains:
+      - "list"
+      - "tuple"
+      - "mutable"
+      - ".md"               # at least one cited file path
+    grading_rubric:
+      - "All Notes/*.md files ingested (or a documented subset with a reason)"
+      - "Citations in the answer point to real filenames"
+      - "Substantive answer to the list-vs-tuple question (mutability mentioned)"
+      - "Chatty question does NOT trigger a retrieval call (observable in event log)"
+      - "task_type used correctly: RETRIEVAL_DOCUMENT on ingest, RETRIEVAL_QUERY on retrieve"
+  solution_pointer: null  # composing from 10A + 10B/02-05 is the exit skill — no peek
+  tutor_notes: |
+    Common mistakes:
+    - Forgetting metadata (no way to cite which file the chunk came from).
+    - Mixing task types — yes, again. Audit.
+    - Stuffing too much in the prompt — practical-python has many chunks; top-3
+      or top-5 is enough.
+    - Not handling chatty input — student may forget that the retrieval tool
+      should NOT fire for greetings. Check by asking "hi" and inspecting events.
+    - Re-embedding on every run (no caching). For repeated drills, suggest a
+      `.pickle` of the side-store + vectors so the student isn't burning quota
+      on each iteration.
+    Pass = list-vs-tuple answer is substantive AND cites a real `.md` file from
+    the corpus. Bonus pass = chat question doesn't trigger retrieval.

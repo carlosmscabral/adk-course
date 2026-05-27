@@ -1,0 +1,39 @@
+Model selection matrix — when to use which
+
+                  ┌─────────────────────────────────────────────────────────────────┐
+                  │                       MODELS                                    │
+  ┌───────────────┼─────────────────────────────────────────────────────────────────┤
+  │ Need          │ Gemini    Gemini    Gemini    Claude    Gemma     GPT-4o /      │
+  │               │ Flash-    Flash     Pro       (Vertex)  (local)   other         │
+  │               │ Lite                                              (LiteLlm)     │
+  ├───────────────┼─────────────────────────────────────────────────────────────────┤
+  │ classification│ ★★★★★    ★★★★      ★★★       ★★★      ★★★       ★★★            │
+  │ short Q&A     │ ★★★★     ★★★★★    ★★★★      ★★★★     ★★★       ★★★★           │
+  │ long reasoning│ ★★       ★★★       ★★★★★    ★★★★★   ★★         ★★★★           │
+  │ heavy code    │ ★★       ★★★       ★★★★★    ★★★★★   ★          ★★★★★         │
+  │ multimodal in │ ★★★★     ★★★★★    ★★★★★    ★★★      —          ★★★            │
+  │ Live (audio)  │ —         ★★★★★    ★★★★★    —         —          —              │
+  │ on-prem/PII   │ —         —         —         —         ★★★★★    —              │
+  │ price (rel)   │ $         $$        $$$$      $$$       0 (gpu)   $$$            │
+  │ latency       │ fast      fast      slow      med       low*      med            │
+  │ vendor lock-in│ Google    Google    Google    Anthropic open      OAI/etc.       │
+  └───────────────┴─────────────────────────────────────────────────────────────────┘
+  *Gemma local: low *steady-state* latency; cold start adds GPU warmup seconds.
+
+Decision rule of thumb (for a router agent):
+
+  IF task == classification           THEN Flash-Lite
+  ELIF task == draft + cheap          THEN Flash
+  ELIF task == reasoning OR code      THEN Pro OR Claude
+  ELIF data must stay on-prem         THEN Gemma local
+  ELIF vendor diversification needed  THEN LiteLlm → GPT-4o
+  ELIF enterprise routing / policy    THEN ApigeeLlm
+  ELSE                                 Flash (the safe default)
+
+Common architectures:
+
+  - Single-model:    one LlmAgent, one model. Smallest moving parts.
+  - Mixed sub_agents: each sub_agent picks its own model. Cheap for triage,
+                      smart for synthesis.
+  - Router pattern:  a Flash-Lite "router" classifies the request, transfers
+                      to a sub_agent whose model fits the class.

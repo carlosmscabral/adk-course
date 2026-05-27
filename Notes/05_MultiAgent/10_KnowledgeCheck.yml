@@ -1,0 +1,37 @@
+module: 05_MultiAgent
+questions:
+  - id: q1
+    prompt: "When do you prefer `sub_agents=[...]` over `AgentTool(agent=...)`?"
+    expected_keywords: [delegation, conversation, handoff, user-facing, cursor]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What field on each sub-agent determines whether the parent routes to it?"
+    expected_keywords: [description, routing, prompt]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "How do two sub-agents share data with each other?"
+    expected_keywords: [output_key, state, brace, substitution, session]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What built-in tool implements the handoff when a parent delegates to a sub-agent?"
+    expected_keywords: [transfer_to_agent]
+    accept_paraphrase: false
+    difficulty: medium
+  - id: q5
+    prompt: "Why is `SequentialAgent` not an `LlmAgent`?"
+    expected_keywords: [deterministic, fixed-order, no-model, orchestrator, template]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "In `financial-advisor`, why is `AgentTool` the right choice over `sub_agents`?"
+    expected_keywords: [orchestration, coordinator, synthesize, multiple-calls, cursor-stays]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q7
+    prompt: "Name two ways circular delegation between two sub_agents can be prevented."
+    expected_keywords: [max_iterations, SequentialAgent, mutually-exclusive, descriptions]
+    accept_paraphrase: true
+    difficulty: hard

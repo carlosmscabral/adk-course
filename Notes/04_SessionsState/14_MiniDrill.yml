@@ -1,0 +1,78 @@
+module: 04_SessionsState
+exercise:
+  id: 04_SessionsState_mini
+  prompt: |
+    Write `Work/remember_name.py`. It must:
+
+      1. Define ONE tool, `remember_name(name: str, tool_context: ToolContext) -> str`,
+         that writes `tool_context.state["user:name"] = name` and returns
+         a confirmation string.
+      2. Build an `LlmAgent` whose `instruction=` uses the optional
+         template `"You are talking to {user:name?}. If a name is known,
+         greet them by it. If the user offers a name, call the
+         remember_name tool."`
+      3. Use `DatabaseSessionService(db_url="sqlite:///Work/state.db")`
+         so the state actually persists.
+      4. In a single `main()`, run TWO turns in the same session:
+            Turn 1:  "Hi, I'm Carlos."
+            Turn 2:  "What's my name?"
+         Print each turn's final reply.
+
+    Expected:
+        Turn 1: something like "Got it — I'll call you Carlos from now on."
+        Turn 2: something like "Your name is Carlos." (the LLM read it
+                                from {user:name?})
+
+    Bonus: re-run the script (without deleting state.db). Use a NEW
+    session_id but the SAME user_id. Turn 1 of the new session should
+    still know the name — `user:` state survives.
+  scaffolding_hint: |
+    - Start from your Module 03 `calc_agent.py`.
+    - Pull the `ToolContext` import from `google.adk.tools`.
+    - Use a hard-coded `session_id` for the first run, then generate a
+      fresh one for the bonus run.
+    - Set `user_id="carlos"` (constant) — that's what scopes `user:` state.
+  estimated_minutes: 40
+  verification:
+    type: script_output
+    expect_files: [Work/remember_name.py]
+    expect_run_output_contains: ["Carlos"]
+    grading_rubric:
+      - "Tool function takes `tool_context: ToolContext` as a parameter"
+      - "Tool writes `state['user:name']` — with the `user:` prefix, NOT a bare `name`"
+      - "Agent instruction uses `{user:name?}` (optional form) so it doesn't error before the first turn"
+      - "Backend is `DatabaseSessionService(db_url='sqlite:///...')` — NOT InMemory"
+      - "Turn 2's reply correctly names 'Carlos' (LLM read state)"
+      - "Bonus (if attempted): with a fresh session_id but the same user_id, Turn 1 of the new session still knows the name"
+  solution_pointer: null
+  tutor_notes: |
+    Two common mistakes to watch for, both flagged in Module 04 page 08:
+
+    1. **Forgetting the `user:` prefix.** Without it, the name is saved
+       to session-scoped state and the bonus re-run forgets the user.
+       Symptoms: Turn 2 of the SAME session works; new session forgets.
+       Fix: add `user:` to the state key. The whole point of the drill
+       is to internalize the prefix.
+
+    2. **Using `{user:name}` (required form) instead of `{user:name?}`
+       (optional).** Turn 1 errors before the LLM is even called because
+       the state key doesn't exist yet. Fix: add the `?`.
+
+    Other mistakes:
+
+    3. Using `InMemorySessionService`. Works for Turn 1 and Turn 2 in
+       the same process. Bonus re-run silently restarts with empty state.
+       Push them to swap the backend.
+
+    4. Generating a fresh `session_id` for both turns inside `main()`.
+       Then Turn 2 doesn't see Turn 1's state because it's a different
+       session. Push them to reuse one session_id.
+
+    5. Hardcoding the name in the tool ("Carlos" instead of `name`).
+       LLM will pass the name in correctly if the tool signature has
+       proper type hints + docstring.
+
+    After they pass, ask: "if Turn 1 had said 'I don't have a name',
+    what would happen in Turn 2?" (The LLM should respond accordingly —
+    the `?` in the template renders empty, so no name is in the prompt;
+    the LLM should ask for a name rather than fabricate one.)

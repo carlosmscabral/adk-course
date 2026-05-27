@@ -1,0 +1,44 @@
+NL2SQL agent flow (with cost guard):
+
+   user: "what was the busiest station in 2017?"
+       │
+       ▼
+   ┌────────────────────────────────────┐
+   │  LlmAgent (gemini-2.5-pro)         │
+   │  + schema (in instruction)          │
+   │  + tools: [bigquery_nl2sql,         │
+   │           execute_sql]              │
+   └──────────────┬─────────────────────┘
+                  │ 1. generate SQL
+                  ▼
+        ┌────────────────────┐
+        │  bigquery_nl2sql   │  ← schema-grounded prompt
+        │  (model produces   │
+        │   SELECT ...       │
+        │   FROM `proj.ds.t` │
+        │   WHERE year=2017  │
+        │   LIMIT 1000)      │
+        └─────────┬──────────┘
+                  │ 2. before_tool_callback
+                  ▼
+        ┌────────────────────────┐
+        │  cost_guard (dry_run)   │  ☁️
+        │  - estimated bytes ✓ ?  │
+        │  - WriteMode==BLOCKED?  │
+        │  - LIMIT present?       │
+        └─────────┬──────────────┘
+                  │ pass → execute       fail → return error → LLM retries
+                  ▼
+        ┌────────────────────────┐
+        │  bq.Client.query(sql,   │
+        │     maximum_bytes_      │
+        │     billed=5GB)        │
+        └─────────┬──────────────┘
+                  │ 3. result rows
+                  ▼
+        ┌────────────────────────┐
+        │  format for user        │
+        │  (markdown, citation)   │
+        └─────────────────────────┘
+
+The cost_guard is the difference between a fun demo and a $5K invoice.

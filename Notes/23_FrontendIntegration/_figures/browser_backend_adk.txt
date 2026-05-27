@@ -1,0 +1,26 @@
+              Browser (SPA)                       Your backend                          ADK
+   ┌──────────────────────────────┐    ┌─────────────────────────────┐    ┌────────────────────────────┐
+   │  React/Vue/vanilla JS        │    │  FastAPI / Cloud Run        │    │  Runner + Session +        │
+   │                              │    │                             │    │  Agent + Tools             │
+   │  - holds session_id          │    │  - verifies auth token      │    │                            │
+   │  - holds user_id             │    │  - resolves user_id         │    │                            │
+   │  - EventSource / WebSocket   │    │  - constructs Runner        │    │                            │
+   │  - file inputs               │    │  - bridges HTTP↔runner      │    │                            │
+   └────────────┬─────────────────┘    └──────────────┬──────────────┘    └─────────────┬──────────────┘
+                │                                     │                                 │
+                │  POST /run + Firebase ID token      │                                 │
+                │ ──────────────────────────────────► │                                 │
+                │                                     │   runner.run_async(...)         │
+                │                                     │ ──────────────────────────────► │
+                │                                     │                                 │
+                │                                     │ ◄────── async for event ──────  │
+                │   SSE: event chunks                 │                                 │
+                │ ◄────────────────────────────────── │                                 │
+                │                                     │                                 │
+
+       owns session_id ────────────► passes session_id ───► uses session_id
+       owns user_id (auth subject) ─► validates, forwards ─► uses user_id
+       browser → ADK frontmatter:
+         - 21 (the HTTP/JSON-RPC surface)
+         - 22 (where the backend lives)
+         - 4B (HITL — frontend drives approvals)

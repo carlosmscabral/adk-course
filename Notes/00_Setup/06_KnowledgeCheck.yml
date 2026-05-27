@@ -1,0 +1,27 @@
+module: 00_Setup
+questions:
+  - id: q1
+    prompt: "Which Python package installs the ADK library AND the `adk` CLI?"
+    expected_keywords: [google-adk, pip, install]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Which environment variable does ADK read to talk to Gemini via AI Studio?"
+    expected_keywords: [GOOGLE_API_KEY]
+    accept_paraphrase: false
+    difficulty: easy
+  - id: q3
+    prompt: "What does `adk run fun_facts` import from the `fun_facts` package, and which symbol does it look for?"
+    expected_keywords: [root_agent, App, module, import]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "Name two reasons not to use `model='gemini-flash-latest'` in production code."
+    expected_keywords: [pinned, version, regression, eval, reproducible]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "Why is the `description=...` field of `Agent(...)` mostly unused in `fun-facts` but required in multi-agent setups?"
+    expected_keywords: [delegation, sub-agents, routing, other agents]
+    accept_paraphrase: true
+    difficulty: medium

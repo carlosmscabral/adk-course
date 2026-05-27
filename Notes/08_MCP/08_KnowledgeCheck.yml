@@ -1,0 +1,37 @@
+module: 08_MCP
+questions:
+  - id: q1
+    prompt: "What are the three primitives MCP exposes?"
+    expected_keywords: [tool, resource, prompt]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Which class do you put inside MCPToolset(connection_params=...) for a modern HTTP-based MCP server?"
+    expected_keywords: [StreamableHTTPConnectionParams]
+    accept_paraphrase: false
+    difficulty: easy
+  - id: q3
+    prompt: "Why is stdio transport a poor choice for a heavily concurrent agent server?"
+    expected_keywords: [subprocess, fork, scale, per-process, resource]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What happens if you never call `await toolset.__aexit__(...)` on an MCPToolset before exit?"
+    expected_keywords: [leak, subprocess, connection, resource]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "Name the FastMCP decorator that exposes a Python function as an MCP tool."
+    expected_keywords: ["@mcp.tool"]
+    accept_paraphrase: false
+    difficulty: easy
+  - id: q6
+    prompt: "In a long-running ADK server, where does MCPToolset lifecycle code typically live?"
+    expected_keywords: [lifespan, startup, shutdown, to_a2a, context manager]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "If your MCP server's tool list changes signatures between releases, what fails and how do you mitigate?"
+    expected_keywords: [version pin, contract drift, schema, prod, upstream]
+    accept_paraphrase: true
+    difficulty: hard

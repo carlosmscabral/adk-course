@@ -1,0 +1,30 @@
+~/study/
+├── adk-python/                       ← FRAMEWORK SOURCE (read in Module 19)
+│   └── src/google/adk/
+│       ├── agents/   ─── LlmAgent, SequentialAgent, ParallelAgent, LoopAgent,
+│       │                  WorkflowAgent, BaseAgent
+│       ├── runners.py ── Runner, InMemoryRunner
+│       ├── sessions/  ── InMemorySessionService, DatabaseSessionService,
+│       │                  VertexAiSessionService
+│       ├── tools/    ─── FunctionTool, AgentTool, MCPToolset, google_search,
+│       │                  load_memory, exit_loop
+│       ├── memory/   ─── InMemoryMemoryService, VertexAiMemoryBankService
+│       ├── events/   ─── Event, EventActions (state_delta, transfer_to_agent…)
+│       ├── plugins/  ─── LoggingPlugin, ReflectAndRetryToolPlugin, …
+│       └── a2a/      ─── to_a2a, RemoteA2aAgent, AgentCard
+│
+├── adk-samples/                      ← YOUR TEXTBOOK (60+ examples)
+│   └── python/agents/
+│       ├── fun-facts/           ← Module 00, 01: one agent + google_search
+│       ├── currency-agent/      ← Module 02, 03: LlmAgent + MCPToolset
+│       ├── academic-research/   ← Module 03, 05: AgentTool composition
+│       ├── llm-auditor/         ← Module 04, 05: SequentialAgent + output_key
+│       ├── workflows-sequential/← Module 06: graph WorkflowAgent
+│       └── …55 more
+│
+└── adk-course/                       ← YOU ARE HERE
+    ├── Notes/         ─── numbered concept pages (this file lives here)
+    ├── Solutions/    ─── gate-keeper exercise solutions
+    ├── Work/         ─── your scratch directory (gitignored)
+    ├── Drills/       ─── milestone integration exercises (M1…M5)
+    └── Reference/    ─── cheat sheets you'll re-read forever

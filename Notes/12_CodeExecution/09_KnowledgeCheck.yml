@@ -1,0 +1,37 @@
+module: 12_CodeExecution
+questions:
+  - id: q1
+    prompt: "Why do agents need code execution if they already have tools?"
+    expected_keywords: [arithmetic, long tail, unpredictable, generated, transformations]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Why is `UnsafeLocalCodeExecutor` unsafe?"
+    expected_keywords: [Python process, no sandbox, prompt injection, filesystem, env vars]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "What's the difference between BuiltInCodeExecutor and VertexAiCodeExecutor?"
+    expected_keywords: [model-side, sandbox, allowlist, runtime-side, package control, custom data]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What does `stateful=True` give you on `VertexAiCodeExecutor`?"
+    expected_keywords: [kernel persists, variables, between calls, session, chained]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "When do you reach for `GkeCodeExecutor` over `ContainerCodeExecutor`?"
+    expected_keywords: [scale, cluster, autoscale, per-pod, on GKE already]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Is a sandbox enough to make code execution safe in prod? Why or why not?"
+    expected_keywords: [resource limits, timeout, network egress, audit log, no, additional controls]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q7
+    prompt: "Where does `code_executor` get attached — on the agent or on a tool?"
+    expected_keywords: [agent, LlmAgent, parallel mechanism, not a tool]
+    accept_paraphrase: true
+    difficulty: easy

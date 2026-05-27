@@ -1,0 +1,37 @@
+llm-auditor (SequentialAgent) — execution order
+
+                ┌────────────────────────────────────────┐
+                │           SequentialAgent              │
+                │            "llm_auditor"               │
+                │                                        │
+                │   ┌──────────────────────────────┐     │
+                │   │       critic_agent            │     │
+                │   │  model: gemini-2.5-flash      │     │
+                │   │  tools: [google_search]       │     │
+                │   │  after_model_callback:        │     │
+                │   │    _render_reference          │     │
+                │   │  (appends URL footnotes)      │     │
+                │   └──────────────┬────────────────┘     │
+                │                  │                       │
+                │  conversation flows to the next agent;   │
+                │  same Session, same state                │
+                │                  │                       │
+                │                  ▼                       │
+                │   ┌──────────────────────────────┐     │
+                │   │       reviser_agent           │     │
+                │   │  model: gemini-2.5-flash      │     │
+                │   │  tools: []                    │     │
+                │   │  after_model_callback:        │     │
+                │   │    _remove_end_of_edit_mark   │     │
+                │   │  (strips the sentinel)        │     │
+                │   └──────────────────────────────┘     │
+                │                                        │
+                └────────────────────────────────────────┘
+
+Files (in adk-samples/python/agents/llm-auditor/llm_auditor/):
+
+  agent.py                              ← root: SequentialAgent
+  sub_agents/critic/agent.py            ← LlmAgent + google_search
+  sub_agents/critic/prompt.py           ← CRITIC_PROMPT (3-step verification)
+  sub_agents/reviser/agent.py           ← LlmAgent + sentinel-stripping callback
+  sub_agents/reviser/prompt.py          ← REVISER_PROMPT (minimal-edit rules + few-shot)

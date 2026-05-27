@@ -1,0 +1,55 @@
+Defense in depth — six layers, no single one is enough
+
+  USER  ──►  ┌────────────────────────────────────────────────────────────────────┐
+             │ L1: INPUT FILTER                                                  │
+             │   on_user_message_callback or before_model_callback               │
+             │   - regex (PII redaction)                                         │
+             │   - LLM-as-judge (jailbreak detector)                             │
+             │   - Model Armor (managed)                                         │
+             └─────────────────────────────┬──────────────────────────────────────┘
+                                           │ (filtered prompt)
+                                           ▼
+             ┌────────────────────────────────────────────────────────────────────┐
+             │ L2: SYSTEM INSTRUCTION                                            │
+             │   - "Never reveal X."  "Never call tool Y for unauth users."      │
+             │   - Defense by *prompt* is the weakest layer; assume bypass.      │
+             └─────────────────────────────┬──────────────────────────────────────┘
+                                           │
+                                           ▼
+             ┌────────────────────────────────────────────────────────────────────┐
+             │ L3: TOOL GATING                                                   │
+             │   before_tool_callback                                            │
+             │   - arg whitelist / pattern block (no rm -rf)                     │
+             │   - per-tool auth check (ToolContext.auth_state)                  │
+             │   - rate-limit per user (state counter)                           │
+             └─────────────────────────────┬──────────────────────────────────────┘
+                                           │ (allowed tool call)
+                                           ▼
+             ┌────────────────────────────────────────────────────────────────────┐
+             │ L4: SANDBOX                                                       │
+             │   ContainerCodeExecutor / VertexAiCodeExecutor / GKE              │
+             │   - never UnsafeLocalCodeExecutor in prod                         │
+             │   - per-call resource caps (CPU, RAM, wall time, net egress)     │
+             └─────────────────────────────┬──────────────────────────────────────┘
+                                           │ (tool output)
+                                           ▼
+             ┌────────────────────────────────────────────────────────────────────┐
+             │ L5: OUTPUT FILTER                                                 │
+             │   after_model_callback                                            │
+             │   - PII scrubber on free-text reply                               │
+             │   - LLM-as-judge on toxicity / leaked secret                      │
+             │   - structured output (Pydantic) shrinks attack surface           │
+             └─────────────────────────────┬──────────────────────────────────────┘
+                                           │ (clean reply)
+                                           ▼
+                                         USER
+                                           │
+             ┌────────────────────────────────────────────────────────────────────┐
+             │ L6: AUDIT / EVAL                                                  │
+             │   - log every guardrail decision (auditable trail)                │
+             │   - red-team eval suite catches regressions before deploy         │
+             │   - cost / abuse alerts in observability                          │
+             └────────────────────────────────────────────────────────────────────┘
+
+Rule: at least 3 of the 6 layers should be present for a public agent.
+Any single layer can fail (bypass, false negative, vendor outage).

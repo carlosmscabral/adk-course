@@ -1,0 +1,51 @@
+PLUGIN HOOKS — fire across the whole Runner
+===========================================
+
+   USER MESSAGE
+        │
+        ▼
+   ┌──────────────────────────────────────────────┐
+   │  Runner                                      │
+   │                                              │
+   │  on_user_message  ──► [Plugins fire here]    │
+   │        │                                     │
+   │        ▼                                     │
+   │  Agent A.before_agent  ──► [Plugins]         │
+   │        │                                     │
+   │        ▼                                     │
+   │   ┌──────────────────────────────┐           │
+   │   │  Agent A turn                │           │
+   │   │                              │           │
+   │   │  before_model  ──► [Plugins] │           │
+   │   │     │                        │           │
+   │   │     ▼                        │           │
+   │   │  LLM call                    │           │
+   │   │     │                        │           │
+   │   │     ▼                        │           │
+   │   │  after_model  ──► [Plugins]  │           │
+   │   │     │                        │           │
+   │   │     ▼                        │           │
+   │   │  before_tool  ──► [Plugins]  │           │
+   │   │     │                        │           │
+   │   │     ▼                        │           │
+   │   │  tool runs                   │           │
+   │   │     │                        │           │
+   │   │     ▼                        │           │
+   │   │  after_tool  ──► [Plugins]   │           │
+   │   └──────────────────────────────┘           │
+   │        │                                     │
+   │        ▼                                     │
+   │  Agent A.after_agent  ──► [Plugins]          │
+   │        │                                     │
+   │        ▼                                     │
+   │  on_event   ──► [Plugins fire per Event]     │
+   └──────────────────────────────────────────────┘
+        │
+        ▼
+   USER SEES FINAL EVENT
+
+KEY DIFFERENCES FROM CALLBACKS:
+  callback  ── scope: ONE agent. Wired on the LlmAgent.
+  plugin    ── scope: WHOLE runner. Wired on the Runner.
+                Fires for every agent / model / tool, on every event.
+                Order: plugins fire in the order passed to Runner(..., plugins=[...]).

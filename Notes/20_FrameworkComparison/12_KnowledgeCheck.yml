@@ -1,0 +1,37 @@
+module: 20_FrameworkComparison
+questions:
+  - id: q1
+    prompt: "Name one feature ADK has first-class that LangGraph does not (as of May 2026)."
+    expected_keywords: [A2A, MCPToolset, Live, Skills, GCP, Vertex]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What is CrewAI's primary multi-agent metaphor?"
+    expected_keywords: [role, persona, Crew, Task, sequential, hierarchical]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Why might you embed Pydantic AI inside an ADK agent instead of using one or the other?"
+    expected_keywords: [typed output, structured, validation, leaf calls, retries on schema]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "If your defining requirement is long-term memory across months of conversation, which framework is the strongest fit and which is the strongest alternative?"
+    expected_keywords: [Letta, MemGPT, ADK, VertexAiMemoryBank, hierarchical]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What's the migration risk specific to LangChain / LangGraph that the In-Production page warns about?"
+    expected_keywords: [churn, package split, LCEL, version pinning, breaking changes]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "AutoGen's `RoundRobinGroupChat` is most analogous to which ADK construct, and what's the key difference?"
+    expected_keywords: [SequentialAgent, sub_agents, termination, deterministic, conversation, text-driven]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Name two reasons your team might pick CrewAI over ADK despite ADK's bigger feature set."
+    expected_keywords: [prompt engineers, lowest floor, persona, simpler, content, fast prototype]
+    accept_paraphrase: true
+    difficulty: medium

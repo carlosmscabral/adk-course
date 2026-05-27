@@ -1,0 +1,39 @@
+# Student sandbox — gitignored except the template
+Work/*
+!Work/_template_run.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.python-version
+*.egg-info/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# uv / poetry / pip caches
+.uv/
+.cache/
+poetry.lock
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/

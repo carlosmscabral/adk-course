@@ -1,0 +1,46 @@
+             YAML  ↔  PYTHON   EQUIVALENCE
+             ──────────────────────────────
+
+  root_agent.yaml                          Python (equivalent)
+  ───────────────                          ──────────────────────────────
+  agent_class: LlmAgent                    from google.adk.agents import LlmAgent
+  name: root_agent
+  model: gemini-2.5-flash                  root_agent = LlmAgent(
+  description: Coordinates tutors.             name="root_agent",
+  instruction: |                               model="gemini-2.5-flash",
+    You delegate questions to                  description="Coordinates tutors.",
+    sub-agents...                              instruction=(
+                                                 "You delegate questions to "
+                                                 "sub-agents..."
+                                               ),
+  sub_agents:                                  sub_agents=[
+    - config_path: code_tutor.yaml             code_tutor_agent,    # loaded from yaml
+    - config_path: math_tutor.yaml             math_tutor_agent,    # loaded from yaml
+                                             ],
+  tools:                                       tools=[example_tool],
+    - name: my_pkg.example_tool          )
+
+
+  ╔══════════════════════════════════════════════════════════════╗
+  ║          WHAT YAML CAN EXPRESS                                ║
+  ║          ─────────────────────                                ║
+  ║   ✓ name, model, instruction, description                     ║
+  ║   ✓ tools by import path                                      ║
+  ║   ✓ sub_agents by config_path                                 ║
+  ║   ✓ generate_content_config (safety, schema)                  ║
+  ║   ✓ global_instruction, output_key, planner config            ║
+  ║                                                               ║
+  ║          WHAT YAML CANNOT (today) EXPRESS                     ║
+  ║          ────────────────────────────────                     ║
+  ║   ✗ Lambda / inline Python in instruction                     ║
+  ║   ✗ Callbacks (before/after_*_callback)                       ║
+  ║   ✗ Custom BaseAgent subclasses                               ║
+  ║   ✗ Dynamic routing logic                                     ║
+  ║   ✗ Plugins (those live on App, not the agent)                ║
+  ║   ✗ Code execution via custom executors                       ║
+  ╚══════════════════════════════════════════════════════════════╝
+
+         YAML = declarative shape.  Python = anything you can call.
+       Most real agents START in YAML and graduate to Python the
+       moment they need a callback.  Both halves can co-exist:
+       a YAML root_agent can have a Python sub_agent and vice-versa.

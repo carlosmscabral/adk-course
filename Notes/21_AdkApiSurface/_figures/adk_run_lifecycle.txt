@@ -1,0 +1,41 @@
+`adk run my_agent` — what happens from keystroke to first event
+
+  user types
+  $ adk run my_agent
+        │
+        ▼
+┌──────────────────────────────────────────────────────────────────┐
+│ click entrypoint                                                 │
+│   src/google/adk/cli/cli_tools_click.py @main.command("run")    │
+│   → resolves AGENT_PARENT_DIR + agent name from argv             │
+│   → builds session/artifact/memory service URIs from flags       │
+│   → defers to run_cli(...)                                       │
+└──────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌──────────────────────────────────────────────────────────────────┐
+│ run_cli   src/google/adk/cli/cli.py                              │
+│   1. AgentLoader(agents_dir).load_agent(agent_name)              │
+│   2. _to_app(loaded, app_name)  ── wraps BaseAgent → App         │
+│   3. _setup_runner_context(...)                                  │
+│        ├── builds SessionService  (in_memory | db | vertex)     │
+│        ├── builds ArtifactService (in_memory | gcs)             │
+│        ├── builds MemoryService                                 │
+│        └── Runner(app, session_service, artifact_service, …)    │
+│   4. session = await session_service.create_session(...)         │
+│   5. enters run_interactively(runner, session, ...)              │
+└──────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌──────────────────────────────────────────────────────────────────┐
+│ run_interactively  (REPL loop)                                   │
+│   while True:                                                    │
+│     line = input("[user]: ")                                     │
+│     async for event in runner.run_async(                         │
+│         user_id, session_id, types.Content(...)):                │
+│         _print_event(event)        ← formats author + content    │
+│         if pending function_calls: _prompt_for_function_call()   │
+└──────────────────────────────────────────────────────────────────┘
+
+  ^ This is the same Runner you would build by hand in module 04 — the CLI
+    just discovers it for you.

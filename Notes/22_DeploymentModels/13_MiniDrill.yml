@@ -1,0 +1,95 @@
+module: 22_DeploymentModels
+page: 13_MiniDrill
+
+exercise:
+  id: 22_DeploymentModels_mini
+  prompt: |
+    Take your M4 auditor (the critic + reviser agent from Milestone M4) and
+    deploy it **twice** — once to Cloud Run, then again to Agent Engine. Both
+    deployments must share the **same `agent.py`** (no `if production:` branches
+    in the agent definition).
+
+    Then deliberately violate one piece of production hygiene on the Cloud Run
+    deploy, restart a pod, and document the resulting failure. Fix it and
+    re-deploy.
+
+    Capture six artifacts:
+      1. `Dockerfile` for the Cloud Run path.
+      2. `agent_engine_app.py` for the Agent Engine path (the `AdkApp` subclass).
+      3. The exact `gcloud run deploy ...` command (with custom SA, secrets,
+         min-instances) AND the `make deploy` Agent Engine command.
+      4. A `curl /run` invocation against the Cloud Run URL with the response
+         showing a successful turn.
+      5. A `vertexai.agent_engines.get(...).stream_query(...)` Python snippet
+         hitting the Agent Engine deployment.
+      6. A 1-paragraph postmortem of the violation you induced: what you broke,
+         what users would have seen, what the fix was.
+
+  scaffolding_hint: |
+    Reuse your M4 auditor package as the *agent layer*. Add a sibling file
+    `agent_engine_app.py` (copy the shape from `adk-ae-oauth/adk_ae_oauth/`)
+    that imports the M4 `App`. For Cloud Run, write a minimal Dockerfile (page
+    02 has the recipe). The two deploys MUST share the same `agent.py`.
+
+    For the violation, pick the cheapest one that will actually fail:
+      a) Use `InMemorySessionService` on Cloud Run, then trigger a pod restart
+         (e.g., re-deploy with a no-op change) mid-conversation and observe
+         that history is gone. Fix: switch to `DatabaseSessionService` or
+         `VertexAiSessionService`.
+      b) Deploy with the default compute SA (no `--service-account=`), then
+         try to call BigQuery (or any GCP API the SA lacks). Observe the 403.
+         Fix: create a custom SA with the right roles.
+
+  estimated_minutes: 120
+
+  verification:
+    type: script_output
+
+    expect_files:
+      - Work/22_DeploymentModels/Dockerfile
+      - Work/22_DeploymentModels/auditor/agent_engine_app.py
+      - Work/22_DeploymentModels/deploy_commands.sh
+      - Work/22_DeploymentModels/cloud_run_curl.txt
+      - Work/22_DeploymentModels/agent_engine_client.py
+      - Work/22_DeploymentModels/postmortem.md
+
+    expect_run_output_contains:
+      - "auditor"
+      - "200"
+
+    grading_rubric:
+      - "The same `agent.py` is imported by both deploys — no fork."
+      - "The Cloud Run command uses a custom `--service-account=` and at least one `--set-secrets`."
+      - "The Agent Engine path uses an `AgentEngineApp(AdkApp)` subclass with a real `set_up()`."
+      - "Both deployments actually responded successfully to a real prompt (curl and SDK output captured)."
+      - "Postmortem identifies the rule violated (from page 11 checklist) and the user-visible symptom."
+      - "Bonus: cost estimate from page 09's math for the student's expected traffic."
+
+  solution_pointer:
+    # No canonical solution — every M4 auditor differs. The shape is the lesson.
+
+  tutor_notes: |
+    Common mistakes:
+      - Forking `agent.py` into a Cloud Run version and an Agent Engine version.
+        Stop them. The whole point of ADK is that the agent is transport-agnostic.
+        Wire diverges at the deployment artifact (`Dockerfile` vs
+        `agent_engine_app.py`), not at the agent.
+      - Putting `vertexai.init()` at module top in `agent_engine_app.py` instead
+        of inside `set_up()`. Symptom: works locally, fails on Agent Engine with
+        "credentials not found" because module-load runs in a different context.
+      - Using `--allow-unauthenticated` on Cloud Run "just to test." Then leaving
+        it that way. Flag it as a violation worth a fix in the postmortem.
+      - For the InMemorySessionService violation: students often "fail" to
+        reproduce because their test was one turn long. Have them deploy, send
+        3 turns, *trigger a redeploy* (this forces a pod restart on Cloud Run),
+        then ask the agent "what did we discuss?" — it won't remember.
+    Edge case to probe (after the basic drill passes):
+      - Have them measure cold-start latency on Cloud Run (`time curl /run`
+        first request after 10min idle). Then add `--min-instances=1` and
+        re-measure. The delta should be 3-8 seconds — bring page 05's table
+        to life.
+    Stretch goal:
+      - Add the `BigQueryAgentAnalyticsPlugin` (page 07) so both deployments
+        log to the same BigQuery dataset. Run a SQL query that shows events
+        from both deployments side by side — proves the analytics layer is
+        platform-agnostic too.

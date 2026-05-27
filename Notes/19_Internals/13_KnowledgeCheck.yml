@@ -1,0 +1,37 @@
+module: 19_Internals
+questions:
+  - id: q1
+    prompt: "What does `LlmAgent._run_async_impl` return / yield, and from which file?"
+    expected_keywords: [AsyncGenerator, Event, llm_agent.py, yield]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Where in the source is `event.actions.state_delta` actually applied to the session state?"
+    expected_keywords: [base_session_service.py, append_event, session.state, update]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q3
+    prompt: "What does `AutoFlow` add on top of `SingleFlow`?"
+    expected_keywords: [agent_transfer, request_processor, sub_agents, transfer_to_agent]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What does `LLMRegistry.resolve` return, and what does the `@lru_cache` protect against?"
+    expected_keywords: [BaseLlm subclass, class, regex match, repeated lookup, performance]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "Why is a single-agent run wrapped in a workflow node in 2.0?"
+    expected_keywords: [build_node, unified, scheduler, tracing, node_runner]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Where is the actual LLM HTTP call made (file and method) inside the flow loop?"
+    expected_keywords: [base_llm_flow.py, _call_llm_async, generate_content_async]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Name two things you should NOT use the source for."
+    expected_keywords: [substitute for docs, private API, memorize, copy underscore-prefixed]
+    accept_paraphrase: true
+    difficulty: easy

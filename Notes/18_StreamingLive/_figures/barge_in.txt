@@ -1,0 +1,22 @@
+Barge-in (user interrupts the model)
+====================================
+
+  T0   user speaks  ─────╮
+                         |   VAD: start-of-speech detected
+  T1   model speaking      ──────────╮
+        (TTS chunks)                 |
+  T2                                 X   <-- Live API emits
+  user keeps talking                     event.interrupted = True
+                                         and STOPS sending audio
+  T3   model listens to user input
+  T4   model produces a NEW turn ─────────────►
+
+  Your job as a client:
+    1. Watch for `event.interrupted == True`
+    2. *Immediately* stop playing the queued audio buffer
+       (drop the rest; don't drain it)
+    3. Resume listening; the model has already pivoted
+
+  VAD (voice activity detection) lives on the server when you use
+  AutomaticActivityDetection. You can disable it and signal turn
+  boundaries manually with realtime_input config.

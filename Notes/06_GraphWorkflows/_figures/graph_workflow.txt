@@ -1,0 +1,73 @@
+Graph workflow — workflow-concurrent_research_writer
+
+──────────────────────────────────────────────────────────────────────────
+root_agent = WorkflowAgent(edges=[("START", research_workflow, blog_workflow)])
+──────────────────────────────────────────────────────────────────────────
+
+  START
+   │   user_input: "The Future of AI in Education"
+   ▼
+ ╔══════════════════ research_workflow (WorkflowAgent) ══════════════════╗
+ ║                                                                       ║
+ ║   START                                                               ║
+ ║    │                                                                  ║
+ ║    ▼                                                                  ║
+ ║   start_node   (FunctionNode)                                         ║
+ ║    │  yield Event(state={"topic": "..."})                             ║
+ ║    │  yield ["X", "LinkedIn", "Reddit", "Medium"]   ←── list = fan-out║
+ ║    ▼                                                                  ║
+ ║   ParallelWorker(research_worker_agent)                               ║
+ ║    │  ┌─ "X"        ──▶ worker → summary X                            ║
+ ║    │  ├─ "LinkedIn"  ──▶ worker → summary LI                          ║
+ ║    │  ├─ "Reddit"    ──▶ worker → summary R                           ║
+ ║    │  └─ "Medium"    ──▶ worker → summary M                           ║
+ ║    │  (auto fan-in: one Content with 4 parts)                         ║
+ ║    ▼                                                                  ║
+ ║   distill_agent   (LlmAgent — synthesize one report)                  ║
+ ║    │                                                                  ║
+ ║    ▼                                                                  ║
+ ║   save_node       (FunctionNode — persist to state + emit to user)    ║
+ ║                                                                       ║
+ ╚═══════════════════════════════════════════════════════════════════════╝
+   │
+   ▼   user thesis for blog post
+ ╔══════════════════ blog_workflow (WorkflowAgent) ══════════════════════╗
+ ║                                                                       ║
+ ║   START                                                               ║
+ ║    │                                                                  ║
+ ║    ▼                                                                  ║
+ ║   start_blog → generate_blog_post_agent → route_changer               ║
+ ║                                            │                          ║
+ ║                                            │  yield Event(route=...)  ║
+ ║                                            │  by word count           ║
+ ║                                            │                          ║
+ ║                            ┌───────────────┼───────────────┐          ║
+ ║                  route="X" │      route=   │   route=      │          ║
+ ║                            │   "LINKEDIN"  │   "MEDIUM"    │          ║
+ ║                            ▼               ▼               ▼          ║
+ ║                       post_to_x      post_to_linkedin  post_to_medium ║
+ ║                            │               │               │          ║
+ ║                            │ yields Event(route=[two shoutout labels])║
+ ║                            │               │               │          ║
+ ║                  ┌─────────┴────┐   ┌──────┴─────┐   ┌─────┴─────┐    ║
+ ║                  ▼              ▼   ▼            ▼   ▼           ▼    ║
+ ║              shoutout_to_   shoutout_to_   shoutout_to_   shoutout_to_║
+ ║              linkedin       reddit         x  reddit      x  linkedin ║
+ ║                                                                       ║
+ ╚═══════════════════════════════════════════════════════════════════════╝
+
+──────────────────────────────────────────────────────────────────────────
+node-kind cheat sheet
+──────────────────────────────────────────────────────────────────────────
+  LlmAgent              — passes user/upstream input through as a turn
+  FunctionNode(fn)      — wraps an async generator; yields state/route/content
+  ParallelWorker(agent) — runs `agent` once per upstream-list-element, in parallel
+  WorkflowAgent         — nests! a whole workflow becomes a node in a bigger one
+
+──────────────────────────────────────────────────────────────────────────
+edge tuple cheat sheet
+──────────────────────────────────────────────────────────────────────────
+  (A, B)               always: A → B
+  (A, B, C)            chain: A → B → C
+  (A, B, "LABEL")      conditional: A → B only if A yields Event(route="LABEL")
+  multiple chains      overlay into one graph

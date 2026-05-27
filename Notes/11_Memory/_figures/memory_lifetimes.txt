@@ -1,0 +1,29 @@
+SESSION vs STATE vs MEMORY — three lifetimes
+============================================
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  one turn  ──►  one turn  ──►  one turn  ──►  one turn   │  ◄── Session
+    │  ▲                                                       │      (single conversation,
+    │  └── session.state dict carries between turns ───────────┤       lives in SessionService)
+    └──────────────────────────────────────────────────────────┘
+                              │
+                              ▼  end of session
+        ┌──────────────────────────────────────────────┐
+        │  state["temp:scratch"]        ── DISCARDED    │
+        │  state["work_in_progress"]    ── persisted    │
+        │  state["user:preference"]     ── persisted    │
+        │  state["app:rate_limit"]      ── persisted    │
+        └──────────────────────────────────────────────┘
+                              │
+                              ▼  optional: feed to MemoryService
+    ┌──────────────────────────────────────────────────────────┐
+    │  MEMORY (cross-session)                                  │
+    │  ─ key facts, prefs, distilled summaries                 │
+    │  ─ retrieved by `load_memory` tool or PreloadMemoryTool  │
+    │  ─ scoped per-user (typically)                           │
+    │  ─ survives forever (or until TTL)                       │
+    └──────────────────────────────────────────────────────────┘
+
+KEY: Session ⊂ State (per-session) ⊂ State (per-user/app) ⊂ Memory (cross-session)
+The transition Session → Memory is NEVER automatic. You explicitly call
+`add_session_to_memory()` (or `add_events_to_memory()`) in a callback.

@@ -1,0 +1,24 @@
+Vertex AI Vector Search — control + data plane:
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                    Vertex AI Vector Search                  │
+  │                                                             │
+  │   ┌──────────────────┐         ┌────────────────────────┐   │
+  │   │  Index           │  deploy │  IndexEndpoint         │   │
+  │   │  (the vectors    │ ──────► │  (serves queries;      │   │
+  │   │   + metadata)    │         │   1+ deployed indexes) │   │
+  │   └──────────────────┘         └────────────────────────┘   │
+  │       ▲                                 ▲                   │
+  │       │ upsert (batch / stream)         │ find_neighbors    │
+  │       │                                 │                   │
+  └───────┼─────────────────────────────────┼───────────────────┘
+          │                                 │
+   ┌──────┴──────┐                  ┌───────┴────────┐
+   │  GCS bucket │                  │  Your agent    │
+   │  *.json     │                  │  (FunctionTool)│
+   │  vectors    │                  └────────────────┘
+   └─────────────┘
+
+Index is storage. Endpoint is a server. They scale independently.
+Same Index can be deployed to multiple Endpoints (e.g. dev + prod).
+Streaming updates are near-real-time but cost more than batch.

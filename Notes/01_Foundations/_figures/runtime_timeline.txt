@@ -1,0 +1,27 @@
+                          ONE INVOCATION (one user turn)
+                          ─────────────────────────────
+
+  caller                       Runner                       Session                Gemini API
+    │                            │                             │                       │
+    │  run_async(new_message) ─▶ │                             │                       │
+    │                            │  load history & state ────▶ │                       │
+    │                            │ ◀──── history + state ──────│                       │
+    │                            │                             │                       │
+    │                            │  POST chat (msgs + tools) ──┼──────────────────────▶│
+    │                            │                             │                       │
+    │  ◀── Event(content=text)── │ ◀──── streamed reply ───────┼──────────────────────│
+    │                            │                             │                       │
+    │                            │  save event to session ───▶ │                       │
+    │                            │                             │                       │
+    │                            │     ── if reply was a tool call: ──                 │
+    │                            │     1. execute tool                                 │
+    │                            │     2. Event(content=tool_response)                 │
+    │                            │     3. POST again with result ───────────────────▶  │
+    │                            │     4. final text Event                             │
+    │                            │                                                     │
+    │  (generator exhausts)      │                                                     │
+
+
+  Legend:  Event = one line in the convo log.
+           Session = the convo log itself (+ state dict).
+           Runner = orchestrator; owns the loop.

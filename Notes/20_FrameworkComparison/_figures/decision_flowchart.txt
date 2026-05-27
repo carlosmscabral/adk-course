@@ -1,0 +1,82 @@
+              FRAMEWORK DECISION FLOWCHART
+
+                ┌────────────────────────────┐
+                │  Where will this run?      │
+                └────────────┬───────────────┘
+                             │
+            ┌────────────────┼─────────────────┐
+            │                │                 │
+            ▼                ▼                 ▼
+       Google Cloud     AWS/Azure/      On-prem / air-gap
+       (Vertex,         hybrid          / regulated
+        BigQuery,           │                 │
+        GKE, …)             │                 │
+            │               │                 │
+            ▼               ▼                 ▼
+         ADK             ADK or            LangGraph
+       (best fit)        LangGraph         (most portable
+                         (toss-up)          state-graph)
+            │
+            ▼
+   ┌──────────────────────────────────────┐
+   │  Multi-agent style needed?           │
+   └────────────┬─────────────────────────┘
+                │
+   ┌────────────┼─────────────────┐
+   │            │                 │
+   ▼            ▼                 ▼
+  graph /   role-based       conversational
+  fan-out   "team of agents" "chat among models"
+   │            │                 │
+   ▼            ▼                 ▼
+  ADK,       CrewAI            AutoGen
+  LangGraph  (lowest-floor)    (Microsoft Research lineage)
+
+   ┌──────────────────────────────────────┐
+   │  Need MCP servers from day 1?        │
+   └────────────┬─────────────────────────┘
+                │
+        ┌───────┴───────┐
+       yes              no
+        │                │
+        ▼                ▼
+      ADK            anything
+      (first-class    (LangChain has
+       MCPToolset)    adapters; ADK
+                      is just smoother)
+
+   ┌──────────────────────────────────────┐
+   │  Strongly-typed structured output?   │
+   └────────────┬─────────────────────────┘
+                │
+       ┌────────┴────────┐
+      yes                no
+        │                │
+        ▼                ▼
+     Pydantic AI     ADK / others
+     (best fit)      (still typed, less strict)
+
+   ┌──────────────────────────────────────┐
+   │  Long-term memory (months/years)?    │
+   └────────────┬─────────────────────────┘
+                │
+        ┌───────┴───────┐
+       yes              no
+        │                │
+        ▼                ▼
+     Letta /          ADK Memory
+     MemGPT           (Vertex AI Memory Bank
+     (memory-first)    + RAG)
+
+   ┌──────────────────────────────────────┐
+   │  Team = prompt engineers, not        │
+   │  Python engineers?                   │
+   └────────────┬─────────────────────────┘
+                │
+        ┌───────┴───────┐
+       yes              no
+        │                │
+        ▼                ▼
+     CrewAI           ADK / LangGraph
+     (role prompts    (Python-first)
+      as first class)

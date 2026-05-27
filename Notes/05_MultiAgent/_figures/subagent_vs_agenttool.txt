@@ -1,0 +1,40 @@
+sub_agents= vs AgentTool — semantic contrast
+
+═══════════════════════════════════════════════════════════════════════
+sub_agents=[child]      |       tools=[AgentTool(agent=child)]
+═══════════════════════════════════════════════════════════════════════
+
+  user ─▶ parent                  user ─▶ parent
+            │                              │
+            │ LLM emits                    │ LLM emits
+            │ transfer_to_agent("child")   │ tool_call("child", {...})
+            │                              │
+            ▼                              ▼
+         child                          child
+            │                              │
+            │ runs to completion           │ returns str
+            │ user sees its output         │
+            │                              ▼
+            ▼                          parent continues
+         (turn ends                       │
+          with child                      │ may call more tools,
+          as the                          │ synthesize answer
+          author)                         │
+                                          ▼
+                                        user sees parent's reply
+═══════════════════════════════════════════════════════════════════════
+
+mental model:
+  sub_agents=  : "hand over the conversation"   (cursor moves)
+  AgentTool    : "ask a specialist for advice"  (cursor stays)
+
+state behavior is identical: both share the same Session and state dict.
+The difference is who the user is talking to after the call returns.
+
+decision tree:
+  ┌── user should see specialist's reply directly?
+  │     yes → sub_agents
+  │     no  → AgentTool
+  └── path is fixed (critic ALWAYS before reviser)?
+        yes → SequentialAgent  (whether children are LlmAgent or wrapped)
+        no  → let parent's LLM decide via sub_agents or AgentTool

@@ -1,0 +1,38 @@
+EVAL PIPELINE — from EvalSet to verdict
+=======================================
+
+   EvalSet (JSON / YAML)
+     │
+     │  cases[]
+     │    ├─ user_content       (the input turn)
+     │    ├─ final_response     (gold: what we expect back)
+     │    ├─ intermediate_data  (gold: tool calls along the way)
+     │    └─ session_input      (starting state)
+     │
+     ▼
+   AgentEvaluator.evaluate(agent_module, eval_set_path, num_runs=N)
+     │
+     │  for each case, num_runs times:
+     │     1. start fresh session with session_input.state
+     │     2. send user_content to runner
+     │     3. capture all events emitted
+     │     4. score with configured metrics
+     │
+     ▼
+   METRICS (per-case scores, then aggregated)
+     │
+     ├─ FinalResponseMatchV1   (string/regex match on final answer)
+     ├─ FinalResponseMatchV2   (semantic match, often LLM-as-judge under the hood)
+     ├─ TrajectoryEvaluator    (did the tool sequence match the gold tools?)
+     ├─ HallucinationsV1       (did the answer cite the source?)
+     ├─ LlmAsJudge             (open-ended rating via an LLM rubric)
+     └─ RubricBasedEvaluator   (fixed rubric scoring)
+     │
+     ▼
+   CRITERIA in test_config.json gate pass/fail:
+     {
+       "tool_trajectory_avg_score": 1.0,
+       "response_match_score": 0.35
+     }
+
+PASS / FAIL → pytest assertion → CI gate

@@ -1,0 +1,37 @@
+module: 10_A2A
+questions:
+  - id: q1
+    prompt: "What does `to_a2a(root_agent)` return, and what server do you run it with?"
+    expected_keywords: [Starlette, ASGI, uvicorn]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "At what well-known path does an A2A agent publish its AgentCard?"
+    expected_keywords: [".well-known/agent.json"]
+    accept_paraphrase: false
+    difficulty: easy
+  - id: q3
+    prompt: "Name three fields in an AgentCard."
+    expected_keywords: [name, description, url, version, skills, capabilities]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q4
+    prompt: "If you have a single Python function with no LLM, should you expose it via A2A or MCP, and why?"
+    expected_keywords: [MCP, function, granularity, no agent, lighter]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "How does RemoteA2aAgent preserve multi-turn context across calls?"
+    expected_keywords: [context_id, session, threaded, sub_agent]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Why might you need sticky sessions OR a persistent TaskStore when scaling an A2A agent to multiple replicas?"
+    expected_keywords: [in-memory, state, replica, round-robin, lost context]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q7
+    prompt: "In the currency-agent sample, which protocol talks to the FX API and which talks to the external caller?"
+    expected_keywords: [MCP, A2A, in front, in back, external]
+    accept_paraphrase: true
+    difficulty: medium

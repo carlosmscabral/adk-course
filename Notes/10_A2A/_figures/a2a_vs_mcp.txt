@@ -1,0 +1,28 @@
+                          A2A vs MCP
+
+       Both are "talk over a wire", but at different granularities.
+
+       ┌─────────────────────────────┐   ┌─────────────────────────────┐
+       │            MCP              │   │            A2A              │
+       ├─────────────────────────────┤   ├─────────────────────────────┤
+       │  exposes:   TOOLS           │   │  exposes:   WHOLE AGENT     │
+       │  granular:  per-function    │   │  granular:  per-agent       │
+       │  contract:  JSON-RPC tools  │   │  contract:  AgentCard       │
+       │  used by:   any LLM client  │   │  used by:   other agents    │
+       │  discover:  list_tools call │   │  discover:  agent.json URL  │
+       │  state:     stateless       │   │  state:     task/context id │
+       └─────────────────────────────┘   └─────────────────────────────┘
+
+       Picture:
+
+          ┌──────────┐          A2A          ┌──────────────┐
+          │ caller   │  ────────────────►    │ ADK agent    │
+          │ agent    │                       │   ┌──────┐   │   MCP
+          │          │                       │   │ MCPT │  ───────►  ┌────────┐
+          └──────────┘                       │   │ tools│   │        │ MCP    │
+                                             │   └──────┘   │        │ server │
+                                             └──────────────┘        └────────┘
+
+       Rule of thumb:
+         "I want to call a function"  →  MCP
+         "I want to delegate a goal"  →  A2A

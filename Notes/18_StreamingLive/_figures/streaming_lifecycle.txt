@@ -1,0 +1,22 @@
+Streaming lifecycle — text token-by-token (run_async)
+=====================================================
+
+  client                Runner                  LLM
+    |                     |                      |
+    |---- user msg ------>|                      |
+    |                     |---- prompt --------->|
+    |                     |                      |
+    |                     |<-- partial chunk 1 --|  Event(partial=True)
+    |<--- chunk 1 --------|                      |
+    |                     |<-- partial chunk 2 --|  Event(partial=True)
+    |<--- chunk 2 --------|                      |
+    |                     |<-- partial chunk N --|  Event(partial=True)
+    |<--- chunk N --------|                      |
+    |                     |<--- final  ----------|  Event(turn_complete=True)
+    |<--- final ----------|                      |
+    |                     |                      |
+
+  Each chunk is an Event whose .content.parts[0].text is a *delta*
+  unless the partial flag is False, in which case it's the final
+  consolidated turn. Loop over events with `async for event in
+  runner.run_async(...)`.

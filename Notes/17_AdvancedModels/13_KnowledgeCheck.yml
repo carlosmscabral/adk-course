@@ -1,0 +1,62 @@
+module: 17_AdvancedModels
+questions:
+  - id: q1
+    prompt: "What does LLMRegistry do, and when does a typo in a model string fail?"
+    expected_keywords: [resolve, lookup, string, class, BaseLlm, runner, late, runtime]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Give a one-line rule of thumb for picking among Gemini Flash-Lite, Flash, and Pro."
+    expected_keywords: [Flash-Lite, classification, Flash, default, Pro, reasoning, code]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Why is LiteLlm 'vendor optional' but not 'vendor independent'?"
+    expected_keywords: [API, hides, capability, prompt, tokenizer, billing, differ, measure]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "Name two reasons a team would deploy Gemma locally instead of using cloud Gemini."
+    expected_keywords: [PII, on-prem, residency, cost, no rate limit, latency, control]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What does ApigeeLlm centralize for an enterprise, and what new failure mode does it introduce?"
+    expected_keywords: [gateway, policy, quota, audit, SPOF, single point]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "When you mix models across sub_agents, why must you re-run evals on the whole graph after a single change?"
+    expected_keywords: [downstream, prompt bleed, interaction, regression, whole graph]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q7
+    prompt: "What does BuiltInPlanner do, and which models can use it?"
+    expected_keywords: [thinking_config, ThinkingConfig, native, Gemini 2.5, reasoning, budget]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q8
+    prompt: "When would you reach for PlanReActPlanner instead of BuiltInPlanner?"
+    expected_keywords: [model-agnostic, non-thinking, tags, audit, plan, reason, act, ReAct]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q9
+    prompt: "Name the three thinking_budget values and what each one means."
+    expected_keywords: [positive, integer, cap, -1, dynamic, 0, disabled, off]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q10
+    prompt: "Why should the LlmAgent model come from a Settings/env-var, not a hard-coded string?"
+    expected_keywords: [config, env, dev, staging, prod, swap, no code change, 12-factor]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q11
+    prompt: "Sketch how on_model_error_callback implements a 429 fallback to a smaller model."
+    expected_keywords: [detect, 429, RESOURCE_EXHAUSTED, retry, LlmResponse, fallback model, return]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q12
+    prompt: "Why is a cost-aware before_model_callback a hidden test surface that needs a circuit breaker?"
+    expected_keywords: [silent, 10x, bill, override, counter, max-cost, circuit breaker, regression]
+    accept_paraphrase: true
+    difficulty: hard

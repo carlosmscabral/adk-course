@@ -1,0 +1,49 @@
+module: 18_StreamingLive
+questions:
+  - id: q1
+    prompt: "What does `runner.run_async(...)` return, and what shape does its consumer use?"
+    expected_keywords: [async iterator, async generator, async for, events]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "Why can't you filter unsafe text out of a streamed response *after* the fact?"
+    expected_keywords: [already sent, partial output, front-load, guardrails before model]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q3
+    prompt: "What is the typical PCM configuration the Gemini Live API expects on the input (mic) side?"
+    expected_keywords: [16 kHz, 16-bit, int16, mono, PCM]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q4
+    prompt: "In ADK Live, what is `LiveRequestQueue` for and what's the difference between `send_realtime` and `send_content`?"
+    expected_keywords: [upstream pipe, audio image blobs, send_realtime, whole text turns, send_content]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "What is barge-in, and what does the client need to do when it sees `event.interrupted == True`?"
+    expected_keywords: [user interrupts, stop playing, clear audio buffer, listen]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "Why do native-audio models lock the response modality to `AUDIO`?"
+    expected_keywords: [speech-to-speech, end-to-end, no text path, model architecture]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q7
+    prompt: "What does `session_resumption=types.SessionResumptionConfig(transparent=True)` get you, and why ship it even in dev?"
+    expected_keywords: [reconnect, resume token, transient gRPC errors, automatic retry]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q8
+    prompt: "If you `await db.write(event)` inside your `async for event in runner.run_async(...)` loop, what's the consequence?"
+    expected_keywords: [backpressure, producer paused, slows the stream, fan out to queue]
+    accept_paraphrase: true
+    difficulty: hard

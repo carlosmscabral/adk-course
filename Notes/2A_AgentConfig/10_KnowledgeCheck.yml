@@ -1,0 +1,50 @@
+# Knowledge check for Module 2A — Agent Config (YAML)
+# The tutor reads this file and asks ONE question at a time, never the whole list.
+# Grade against `expected_keywords` (or use LlmAsJudge with `accept_paraphrase: true`).
+# Record pass/fail per question id back into PROGRESS.md and student_profile.md.
+
+module: 2A_AgentConfig
+page: 10_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "What is the one-line YAML comment that gives you IDE auto-complete and load-time validation, and why does pinning it to a git tag matter?"
+    expected_keywords: [yaml-language-server, schema, pin, tag]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "Given `tools: [{name: my_pkg.tools.get_weather}]` in YAML, where does the LLM learn the parameter schema for `get_weather`?"
+    expected_keywords: [docstring, type, hint, python, function]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "In a YAML sub-agent that omits `model:`, where does the resolved model come from at runtime?"
+    expected_keywords: [parent, inherit, canonical_model, root]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "Name three things YAML cannot express that force you to drop into Python."
+    expected_keywords: [callback, dynamic, instruction, plugin, custom, BaseAgent]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "If `root_agent.yaml` references `sub_agents: [{config_path: tutors/math.yaml}]`, what directory is the `tutors/math.yaml` path resolved against?"
+    expected_keywords: [parent, yaml, directory, relative, containing]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "Your team has one prompt engineer who reviews instruction changes and one Python engineer who writes the tools. Which adoption pattern (1=all YAML, 2=YAML root + Python escape hatches, 3=all Python) fits, and why?"
+    expected_keywords: [pattern, 2, YAML, root, Python, escape, hatches, prompt, engineer]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q7
+    prompt: "After `agent = config_agent_utils.from_config('root.yaml')`, you mutate `agent.instruction = 'new prompt'`. Does the YAML file get rewritten? What does this tell you about the load direction?"
+    expected_keywords: [no, one-way, source, runtime, not, rewritten, in-memory]
+    accept_paraphrase: true
+    difficulty: hard

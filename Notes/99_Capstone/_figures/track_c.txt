@@ -1,0 +1,42 @@
+                  TRACK C — PERSONAL KNOWLEDGE HUB
+
+                  ┌─────────────────────────────────────┐
+                  │  Root LlmAgent (Intake/Router)      │
+                  └────────────┬────────────────────────┘
+                               │  sub_agents
+              ┌────────────────┼─────────────────────┐
+              ▼                ▼                     ▼
+       ┌────────────┐   ┌────────────┐        ┌────────────┐
+       │  Capture   │   │   Recall   │        │ Synthesize │
+       │  Agent     │   │   Agent    │        │   Agent    │
+       └─────┬──────┘   └─────┬──────┘        └─────┬──────┘
+             │                │                     │
+             │ Skill:         │ load_memory tool    │ FunctionTool:
+             │ "save-note"    │ (VertexAiMemoryBank)│  build_synthesis
+             │ SkillToolset   │                     │  (consumes top-K
+             │                │ RAG retrieval       │   recall results)
+             │                │ (VertexAiRagMemory) │
+             ▼                ▼                     ▼
+       ┌─────────────────────────────────────────────┐
+       │  Memory Layer:                              │
+       │  • VertexAiMemoryBankService (curated)      │
+       │  • VertexAiRagMemoryService (vector store)  │
+       │  Session: DatabaseSessionService            │
+       │  Artifacts: Cloud Storage (raw notes)       │
+       └─────────────────────────────────────────────┘
+                               │
+                               ▼
+                  ┌─────────────────────────────────┐
+                  │  to_a2a(root)                   │
+                  │  + Skills package (.skill files)│
+                  │  + adk web for UI               │
+                  └─────────────────────────────────┘
+
+   Cross-cutting:
+     • SkillToolset (capability packaging — the headline)
+     • Plugins: LoggingPlugin + GlobalInstructionPlugin
+     • before_model_callback (PII scrubber)
+     • before_tool_callback (auth check on capture)
+     • OpenTelemetry → Cloud Trace
+     • AgentEvaluator: 6 eval cases (capture→recall→synthesis trajectories),
+       LlmAsJudge + HallucinationsV1

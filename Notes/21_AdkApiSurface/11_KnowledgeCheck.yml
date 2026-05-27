@@ -1,0 +1,45 @@
+module: 21_AdkApiSurface
+page: 11_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "What two things must a directory contain for `adk run my_agent` to load it?"
+    expected_keywords: [__init__.py, root_agent, package, import]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "What is the only functional difference between `adk web` and `adk api_server`?"
+    expected_keywords: [Angular, dev UI, web=True, web=False, static, mount]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "Given a folder name and an agent `name=` kwarg, which one shows up in the `/run` URL as `app_name`?"
+    expected_keywords: [folder, directory, package, name, kwarg, ignored]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "When would you use `/run_sse` instead of `/run`?"
+    expected_keywords: [streaming, partial, latency, progressive, server-sent events, UI]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "Name three production gotchas of the default `adk api_server` deployment."
+    expected_keywords: [auth, workers, sticky, sessions, CORS, redaction, SSE keepalive, rate limit]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "Why is verifying `user_id` against the URL critical even if your OIDC middleware accepted the token?"
+    expected_keywords: [broken access control, session, guess, IDOR, authorize, authentication vs authorization]
+    accept_paraphrase: true
+    difficulty: hard
+
+  - id: q7
+    prompt: "What does `get_fast_api_app(web=False, ...)` return and why would you call it instead of `adk api_server`?"
+    expected_keywords: [FastAPI, instance, custom routes, middleware, mount, deployment, own process]
+    accept_paraphrase: true
+    difficulty: hard

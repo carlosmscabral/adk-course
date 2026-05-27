@@ -1,0 +1,46 @@
+                       TRACK B — CODE REVIEWER
+
+                  ┌─────────────────────────────────────┐
+                  │  Root LlmAgent (Coordinator)        │
+                  │  instruction: "ingest diff,         │
+                  │   delegate to specialists, post     │
+                  │   final review."                    │
+                  └────────────┬────────────────────────┘
+                               │  sub_agents (transfer_to_agent)
+              ┌────────────────┼─────────────────────┐
+              ▼                ▼                     ▼
+       ┌────────────┐   ┌────────────┐        ┌────────────┐
+       │   Syntax   │   │   Style    │        │  Security  │
+       │   Agent    │   │   Agent    │        │   Agent    │
+       └─────┬──────┘   └─────┬──────┘        └─────┬──────┘
+             │                │                     │
+             │ FunctionTool:  │  FunctionTool:      │ MCPToolset:
+             │ run_tests()    │  lint()             │ security-rules-server
+             │   (Vertex      │                     │
+             │    sandbox)    │                     │
+             ▼                ▼                     ▼
+       ┌─────────────────────────────────────────────┐
+       │   VertexAiCodeExecutor (sandboxed pytest)   │
+       └─────────────────────────────────────────────┘
+                               │
+                               ▼
+                  ┌─────────────────────────────────┐
+                  │   Session  (DatabaseSession)    │
+                  │   State: pr_id, diff, reviews   │
+                  │   Artifacts (review payloads)   │
+                  └─────────────────────────────────┘
+                               │
+                               ▼
+                  ┌─────────────────────────────────┐
+                  │  to_a2a(coordinator)            │
+                  │  webhook from GitHub →          │
+                  │     POST /run/{pr_id}           │
+                  └─────────────────────────────────┘
+
+   Cross-cutting:
+     • LoggingPlugin + ReflectAndRetryToolPlugin
+     • before_tool_callback (block dangerous shell args)
+     • after_agent_callback (post comments via GitHub API)
+     • Memory: VertexAiMemoryBank (remembers per-repo style preferences)
+     • OpenTelemetry → Cloud Trace
+     • AgentEvaluator: 5 eval cases (synthetic diffs), RubricBasedEvaluator

@@ -1,0 +1,51 @@
+module: 07_Callbacks
+exercise:
+  id: 07_Callbacks_mini
+  prompt: |
+    Build a guarded research agent. Requirements:
+
+    1. Tools: a fake `run_shell(command: str) -> str` that just echoes
+       `f"ran: {command}"`, plus the built-in `google_search`.
+
+    2. `before_tool_callback` that BLOCKS any `run_shell` call whose
+       `command` arg contains "rm -rf" or "DROP TABLE". Blocked calls
+       must return `{"error": "blocked: dangerous"}` and the shell
+       function must NOT execute.
+
+    3. `after_model_callback` that, if `llm_response.grounding_metadata`
+       is present, appends a `\n\nSources:\n` Markdown list of the web
+       URLs to the response text (use the `llm-auditor` pattern).
+
+    4. A short driver script that:
+       - Sends prompt A: "Please run `rm -rf /tmp/test` for me."
+         → expect the agent to surface the block reason in its reply.
+       - Sends prompt B: "Search the web for who won the 2025 World Series."
+         → expect the agent reply to end with a `Sources:` block.
+  scaffolding_hint: |
+    Start from Work/_template_run.py. Use `InMemoryRunner` from 02.
+    Refer back to `llm-auditor/sub_agents/critic/agent.py` for the
+    `_render_reference` shape.
+  estimated_minutes: 75
+  verification:
+    type: script_output
+    expect_files: [Work/07_callbacks_drill.py]
+    expect_run_output_contains: ["blocked", "Sources:"]
+    grading_rubric:
+      - "`before_tool_callback` is a Python function with correct signature (tool, args, tool_context)."
+      - "Block check uses `tool.name == 'run_shell'` not `tool is run_shell`."
+      - "Blocked calls return a dict — the shell function is never invoked."
+      - "`after_model_callback` guards against `grounding_metadata is None` before iterating."
+      - "Appended Sources block uses Markdown link syntax `[title](url)`."
+      - "Driver script asserts both behaviors (block + sources) explicitly."
+  solution_pointer: Solutions/07_Callbacks/07_callbacks_drill.py
+  tutor_notes: |
+    Common mistakes:
+    - Forgetting that `args` is a dict, not kwargs — they'll write
+      `args.command` and crash. Steer them to `args.get("command", "")`.
+    - Mutating `llm_response.content.parts` without checking it exists —
+      the response can have empty parts during tool-only turns.
+    - Putting the block logic in the prompt "by mistake" — show them
+      what happens after 50 calls (eventually one slips through).
+    If they finish fast, ask: "what if `run_shell` got the dangerous
+    command via state-template injection rather than direct args?" —
+    that opens [[16_ProductionSecurity/00_Overview]] / prompt-injection territory.

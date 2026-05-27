@@ -1,0 +1,54 @@
+                    ADK 2.0 OBJECT HIERARCHY
+                    ────────────────────────
+
+   ┌──────────────────────────────────────────────────────────────┐
+   │                          App                                 │
+   │   (the 2.0 container — pre-2.0 there was no `App` at all)    │
+   │                                                              │
+   │   name:                       "research-assistant"           │
+   │   root_agent:        ─┐                                      │
+   │   plugins:            │   [LoggingPlugin(), ...]             │
+   │   events_compaction:  │   EventsCompactionConfig(...)        │
+   │   context_cache:      │   ContextCacheConfig(...)            │
+   │   resumability:       │   ResumabilityConfig(is_resumable=…) │
+   │                       │                                      │
+   └───────────────────────┼──────────────────────────────────────┘
+                           │
+                           ▼
+           ┌──────────────────────────────────┐
+           │           LlmAgent               │       built by you,
+           │   (the root agent)               │       declared once,
+           │   name=, model=, instruction=,   │       reused per turn
+           │   tools=, sub_agents=, ...       │
+           └──────────────┬───────────────────┘
+                          │
+                          │
+                          ▼
+              ┌─────────────────────┐
+              │       Runner        │       constructed FROM the App.
+              │  (orchestrator)     │       Runner(app=app, session_service=...).
+              │  app:        ─┐     │       Owns the per-process plumbing.
+              │  agent:       │     │
+              │  session_svc: │     │
+              │  plugins:     │     │
+              │  context_cache_config: <-- pulled from app
+              │  resumability_config:  <-- pulled from app
+              └───────┬─────────────┘
+                      │
+                      ▼
+        ┌──────────────────────────────┐
+        │          Session             │   per (app_name, user_id, session_id)
+        │   events:  [Event, Event...] │
+        │   state:   {                 │
+        │              "k": v,         │   (no prefix)  = session-scoped
+        │              "user:x": v,    │   user:        = cross-session per user
+        │              "app:y": v,     │   app:         = cross-user, app-wide
+        │              "temp:z": v,    │   temp:        = this invocation only
+        │            }                 │
+        └──────────────────────────────┘
+
+
+   Read top→bottom: App owns the *config truth*. Runner is the
+   *runtime executor* built from that App. Session is the *per-turn
+   container*. The App is now where every cross-cutting concern lives:
+   plugins, caching, compaction, resumability, the app:-scoped state.

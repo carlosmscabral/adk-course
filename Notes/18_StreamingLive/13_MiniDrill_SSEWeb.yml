@@ -1,0 +1,86 @@
+module: 18_StreamingLive
+exercise:
+  id: 18_StreamingLive_sse_web
+  prompt: |
+    Take the M1 todo agent (or the streaming CLI from drill 11 if M1 is not
+    yet built) and expose its streaming output through a FastAPI SSE endpoint.
+    Then load a tiny HTML page in a browser and watch tokens arrive
+    incrementally.
+
+    Requirements:
+    - FastAPI endpoint `GET /stream?q=...` returning `media_type="text/event-stream"`.
+    - For each event chunk from `runner.run_async(...)`, yield
+      `f"data: {chunk_text}\n\n"`.
+    - On `turn_complete`, yield `"event: done\ndata: ok\n\n"` and return.
+    - An `index.html` page that calls `new EventSource("/stream?q=hello")`
+      and appends each `e.data` to the page.
+
+    Acceptance:
+    - Run `uvicorn` on port 8000, open `http://localhost:8000` in a browser.
+    - Visible text appears progressively in the page (not all at once at
+      the end).
+    - Browser DevTools > Network > the /stream request shows "EventStream"
+      tab populated with multiple chunks.
+
+  scaffolding_hint: |
+    Skeleton (full code lives in 03_TextStreaming.md):
+
+      from fastapi import FastAPI
+      from fastapi.responses import StreamingResponse, HTMLResponse
+
+      app = FastAPI()
+
+      @app.get("/")
+      def root():
+          return HTMLResponse('''
+          <pre id="o"></pre>
+          <script>
+            const es = new EventSource("/stream?q=Explain%20SSE%20briefly");
+            es.onmessage = e => document.getElementById("o").append(e.data);
+            es.addEventListener("done", () => es.close());
+          </script>''')
+
+      @app.get("/stream")
+      async def stream(q: str):
+          async def gen():
+              async for event in runner.run_async(...):
+                  if event.content and event.content.parts:
+                      text = event.content.parts[0].text or ""
+                      if text:
+                          yield f"data: {text}\n\n"
+                  if event.turn_complete:
+                      yield "event: done\ndata: ok\n\n"
+                      return
+          return StreamingResponse(gen(), media_type="text/event-stream")
+
+  estimated_minutes: 30
+  verification:
+    type: script_output
+    expect_files: [Work/18_sse_web.py, Work/18_sse_web_index.html]
+    grading_rubric:
+      - "SSE response correctly formatted with `data:` + double newline"
+      - "Returns `StreamingResponse(media_type='text/event-stream')`"
+      - "Closes the connection on `turn_complete` via custom `event: done`"
+      - "HTML page uses `EventSource`, not `fetch` polling"
+      - "Browser shows progressive rendering, not one-shot dump"
+  solution_pointer: null
+  tutor_notes: |
+    Common issues:
+      - "Whole reply appears at once": SSE chunks not terminated with
+        `\n\n`. ONE `\n` keeps the parser buffering. Show them with
+        `curl -N http://localhost:8000/stream?q=hi` — they should see
+        live tokens, not a single dump.
+      - "Nothing appears": forgot `media_type="text/event-stream"`, or
+        running behind a proxy that buffers. For Cloud Run, no extra
+        config needed; for Nginx, add `proxy_buffering off`.
+      - "Connection stays open forever": no `return` after the done
+        event. Generator must exit.
+      - "TypeError: not async iterable": they wrote `def gen():` instead
+        of `async def gen():`.
+
+    Bonus tasks (if they finish fast):
+      - Add a `q` from a `<form>` so the user can ask their own questions.
+      - Add an "interrupt" button that closes the EventSource. Notice the
+        server-side keeps generating until the next yield blocks — this
+        is how SSE differs from a true bidi WebSocket. Good lead-in to
+        the [[WebSockets]] detour.

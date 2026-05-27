@@ -1,0 +1,55 @@
+                THE AGENT-FRAMEWORK LANDSCAPE (May 2026)
+
+  multi-agent style
+      │
+      │ role-based ─────────────── CrewAI
+      │
+      │ chat-based ─────────────── AutoGen
+      │
+      │ graph + tree (hybrid) ──── ADK (sub_agents + WorkflowAgent)
+      │
+      │ state-graph ────────────── LangGraph
+      │
+      │ handoffs ──────────────── OpenAI Agents SDK
+      │
+      │ memory-first ──────────── Letta / MemGPT
+      │
+      │ type-driven ───────────── Pydantic AI
+      ▼
+
+                              tool model
+
+      ┌───────────────────────────────────────────────────────────┐
+      │             tools as fn schemas (FunctionDeclaration)     │
+      │   ADK   LangChain   CrewAI   OAI Agents   Pydantic AI     │
+      └───────────────────────────────────────────────────────────┘
+      ┌───────────────────────────────────────────────────────────┐
+      │  tools as protocol (MCP)                                  │
+      │   ADK (first-class)   Claude Code   Cursor   …            │
+      └───────────────────────────────────────────────────────────┘
+
+                              memory
+
+      stateless ◄────────────────────────────────────► persistent
+      (LangChain)                          (Letta, ADK Memory)
+
+                          observability
+
+      logs only ──── traces ──── full OTel ──── managed (Vertex AI, AgentOps)
+       (CrewAI)      (most)        (ADK)            (ADK + GCP)
+
+                      ASCII feature matrix snapshot
+
+                  ADK   LG   CrewAI  AGn  OAIA  PydAI  Letta
+  multi-agent      ★★★  ★★★   ★★★    ★★★   ★★    ★      ★★
+  graph workflow   ★★★  ★★★   ★      ★    -     -      -
+  tools/MCP        ★★★  ★★    ★★     ★★    ★★    ★★     ★
+  A2A              ★★★  ★     -      -    -     -      -
+  memory svc       ★★★  ★★    ★      ★    ★     ★      ★★★
+  evals built-in   ★★★  ★★    ★      ★    ★     ★      ★
+  OTel tracing     ★★★  ★★    ★      ★    ★     ★      ★
+  code-exec sand   ★★★  ★     ★      ★★   ★     -      -
+  vendor neutral   ★★   ★★★   ★★★    ★★★   ★     ★★     ★★
+  GA maturity      ★★★  ★★    ★★     ★★    ★★    ★★     ★★
+
+  Legend: ★★★ first-class, ★★ supported, ★ minimal, - absent

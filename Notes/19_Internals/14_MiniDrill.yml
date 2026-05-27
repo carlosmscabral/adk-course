@@ -1,0 +1,57 @@
+module: 19_Internals
+exercise:
+  id: 19_Internals_mini
+  prompt: |
+    Write a custom agent that wraps `LlmAgent` (or subclasses `BaseAgent`)
+    and forces every model response to end with " — arrr." so the agent
+    talks like a pirate, regardless of instruction.
+
+    Constraint: do it by overriding the agent's response pipeline — NOT
+    by appending to `instruction`. The point is to touch the runtime.
+
+    Two acceptable approaches:
+      (a) Subclass `BaseAgent` and override `_run_async_impl` to wrap
+          `super()._run_async_impl(ctx)` or `self._llm_flow.run_async(ctx)`,
+          mutating each final-response Event's content before yielding.
+      (b) Register an `after_model_callback` on an `LlmAgent` that
+          appends " — arrr." to the LlmResponse text.
+
+    Submit (a). Approach (b) is for the tutor to suggest as a cleaner
+    alternative once (a) works.
+
+  scaffolding_hint: |
+    Start from `Work/_template_run.py`. Import:
+        from google.adk.agents.base_agent import BaseAgent
+        from google.adk.agents.llm_agent import LlmAgent
+        from google.adk.events.event import Event
+        from google.adk.runners import InMemoryRunner
+        from google.genai import types
+    Build an inner LlmAgent normally. Define `PirateAgent(BaseAgent)`
+    that holds an `inner: LlmAgent` field and yields the inner's events
+    with the final response mutated.
+
+  estimated_minutes: 60
+  verification:
+    type: script_output
+    expect_files: [Work/pirate_agent.py]
+    expect_run_output_contains: ["arrr"]
+    grading_rubric:
+      - "Custom agent subclasses BaseAgent (not just sets instruction)."
+      - "Iterates events from the inner agent / flow with `async for`."
+      - "Mutates only the final response event (preserves tool-call events untouched)."
+      - "Yields events — does not collect-then-yield (keeps streaming working)."
+      - "Runs end-to-end against a real LLM call (or a stubbed model in tests) and the printed output ends with ' — arrr.'"
+
+  solution_pointer: Solutions/19_Internals/pirate_agent.py
+
+  tutor_notes: |
+    Common mistakes:
+      - Mutating `event.content` on a partial=True event (breaks streaming).
+        Fix: only mutate when `event.is_final_response() and not event.partial`.
+      - Forgetting that Content.parts can have non-text parts. Iterate parts
+        and only append to text-bearing ones.
+      - Returning a list instead of yielding — breaks the async generator contract.
+    After the student passes, ask: "Now do it as an after_model_callback in 5 lines.
+    Which is more correct?" (Answer: the callback is cleaner for THIS task; the
+    custom-agent route is the right tool when you need control-flow changes,
+    not text edits.)

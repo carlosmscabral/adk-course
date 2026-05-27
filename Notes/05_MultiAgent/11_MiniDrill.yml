@@ -1,0 +1,63 @@
+module: 05_MultiAgent
+exercise:
+  id: 05_MultiAgent_mini
+  prompt: |
+    Clone the shape of `llm-auditor`, but with two NEW sub-agents:
+
+      1. `summarizer_agent` — takes a paragraph of English text, returns
+         a one-sentence summary. Use `output_key="summary"`.
+      2. `translator_agent` — reads `{summary}` from state and translates
+         it to French. Use `output_key="translation"`.
+
+    Wire them as:
+
+        root = SequentialAgent(
+            name="summ_translate",
+            sub_agents=[summarizer_agent, translator_agent],
+        )
+
+    Both specialists use `gemini-2.5-flash` (we don't need pro-level
+    reasoning here). Place the file at `Work/summ_translate.py` and run
+    it against this paragraph:
+
+        "The Apollo program was a series of crewed spaceflights run by
+        NASA between 1961 and 1972. Its primary objective, set by
+        President Kennedy in 1961, was to land humans on the Moon and
+        return them safely to Earth, which it accomplished with Apollo 11
+        in July 1969. The program also produced significant scientific
+        and technological advances."
+
+    Verify the final printed output is a French sentence that fits the
+    paragraph's meaning.
+  scaffolding_hint: |
+    Start from Work/_template_run.py (the same runner skeleton you used
+    in 04_SessionsState). Use `InMemoryRunner` or `Runner` + `InMemorySessionService`.
+    Walk events with `async for event in runner.run_async(...)`.
+  estimated_minutes: 60
+  verification:
+    type: script_output
+    expect_files: [Work/summ_translate.py]
+    expect_run_output_contains: ["Apollo", "Lune"]  # the translation should mention "Lune" (Moon) or "Apollo"
+    grading_rubric:
+      - "Two LlmAgents created, each with a distinct `name` and `description`"
+      - "summarizer_agent has output_key=\"summary\""
+      - "translator_agent's instruction substitutes {summary}"
+      - "Root is a SequentialAgent (not an LlmAgent)"
+      - "Script prints final translation; session.state contains both keys"
+  solution_pointer: Solutions/05_MultiAgent/summ_translate.py
+  tutor_notes: |
+    The gate-keeper solution is provided because this is the student's
+    first SequentialAgent — they need a reference for the runner wiring.
+
+    Common mistakes:
+      - Forgetting to substitute {summary} in the translator's instruction
+        (then the translator translates the user's original paragraph
+        instead of the summary).
+      - Using a single LlmAgent with sub_agents=[...] instead of
+        SequentialAgent — works but the order isn't guaranteed.
+      - Naming both agents the same (collision).
+
+    Stretch: ask the student to add a third agent, `quality_checker`,
+    that scores the translation 1-5 and writes `output_key="score"`.
+    Wire it into the SequentialAgent at the end. This is a gentle
+    on-ramp to module 06's loop patterns.

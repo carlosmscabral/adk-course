@@ -1,0 +1,37 @@
+module: 02_FirstAgent
+questions:
+  - id: q1
+    prompt: "What does `runner.run_async(...)` return?"
+    expected_keywords: [async generator, AsyncGenerator, Event, yields, async for]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What is the role of `Session` in the runtime?"
+    expected_keywords: [conversation, history, event log, state, container]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Why must `app_name` on the Runner match the `app_name` you used on `create_session(...)`?"
+    expected_keywords: [primary key, lookup, session not found, scope]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What shape of object does ADK pass to Gemini for a new user message?"
+    expected_keywords: [types.Content, role, parts, Part, text]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "Why guard `event.content and event.content.parts` before reading `parts[0].text`?"
+    expected_keywords: [None, partial, streaming, bookkeeping, safety]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "If you forget to call `session_service.create_session(...)` before `run_async`, what happens by default?"
+    expected_keywords: [ValueError, session not found, auto_create_session]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Why is the `LlmAgent(...)` instance described as stateless even though it holds the instruction string?"
+    expected_keywords: [config, no history, Runner re-sends, reusable, immutable shape]
+    accept_paraphrase: true
+    difficulty: hard

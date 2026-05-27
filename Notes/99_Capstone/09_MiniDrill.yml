@@ -1,0 +1,82 @@
+module: 99_Capstone
+exercise:
+  id: 99_Capstone_drill
+  prompt: |
+    Build and submit your chosen track's capstone repo.
+
+    Tracks:
+      A — Research Assistant (graph workflow + MCP + A2A)
+      B — Code Reviewer (sub_agents + sandboxed code-exec)
+      C — Personal Knowledge Hub (memory + Skills)
+
+    See 01_TrackA, 02_TrackB, 03_TrackC for full specs.
+    See 04_SharedRequirements for the floor every track must meet.
+
+  scaffolding_hint: |
+    Start with `adk create capstone-<track>`. Port the scaffold into the
+    layout suggested in your track's page. Build in the order on
+    05_BuildingPlan (scaffold → agents → tools → composition → state/memory
+    → evals → guardrails → observability → A2A → polish).
+
+  estimated_minutes: 1800   # 5 days × 6 hours
+  verification:
+    type: code_review
+    expect_files:
+      - README.md
+      - pyproject.toml
+      - tests/eval_set.json
+    grading_rubric:
+      # Composition
+      - "≥3 agents composed (sub_agents OR Workflow graph)."
+      - "≥2 tools wired; ≥1 not a built-in (FunctionTool / MCPToolset / AgentTool)."
+      # State & memory
+      - "Persistent state via DatabaseSessionService or SqliteSessionService (NOT InMemory)."
+      - "Memory service wired (Vertex Memory Bank, RAG, or InMemory with prod-swap note)."
+      # Evals
+      - "EvalSet has ≥5 cases."
+      - "≥2 distinct evaluator types used (e.g., LlmAsJudge + FinalResponseMatchV1)."
+      - "`adk eval` runs cleanly; results pasted in README."
+      # Cross-cutting
+      - "≥1 plugin registered (built-in or custom BasePlugin subclass)."
+      - "≥2 callbacks registered; ≥1 of them a guardrail (input validation / output filter / budget)."
+      # Interface
+      - "A2A interface works end-to-end (to_a2a server + RemoteA2aAgent client demonstrated)."
+      # Observability
+      - "OpenTelemetry tracing exporting; ≥8 spans observable on a single invocation."
+      # Documentation
+      - "README contains: architecture diagram, run commands (≤3), extend example (≤20 lines), eval results, limitations."
+      - "README contains a 'why ADK / where competitors would do as well or better' paragraph (module 20 self-review)."
+      # Track-specific
+      - "Track A: WorkflowAgent graph; MCPToolset; critic loop with bounded cycles."
+      - "Track B: VertexAiCodeExecutor or ContainerCodeExecutor (NOT UnsafeLocal); diff-safety callback present."
+      - "Track C: BOTH VertexAiMemoryBankService AND VertexAiRagMemoryService wired; Skills pack with ≥3 .skill files."
+
+  solution_pointer: null    # there is no canonical solution — the capstone is the artifact
+
+  tutor_notes: |
+    Grading is honest, not harsh. The student WILL cut features. Score them on:
+      1. Does the floor (shared requirements) actually work?
+      2. Does the track-specific headline work?
+      3. Is the README good enough that a stranger could deploy it?
+      4. Is the self-review paragraph (module 20) NUANCED, not promotional?
+
+    Probes after submission:
+      - "Show me a Cloud Trace span tree for one invocation."
+      - "Run `adk eval` in front of me. Which case fails, and why?"
+      - "Add one new sub-agent in <20 lines without touching anything else."
+        (This tests the 'how to extend' claim.)
+      - "If you had a day more, what's the one feature you'd add — and what would you cut to make room?"
+
+    Failure modes to call out gently:
+      - Evals exist but are trivial (only ever assert non-empty output).
+      - A2A configured but never actually tested with a client.
+      - Memory wired but never cross-session-verified.
+      - README too optimistic about what works.
+
+    Pass criteria:
+      ≥18 of the rubric items checked, AND the track-specific bullets pass,
+      AND the student can answer at least 3 of the post-submit probes
+      coherently.
+
+    If they pass: tell them. They've completed the course. Encourage them to
+    pick option A (ship it) from 07_InProduction.

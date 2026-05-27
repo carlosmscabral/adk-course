@@ -1,0 +1,75 @@
+module: 21_AdkApiSurface
+page: 12_MiniDrill
+
+exercise:
+  id: 21_AdkApiSurface_mini
+  prompt: |
+    Take your M4 auditor (the critic + reviser agent from Milestone M4) and
+    serve it via `adk api_server`. From a second terminal, hit `/run_sse` with
+    `curl` and a Python httpx client. Verify the stream emits at least one
+    `partial` event before the final event.
+
+    Then add **one** piece of production hardening from the page 10 checklist:
+    an SSE keepalive comment line every 15 seconds (the "easy" item) OR a
+    middleware that derives `user_id` from a fake `Authorization: Bearer dev-<userid>`
+    header and rejects requests where the URL `user_id` does not match (the
+    "real" item).
+
+    Capture three artifacts:
+      1. `curl -N -X POST .../run_sse ...` raw output (showing data: lines)
+      2. The Python httpx client's printed `partial` count vs final
+      3. The hardened middleware code
+
+  scaffolding_hint: |
+    Start from your M4 auditor package. Run `adk api_server <parent-dir>
+    --port 8000`. Use the SSE consumer from page 04 as your httpx scaffold.
+    For the hardening item, prefer wrapping with `get_fast_api_app(web=False,
+    ...)` so you can attach middleware (page 06 + page 08).
+
+  estimated_minutes: 60
+
+  verification:
+    type: script_output
+
+    expect_files:
+      - Work/21_AdkApiSurface/sse_curl_output.txt
+      - Work/21_AdkApiSurface/sse_httpx_client.py
+      - Work/21_AdkApiSurface/hardening_middleware.py
+
+    expect_run_output_contains:
+      - "data:"
+      - "partial"
+
+    grading_rubric:
+      - "The agent is served by `adk api_server` or `get_fast_api_app`, not `adk web`."
+      - "curl output shows multiple `data:` lines, not a single JSON blob."
+      - "httpx client distinguishes partial events from the final event (print a count or label)."
+      - "The hardening middleware is functional — either emits keepalive comments OR rejects a mismatched user_id with 403."
+      - "Bonus: student adds a `/healthz` that ADK does not already define, on the same FastAPI app."
+
+  # Not a gate-keeper drill — the student will fumble SSE buffering and that's
+  # the lesson. No Solutions/ entry.
+  # solution_pointer:
+
+  tutor_notes: |
+    Common mistakes:
+      - Using `requests` (sync, no chunk iteration) instead of `httpx.stream` —
+        they see one giant response, not events. Switch them to `httpx.stream`
+        or `curl -N`.
+      - Forgetting the `streaming: true` flag in the JSON body — they still get
+        events but only the major ones (no per-token partials). Probe by asking
+        why they only see 3 events for a 200-token response.
+      - Configuring the keepalive in a background task that doesn't share the
+        response stream's lifecycle — the simplest correct version is a
+        `StreamingResponse` generator that yields `b": keepalive\n\n"` between
+        agent events using `asyncio.wait_for` with a 15s timeout.
+      - For the user_id authz drill: forgetting that `request.state` is only
+        set when the middleware runs first. If the auth middleware is added
+        AFTER the authz check, authz runs against an empty `state`.
+    Edge case to probe (after basic drill passes):
+      - Have them open two SSE streams to the same session_id from two different
+        clients. What happens? (ADK serializes per session, so the second waits
+        for the first. Discuss whether this is desirable for their app.)
+    Stretch goal:
+      - Wire OpenTelemetry from module 15 so the SSE handler's trace shows the
+        per-event spans. That's the bridge from page 10 item #3 + module 15.

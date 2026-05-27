@@ -1,0 +1,54 @@
+module: 20_FrameworkComparison
+exercise:
+  id: 20_FrameworkComparison_mini
+  prompt: |
+    In ≤200 words, justify ADK over LangGraph for a hypothetical
+    "Federated Travel Planner" project (the M3 milestone spec).
+
+    The project requires:
+      - 4 specialist agents (flights, hotels, activities, budget)
+      - Each potentially run by a different team behind an A2A boundary
+      - MCP servers exposing inventory data
+      - Memory of the user's preferences across trips
+      - Evals on output quality
+      - Deployment to GCP
+
+    Your write-up must:
+      1. Identify 3 specific ADK features that map to the requirements.
+      2. Acknowledge ONE area where LangGraph would still beat ADK.
+      3. Stay under 200 words.
+
+  scaffolding_hint: |
+    The flowchart on page 09 + the matrix on page 08 give you the raw material.
+    Don't list every ADK feature — pick the 3 that map to the spec.
+
+  estimated_minutes: 30
+  verification:
+    type: llm_judge
+    grading_rubric:
+      - "Mentions A2A protocol (federated/multi-team boundary)."
+      - "Mentions MCP / MCPToolset (inventory data servers)."
+      - "Mentions GCP integration (Vertex / Agent Engine / deployment)."
+      - "Mentions long-term memory (VertexAiMemoryBank or RAG memory)."
+      - "Mentions evals (AgentEvaluator / built-in eval suite)."
+      - "Explicitly acknowledges at least ONE area where LangGraph wins (ecosystem breadth, cloud neutrality, LangSmith, tutorials, etc.)."
+      - "Stays within 200 words (auto-fail at >220)."
+      - "Avoids hand-wave statements like 'ADK is more enterprise' — every claim is tied to a specific feature or requirement."
+
+  solution_pointer: null   # not a gate-keeper — the student should produce their own
+
+  tutor_notes: |
+    Score on substance, not prose. A 150-word answer that hits all rubric points
+    beats a 200-word answer that only hits half.
+
+    Common weak points:
+      - Forgetting A2A entirely (the most differentiating feature for this spec).
+      - Failing to concede ANY LangGraph advantage — students often over-sell.
+      - Listing features without mapping to requirements (a feature without a
+        requirement-tie is decoration).
+
+    Sample skeleton (DO NOT show the student until they've tried):
+      Para 1 (~80 words): 3 ADK features → requirements.
+      Para 2 (~60 words): why each LangGraph option falls short.
+      Para 3 (~40 words): the LangGraph win we'd accept (e.g., LangSmith
+        tracing maturity, or community tutorials, or cloud-neutral deploy).

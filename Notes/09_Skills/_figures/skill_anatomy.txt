@@ -1,0 +1,48 @@
+                          Skill Anatomy (file-based) + Progressive Disclosure
+
+         my-skill-name/                                     LLM sees:
+         ├── SKILL.md          ← L1 frontmatter + L2 body   L1 (name+desc) always
+         │     ---                                          L2 loaded on demand
+         │     name: my-skill-name        ←──┐              L3 loaded on demand
+         │     description: ...one line...  L1 (always shown)
+         │     ---                          ─┘
+         │                                                  ─────────────
+         │     # Markdown instructions...   ← L2 (load_skill)
+         │     ...                                          Progressive
+         │                                                  disclosure:
+         ├── references/       ← L3 (load_skill_resource)   keep the prompt
+         │   ├── style-guide.md                             tiny until the
+         │   └── examples.md                                skill is needed.
+         │
+         ├── assets/           ← L3 (load_skill_resource)
+         │   └── template.json
+         │
+         └── scripts/          ← L3 (run_skill_script)
+             └── render.sh
+
+
+                          SkillToolset wires N skills to one agent
+
+         ┌────────────────────────────────────────────────────────┐
+         │  SkillToolset(skills=[skill_a, skill_b, skill_c])      │
+         │                                                        │
+         │  Auto-exposes tools:                                   │
+         │    • list_skills         (L1 — names + descriptions)   │
+         │    • load_skill          (L2 — body of one skill)      │
+         │    • load_skill_resource (L3 — reference / asset)      │
+         │    • run_skill_script    (L3 — exec a scripts/ entry)  │
+         └────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                          ┌───────────────┐
+                          │   LlmAgent    │
+                          │   tools=[...] │
+                          └───────────────┘
+
+
+                          Four invocation patterns
+
+         1. Inline           — models.Skill defined directly in Python.
+         2. File-based       — load_skill_from_dir(path/to/skill).
+         3. External / GCS   — load_skill_from_gcs_dir(gs://...).
+         4. Meta             — a skill whose instructions are "create new skills".

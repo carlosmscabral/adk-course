@@ -1,0 +1,51 @@
+module: 22_DeploymentModels
+page: 12_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "When is Agent Engine the right deployment choice over Cloud Run?"
+    expected_keywords: [sessions, managed, Gemini Enterprise, OAuth, long-running, observability, included, ops weight]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "Why is `InMemorySessionService` a production trap for Cloud Run and GKE deployments?"
+    expected_keywords: [pod restart, lost, multi-instance, sticky, DatabaseSessionService, VertexAiSessionService]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "What is wrong with using Cloud Run's default `--concurrency=80` for an ADK agent?"
+    expected_keywords: [LLM, latency, thrash, 3-8 seconds, CPU, p95, lower, 10-25]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "List the four secrets a typical ADK agent has and the right place to store each."
+    expected_keywords: [API key, database, tool credentials, OAuth client, Secret Manager, ADC, Vertex]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "Why must `setup_telemetry()` be called BEFORE `super().set_up()` in `AgentEngineApp`?"
+    expected_keywords: [tracer provider, noop, span, BEFORE, App construction, OTel, ordering]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "An agent loop bug starts emitting 4M tokens/sec. Which two alerts catch this, and which one catches it sooner?"
+    expected_keywords: [billing budget, token-rate, metric, baseline, 2x, runaway, sooner, token rate]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q7
+    prompt: "Why is mixing service identity and end-user identity the #1 source of agent security incidents?"
+    expected_keywords: [audit trail, blast radius, per-user, rate limit, OAuth, service account, scope, owns]
+    accept_paraphrase: true
+    difficulty: hard
+
+  - id: q8
+    prompt: "If you save 30% on Cloud Run compute by switching to GKE, why is the math usually not worth it?"
+    expected_keywords: [ops weight, engineer-hours, $150/hour, cluster, upgrades, on-call, LLM dominates, theatre]
+    accept_paraphrase: true
+    difficulty: hard

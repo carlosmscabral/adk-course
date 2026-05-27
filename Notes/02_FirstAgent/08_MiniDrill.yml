@@ -1,0 +1,64 @@
+module: 02_FirstAgent
+exercise:
+  id: 02_FirstAgent_mini
+  prompt: |
+    Write `Work/hello_agent.py`. It must:
+
+      1. Accept ONE user message from `sys.argv[1]`.
+      2. Build an LlmAgent named "greeter" that uses `gemini-2.5-flash`
+         and an instruction like "Reply in one short sentence."
+      3. Build an `InMemorySessionService` and create a session
+         (app_name="hello", user_id="cli", session_id=str(uuid.uuid4())).
+      4. Build a `Runner` and call `run_async` with the user message
+         wrapped as `types.Content`.
+      5. Print the final response text and ONLY the final response text.
+
+    Example:
+        $ python Work/hello_agent.py "say hi in pirate"
+        Ahoy! Greetings to ye, matey!
+
+    No tools, no callbacks, no fancy printing. Just the loop.
+  scaffolding_hint: |
+    Start by copying the script from page 03 (`first_run.py`) and:
+      - Read the user message from `sys.argv[1]` instead of hard-coding.
+      - Generate `session_id` with `uuid.uuid4()`.
+      - Wrap the whole `main()` in `asyncio.run(main())`.
+      - Don't forget `load_dotenv()` so your API key is found.
+  estimated_minutes: 30
+  verification:
+    type: script_output
+    expect_files: [Work/hello_agent.py]
+    expect_run_output_contains: []   # output is non-deterministic
+    grading_rubric:
+      - "Script reads the user message from sys.argv[1] (NOT hard-coded)"
+      - "Uses gemini-2.5-flash as the model"
+      - "Session is created with a unique session_id (UUID, not a literal)"
+      - "Runner is built once, used once — no per-iteration Runner construction"
+      - "Output to stdout is ONLY the final response text (no debug prints leaking)"
+      - "load_dotenv() is called so GOOGLE_API_KEY is picked up"
+      - "Running `python Work/hello_agent.py 'say hi'` produces non-empty text on stdout"
+  solution_pointer: Solutions/02_FirstAgent/hello_agent.py
+  tutor_notes: |
+    This is a GATE-KEEPER exercise. Most students hit one of these:
+
+    1. Forgetting `asyncio.run(main())` and just calling `main()` — gets
+       a "coroutine was never awaited" warning, no output. Fix: wrap.
+
+    2. Forgetting `load_dotenv()` — gets a 401 from Gemini. Fix: import
+       and call before constructing the agent.
+
+    3. Iterating `runner.run_async(...)` without `async for` — gets a
+       "object Runner.run_async can't be used in 'await' expression" or
+       similar. Reinforce that it's an async **generator**.
+
+    4. Reading `event.content.parts[0].text` without the None guards
+       and crashing on a partial event. Fix: `if event.is_final_response()
+       and event.content and event.content.parts: ...`.
+
+    Only show the solution after the student has hit ≥1 of these AND
+    tried for ≥10 minutes. The wheels coming off is the lesson.
+
+    After they pass, ask: "what one line do you change to swap to
+    SQLite-backed sessions?" (Answer: replace `InMemorySessionService()`
+    with `SqliteSessionService(db_path="sessions.db")`. Everything else
+    is identical.)

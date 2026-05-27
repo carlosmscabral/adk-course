@@ -1,0 +1,56 @@
+module: 09_Skills
+exercise:
+  id: 09_Skills_mini
+  prompt: |
+    Repackage your M1 todo agent as a Skill.
+
+    1. Create a directory `Work/skills/todo-manager/` with a SKILL.md.
+       Frontmatter:
+         name: todo-manager
+         description: Manages a personal todo list. Supports add, list, complete, remove.
+       Body: step-by-step instructions describing how to add, list, complete,
+       and remove todos. Reference the actual tool functions by name.
+
+    2. Keep the underlying Python tool functions from M1
+       (`add_todo`, `list_todos`, `complete_todo`, `remove_todo`).
+
+    3. Create `Work/09_skills_drill.py` that:
+       - Loads the skill via `load_skill_from_dir(...)`.
+       - Builds a `SkillToolset(skills=[todo_skill], additional_tools=[
+         add_todo, list_todos, complete_todo, remove_todo])`.
+       - Wires it into an `Agent(model="gemini-2.5-flash", tools=[toolset])`.
+       - Runs the agent against: "Add 'buy milk' to my list", then
+         "show me my list", then "mark 'buy milk' done".
+
+    4. Verify in the run output that the agent calls `load_skill("todo-manager")`
+       at least once before invoking the underlying tools.
+  scaffolding_hint: |
+    See `agent-skills-tutorial/app/skills/blog-writer/SKILL.md` for the
+    frontmatter shape. The `additional_tools=` slot on `SkillToolset` is
+    documented on page 03.
+  estimated_minutes: 90
+  verification:
+    type: script_output
+    expect_files:
+      - Work/skills/todo-manager/SKILL.md
+      - Work/09_skills_drill.py
+    expect_run_output_contains: ["buy milk", "done", "todo-manager"]
+    grading_rubric:
+      - "SKILL.md frontmatter has `name: todo-manager` matching the dir name."
+      - "Description is concrete and under 1024 chars."
+      - "SkillToolset includes both `skills=` and `additional_tools=`."
+      - "Run output shows the agent invoking `load_skill` at least once."
+      - "Final state reflects 'buy milk' marked complete."
+  solution_pointer: Solutions/09_Skills/skills_drill.py
+  tutor_notes: |
+    Common mistakes:
+    - Naming the dir `todo_manager` (snake_case) but frontmatter says
+      `todo-manager` — the loader will reject it. Make them fix the dir.
+    - Putting tool calls IN the SKILL.md body as code instead of as
+      English instructions. Skills are instructions for the LLM, not code.
+      Tools are the executable side.
+    - Forgetting `additional_tools=` and wondering why the agent says
+      "I don't have a tool to add todos". The skill DESCRIBES how to add;
+      the TOOLS are how it actually happens.
+    Stretch: ask them to add a `references/examples.md` with sample dialogs
+    and have the skill body reference it via `load_skill_resource`.

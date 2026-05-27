@@ -1,0 +1,74 @@
+# Mini-drill for Module 1A — App & Runner Architecture
+
+module: 1A_AppAndRunner
+page: 11_MiniDrill
+
+exercise:
+  id: 1A_AppAndRunner_mini
+  prompt: |
+    Rewrite your `Work/hello_agent.py` from Module 02's mini-drill in the
+    modern 2.0 form. Specifically:
+
+      1. Construct an explicit `App(name="hello_app", root_agent=agent)`.
+      2. Pass the App to the Runner via `Runner(app=app, session_service=...)`.
+         Do NOT use the legacy `Runner(app_name=..., agent=...)` form.
+      3. Pre-seed two state values at `create_session(..., state={...})`:
+           - `user:tier` = "premium"
+           - `app:max_tokens_budget` = 50000
+      4. After the agent's reply, fetch the session again with
+         `session_service.get_session(...)` and print BOTH the final reply text
+         AND the surviving state dict. Confirm the two prefixed keys are present.
+      5. Add a `try`/`finally` around the runtime that calls
+         `await runner.plugin_manager.close()` on exit — even though the
+         plugin list is empty.
+
+    Example:
+        $ python Work/1A_hello_app.py "say hi"
+        Hi there!
+        state after turn: {'user:tier': 'premium', 'app:max_tokens_budget': 50000, ...}
+
+  scaffolding_hint: |
+    Start from your Module 02 `Work/hello_agent.py`. The diff is small: import
+    `App` from `google.adk.apps`, wrap the agent, change the Runner signature,
+    pass `state={...}` to `create_session`, add the second `get_session` call.
+
+  estimated_minutes: 30
+
+  verification:
+    type: script_output
+    expect_files:
+      - Work/1A_hello_app.py
+    expect_run_output_contains:
+      - "user:tier"
+      - "app:max_tokens_budget"
+    grading_rubric:
+      - "Uses `App(name=..., root_agent=...)` explicitly — NOT the legacy Runner(agent=, app_name=) form"
+      - "Runner is constructed with `app=app` kwarg, not `agent=` + `app_name=`"
+      - "create_session is called with a `state={...}` arg that includes both `user:tier` and `app:max_tokens_budget`"
+      - "After run_async, calls session_service.get_session(...) and prints the state dict"
+      - "Wraps the main async block in try/finally with `await runner.plugin_manager.close()`"
+      - "load_dotenv() is called so GOOGLE_API_KEY is found"
+      - "Final reply text is printed (in addition to the state dict)"
+
+  tutor_notes: |
+    Common mistakes:
+
+    1. Importing `App` from the wrong path. Correct: `from google.adk.apps import App`.
+       Common wrong: `from google.adk import App` (does not exist).
+
+    2. Passing both `app=` and `app_name=` to Runner. That works (app_name overrides
+       app.name) but is rarely what they want. If you see both, ask why — usually
+       a leftover from Module 02 they forgot to delete.
+
+    3. Forgetting that `state={...}` goes on `create_session`, not on `Runner` or
+       `App`. The Session owns state; the App declares structure.
+
+    4. Calling `runner.plugin_manager.close()` without `await` — silently a no-op
+       (coroutine is never awaited). Watch for the "coroutine was never awaited"
+       warning at exit.
+
+    After they pass, probe: "what would you add to the App if your agent had to
+    survive a Cloud Run instance restart mid-conversation?"
+    (Expected answer: `resumability_config=ResumabilityConfig(is_resumable=True)`
+    AND switch to a persistent session service. They need both — neither alone is
+    enough.)

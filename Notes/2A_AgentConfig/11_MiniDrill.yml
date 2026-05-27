@@ -1,0 +1,76 @@
+# Mini-drill for Module 2A — Agent Config (YAML)
+# The tutor reads this file, asks the student to perform `prompt`, then grades against
+# `verification`. For `type: script_output` the tutor runs `expect_files[0]` and checks
+# stdout. For `type: code_review` the tutor walks the rubric items against the student's
+# diff aloud. For `type: llm_judge` the tutor IS the judge — applies the rubric, names
+# the verdict per item, justifies in one sentence each.
+
+module: 2A_AgentConfig
+page: 11_MiniDrill
+
+exercise:
+  id: 2A_AgentConfig_mini
+  prompt: |
+    Take the hello_agent from Module 02 (a single Python `LlmAgent` with one `get_weather`
+    tool) and rewrite it as a YAML-driven agent. Produce three deliverables in
+    `Work/2A_drill/`:
+
+    1. `root_agent.yaml` — declares name, model (`gemini-2.5-flash`), description,
+       instruction, and references the tool via dotted path.
+    2. `tools.py` — defines `get_weather(city: str) -> str` with a proper docstring
+       and type hints.
+    3. `main.py` — loads the YAML via `config_agent_utils.from_config()`, wraps it
+       in `App(name="hello_yaml")`, builds a `Runner` with `InMemorySessionService`,
+       and asks the agent "What is the weather in Tokyo?" Print the final response.
+
+    The agent must successfully call the tool and incorporate its return value into
+    the reply. Run with `uv run python Work/2A_drill/main.py`.
+
+  scaffolding_hint: |
+    Start from `Work/2A_anatomy.yaml` for the YAML shape, `Work/2A_load_yaml.py` for the
+    loader call, and `Work/1A_app_basics.py` for the App + Runner wiring. The tool
+    function lives in Python — YAML only references it via dotted path.
+
+  estimated_minutes: 30
+
+  verification:
+    type: script_output
+
+    expect_files:
+      - Work/2A_drill/root_agent.yaml
+      - Work/2A_drill/tools.py
+      - Work/2A_drill/main.py
+
+    expect_run_output_contains:
+      - "Tokyo"
+
+    grading_rubric:
+      - "root_agent.yaml has the `# yaml-language-server: $schema=...` comment"
+      - "root_agent.yaml uses `tools: [{name: ...}]` with the correct dotted import path"
+      - "tools.py `get_weather` has BOTH a docstring AND `city: str` type hint"
+      - "main.py uses `config_agent_utils.from_config(...)` to load the YAML (not Python `LlmAgent(...)`)"
+      - "main.py wraps the loaded agent in `App(name=..., root_agent=...)` and passes the App to Runner"
+      - "Output mentions Tokyo (proving the tool was called)"
+      - "Bonus: instruction explicitly tells the LLM when to use `get_weather`"
+
+  tutor_notes: |
+    Most common mistakes:
+    1. **Tool reference dotted path off by one** — student writes `tools.get_weather`
+       instead of `Work.2A_drill.tools.get_weather` (or whatever the actual import path
+       is). Symptom: `ModuleNotFoundError` at load time. Fix: match exact `PYTHONPATH`.
+    2. **Forgetting the docstring** on `get_weather`. The agent will load fine but the
+       LLM will never call the tool (no schema). Catch: ask the student to grep for
+       `def get_weather` and confirm there is a `"""..."""` immediately below.
+    3. **Importing `LlmAgent` and constructing it manually** in `main.py`, defeating
+       the YAML. The drill is about the YAML→Python load path; the constructor call
+       should be `from_config(...)`, not `LlmAgent(...)`.
+    4. **Skipping the App wrapper** — using legacy `Runner(app_name=..., agent=...)`.
+       This works but misses the modern construction the drill is testing. Pass with hint.
+
+    Edge case worth probing: ask the student to change `model:` in the YAML
+    (e.g. to `gemini-2.5-flash-lite`) without touching Python and re-run. The change
+    should take effect immediately. This is the diffability win — make them feel it.
+
+    Clean pass: all three deliverables present, runs without exception, mentions Tokyo,
+    no Python `LlmAgent(...)` call anywhere in `main.py`. Pass with hint: works but
+    used legacy Runner construction or missed the `App` wrapper.

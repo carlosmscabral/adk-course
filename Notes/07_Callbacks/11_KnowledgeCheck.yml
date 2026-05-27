@@ -1,0 +1,57 @@
+module: 07_Callbacks
+questions:
+  - id: q1
+    prompt: "Name the 6 sync callback hook points on an LlmAgent."
+    expected_keywords: [before_agent, after_agent, before_model, after_model, before_tool, after_tool]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What does it mean to return None from a callback vs returning a non-None value?"
+    expected_keywords: [passthrough, override, short-circuit, replace]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Why is a `before_tool_callback` a stronger guardrail than an instruction telling the LLM 'never call rm -rf'?"
+    expected_keywords: [enforced, deterministic, model drift, policy, code]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What's the difference between `after_model_callback` and `on_model_error_callback`?"
+    expected_keywords: [success, exception, error, recover, normal path]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "In `llm-auditor`'s critic agent, what data structure does `_render_reference` walk to build the reference list?"
+    expected_keywords: [grounding_metadata, grounding_chunks, web, retrieved_context]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "How do you keep an `on_model_error_callback` from looping infinitely when its own recovery path fails?"
+    expected_keywords: [counter, temp state, flag, bounded retry, propagate]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q7
+    prompt: "When should a callback become a plugin instead?"
+    expected_keywords: [cross-agent, runner, multiple agents, global policy, shared]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q8
+    prompt: "Which CallbackContext attribute is the right correlation id for tracing one user turn end-to-end?"
+    expected_keywords: [invocation_id, stable, one per run_async, correlation]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q9
+    prompt: "In a parent → child sub-agent tree, the parent's callback writes `temp:flag`. The child's callback reads it. What does it see, and why?"
+    expected_keywords: [None, temp scoped to invocation, sub-agent fresh, use no-prefix or app]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q10
+    prompt: "Name two recipes from the cookbook and the canonical hook for each."
+    expected_keywords: [PII redact, after_model, citations, after_model, rate limit, before_model, feature gate, before_tool, audit, after_tool, cache, before_model]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q11
+    prompt: "You've copy-pasted the same PII-redaction callback onto four agents. What's the refactor?"
+    expected_keywords: [plugin, rule of three, runner-level, BasePlugin, promotion]
+    accept_paraphrase: true
+    difficulty: medium

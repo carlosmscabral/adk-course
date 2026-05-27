@@ -1,0 +1,46 @@
+# Mini-drill for Module NN — <Topic>
+# The tutor reads this file, asks the student to perform `prompt`, then grades against
+# `verification`. For `type: script_output` the tutor runs `expect_files[0]` and checks
+# stdout. For `type: code_review` the tutor walks the rubric items against the student's
+# diff aloud. For `type: llm_judge` the tutor IS the judge — applies the rubric, names
+# the verdict per item, justifies in one sentence each.
+
+module: NN_Topic
+page: 08_MiniDrill
+
+exercise:
+  id: NN_Topic_mini
+  prompt: |
+    <Imperative, concrete task. ≤4 sentences. Names the deliverable file(s)
+    and the observable behavior. Examples of inputs to test against.>
+
+  scaffolding_hint: |
+    <One sentence pointing at the template, e.g. "Start from Work/_template_run.py
+    and add your tool above the agent construction.">
+
+  estimated_minutes: 30
+
+  verification:
+    type: script_output           # one of: script_output | code_review | llm_judge
+
+    expect_files:
+      - Work/<deliverable>.py
+
+    expect_run_output_contains:
+      - "<substring1>"
+      - "<substring2>"
+
+    grading_rubric:
+      - "<rubric item 1 — must-have>"
+      - "<rubric item 2 — must-have>"
+      - "<rubric item 3 — must-have>"
+      - "<rubric item 4 — bonus / nice-to-have>"
+
+  # Only set solution_pointer if this drill is a gate-keeper (first instance of a new
+  # pattern) per pedagogical rule #13. Most drills do NOT have a solution.
+  # solution_pointer: ../../Solutions/NN_Topic/<deliverable>.py
+
+  tutor_notes: |
+    <Common mistakes to watch for. The 1-2 most likely failure modes.
+    The edge case worth probing once the basic implementation works.
+    What "pass with hint" vs "clean pass" looks like.>

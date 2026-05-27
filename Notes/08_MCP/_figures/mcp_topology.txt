@@ -1,0 +1,48 @@
+                          MCP Topology (consumer + server)
+
+                       ┌──────────────────────────────┐
+                       │   ADK Agent (LlmAgent)       │
+                       │                              │
+                       │   tools=[                    │
+                       │     MCPToolset(              │
+                       │       connection_params=...  │
+                       │     ),                       │
+                       │   ]                          │
+                       └──────────────┬───────────────┘
+                                      │
+                       MCP wire protocol (JSON-RPC over...)
+                                      │
+                ┌─────────────────────┼─────────────────────┐
+                │                     │                     │
+                ▼                     ▼                     ▼
+       ┌────────────────┐    ┌────────────────┐    ┌────────────────┐
+       │ stdio          │    │ HTTP-SSE       │    │ Streamable HTTP│
+       │ (subprocess,   │    │ (long-lived    │    │ (HTTP +        │
+       │  local)        │    │  event stream) │    │  streaming)    │
+       └────────┬───────┘    └────────┬───────┘    └────────┬───────┘
+                │                     │                     │
+                ▼                     ▼                     ▼
+       ┌────────────────┐    ┌────────────────┐    ┌────────────────┐
+       │ MCP server     │    │ MCP server     │    │ MCP server     │
+       │ as CLI         │    │ at host:port   │    │ at host:port   │
+       │ (uvx, npx, …)  │    │ /sse           │    │ /mcp           │
+       └────────┬───────┘    └────────┬───────┘    └────────┬───────┘
+                │                     │                     │
+                └─────────────────────┴─────────────────────┘
+                                      │
+                                      ▼
+                              External world
+                       (Google Maps, payments, DB, …)
+
+
+   Server side (you write this with FastMCP):
+
+       ┌────────────────────────────────────────────────────┐
+       │   from fastmcp import FastMCP                      │
+       │   mcp = FastMCP("My Server")                       │
+       │                                                    │
+       │   @mcp.tool()                                      │
+       │   def fetch_weather(city: str) -> dict: ...        │
+       │                                                    │
+       │   mcp.run_async(transport="http", port=8080)       │
+       └────────────────────────────────────────────────────┘

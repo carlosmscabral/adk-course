@@ -1,0 +1,66 @@
+module: 10C_BigQueryAgents
+exercise:
+  id: 10C_BigQueryAgents_mini
+  prompt: |
+    Build an `nl_to_bq` agent on the public dataset
+    `bigquery-public-data.london_bicycles`.
+
+    Steps:
+    1. Smoke-test access with `bq ls bigquery-public-data:london_bicycles`.
+    2. Build a schema block (page 02) for at minimum:
+         - `cycle_hire`   (the rentals table; PARTITIONED BY DATE(start_date))
+         - `cycle_stations` (the stations table)
+       Include a sample row each (you can hard-code from the BQ console preview;
+       or fetch with `SELECT * ... LIMIT 1` in a helper).
+    3. Build the agent (page 03 shape):
+         - model: gemini-2.5-flash (upgrade to pro if Flash hallucinates schema)
+         - tools: BigQueryToolset with WriteMode.BLOCKED and tool_filter=['execute_sql']
+         - before_tool_callback: cost_guard with MAX_BYTES = 1 GB
+         - instruction: schema block + NL2SQL guidelines
+    4. Ask the question: "What was the busiest station in 2017?"
+    5. Verify:
+         - Generated SQL includes a partition-pruning predicate on start_date
+           (e.g. WHERE start_date >= '2017-01-01' AND start_date < '2018-01-01')
+         - Cost-guard passes (query is well under 1 GB scan).
+         - Agent returns a specific station name (not "I don't know" / not a stack
+           trace).
+    6. Bonus: ask "show me every rental ever" — verify cost-guard rejects it
+       with a clear message, AND the LLM tries again with a saner query.
+
+  scaffolding_hint: |
+    Start from Work/_template_run.py. Use `from google.adk.tools.bigquery import
+    BigQueryToolset` and `BigQueryToolConfig`. ADC must be set; the public dataset
+    is queryable by any authenticated account.
+
+  estimated_minutes: 75
+  verification:
+    type: script_output
+    expect_files:
+      - Work/10C_nl2bq_agent.py
+      - Work/10C_outputs.txt
+    expect_run_output_contains:
+      - "station"               # specific station name in the answer
+      - "2017"                  # year mentioned
+      - "WHERE"                 # SQL has a filter
+      - "rejected" OR "REJECTED" # cost-guard fired on the bonus
+    grading_rubric:
+      - "Schema block includes partition column for cycle_hire"
+      - "WriteMode.BLOCKED is set explicitly"
+      - "Cost-guard uses dry_run with use_query_cache=False"
+      - "Generated SQL uses a partition predicate on start_date"
+      - "Agent returns a specific station name (not a hallucination)"
+      - "Bonus: cost-guard rejects 'show me every rental' with a clear message"
+  solution_pointer: null  # students should be able to compose from 03/06
+  tutor_notes: |
+    Common mistakes:
+    - WriteMode left at the default (audit and fix).
+    - Forgetting partition info in the schema block → query scans the whole 100M+
+      row table → cost-guard rejects → student blames the cost-guard.
+    - Using `bigquery_nl2sql` from the data-science sample directly without
+      adapting the schema (it'll reference the flights schema). Build a clean
+      version for this dataset.
+    - For the bonus: some students will let the cost-guard error pass without
+      retry. The LLM should see the rejection message and try again — verify
+      the conversation includes a recovery.
+    Pass = busiest station identified correctly (it's usually a station near
+    King's Cross or Waterloo in 2017) AND cost-guard rejects the unbounded query.

@@ -1,0 +1,72 @@
+HITL — full pause/resume lifecycle (tool-confirmation flavor)
+
+──────────────────────────────────────────────────────────────────────────
+Timeline (left-to-right). Each column is one process; arrows cross
+process boundaries via the session store.
+──────────────────────────────────────────────────────────────────────────
+
+  client                Runner                   tool fn                user
+   (Slack /              (your                   (your                 (a real
+    web UI)               server)                 Python code)          human)
+    │                       │                       │                    │
+    │  POST /run            │                       │                    │
+    │ ───────────────────▶  │                       │                    │
+    │                       │  runner.run_async()   │                    │
+    │                       │ ────────────────────▶ │                    │
+    │                       │                       │   ctx.request_     │
+    │                       │                       │   confirmation(    │
+    │                       │                       │     hint="Delete   │
+    │                       │                       │      file X?",     │
+    │                       │                       │     payload={...}, │
+    │                       │                       │   )                │
+    │                       │                       │   return None       │
+    │                       │ ◀──────────────────── │                    │
+    │                       │                       │                    │
+    │                       │  yields Event with    │                    │
+    │                       │  actions              │                    │
+    │                       │   .requested_tool_    │                    │
+    │                       │    confirmations      │                    │
+    │  Event(...)           │                       │                    │
+    │ ◀──────────────────── │   ← INVOCATION DONE   │                    │
+    │                       │     (state persisted) │                    │
+    │                                                                     │
+    │  render approve/reject UI ───────────────────────────────────────▶  │
+    │                                                                     │
+    │  ◀── click "Approve" ──────────────────────────────────────────────│
+    │                                                                     │
+    │  POST /run with        │                                            │
+    │   function_response    │                                            │
+    │   = ToolConfirmation(  │                                            │
+    │     confirmed=True,    │                                            │
+    │     payload={...},     │                                            │
+    │   )                    │                                            │
+    │ ───────────────────▶   │                                            │
+    │                        │  runner.run_async(                         │
+    │                        │    invocation_id=<resume>,                 │
+    │                        │    new_message=function_response,          │
+    │                        │  )                                         │
+    │                        │ ────────────────────▶ │                    │
+    │                        │                       │  ctx.tool_         │
+    │                        │                       │  confirmation      │
+    │                        │                       │  .confirmed = True │
+    │                        │                       │  → execute side    │
+    │                        │                       │    effect          │
+    │                        │                       │  return result     │
+    │                        │ ◀──────────────────── │                    │
+    │  final Event           │                                            │
+    │ ◀───────────────────── │                                            │
+    │                                                                     │
+
+──────────────────────────────────────────────────────────────────────────
+key invariants
+──────────────────────────────────────────────────────────────────────────
+- The tool function is called TWICE: once to request, once on resume.
+  Make the pre-confirm path side-effect free.
+- The pause survives a process restart IFF the session backend is durable
+  (DatabaseSessionService / VertexAiSessionService / SqliteSessionService),
+  not InMemorySessionService.
+- Resume identity = invocation_id + function_call_id. Bind both to the
+  authenticated user on resume; anyone holding the ids can fake-approve.
+- The same pattern works for workflow-graph pauses — see
+  RequestInput in 06_GraphWorkflows/07_HumanInTheLoop. Different event,
+  same suspend/resume contract.

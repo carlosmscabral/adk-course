@@ -1,0 +1,49 @@
+                                   The universal channel adapter
+
+   Slack / Google Chat / Discord / WhatsApp / Email / Pub/Sub
+                        │
+                        │   POST (webhook)
+                        ▼
+            ┌────────────────────────────────┐
+            │   Your FastAPI handler         │
+            │                                │
+            │   1. Verify signature          │
+            │   2. Parse channel event       │
+            │   3. Extract:                  │
+            │        - channel user id  ──┐  │
+            │        - text / payload    │  │
+            │        - thread / channel  │  │
+            │   4. Map → ADK user_id  ◄──┘  │
+            │      session_id =             │
+            │         channel + thread      │
+            │   5. ACK quickly (<3s)        │
+            │      or 200-then-background   │
+            └─────────────┬──────────────────┘
+                          │
+                          │  runner.run_async(user_id, session_id, msg)
+                          ▼
+            ┌────────────────────────────────┐
+            │   ADK Runner + Agent + Tools   │
+            │                                │
+            │   - SessionService persists    │
+            │   - Tools see user_id          │
+            │     in ToolContext             │
+            │   - Streams events back        │
+            └─────────────┬──────────────────┘
+                          │
+                          │  collected reply (or partial updates)
+                          ▼
+            ┌────────────────────────────────┐
+            │   Post back to channel         │
+            │     via channel's REST API     │
+            │     (chat.postMessage,         │
+            │      bot.send_message, etc.)   │
+            └────────────────────────────────┘
+
+   Notes:
+   - User mapping: channel UID -> ADK user_id is your decision (page 02).
+   - Session keying: by channel thread, by DM, or per-message — depends on UX.
+   - Long-running: chat platforms expect <3s ACK; do real work in a background task
+     and post follow-up updates (page 02).
+   - Auth: signature verification at the door; per-user OAuth only when the agent
+     needs to act AS the user.

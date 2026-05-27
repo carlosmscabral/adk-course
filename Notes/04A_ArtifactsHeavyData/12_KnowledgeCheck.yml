@@ -1,0 +1,50 @@
+# Knowledge check for Module 04A — Artifacts & Heavy Data
+# Tutor reads this and asks ONE question at a time, never the whole list.
+# Grade against `expected_keywords` (or use LlmAsJudge with `accept_paraphrase: true`).
+# Record pass/fail per question id back into PROGRESS.md and student_profile.md.
+
+module: 04A_ArtifactsHeavyData
+page: 12_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "Name two values that belong in state and two that belong in an artifact, and one rule of thumb that distinguishes them."
+    expected_keywords: [small, large, binary, bytes, string, PDF, image, kilobyte, dict]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "What is the signature of `tool_context.save_artifact`, and what does it return?"
+    expected_keywords: [filename, Part, version, int, save_artifact]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "Distinguish `inline_data` from `file_data` on a `types.Part`, and give the size threshold for switching from one to the other."
+    expected_keywords: [Blob, FileData, URI, 10 MB, GCS, request body, file_uri]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "When the Runner persists an artifact-saving tool call, what fields on the resulting Event capture the write?"
+    expected_keywords: [actions, EventActions, artifact_delta, filename, version, dict]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "Why does `GcsArtifactService` typically ship in production behind a fallback to `InMemoryArtifactService` rather than alone? What does the fallback protect against?"
+    expected_keywords: [config, missing, bucket, dev, fall back, log, graceful, degrade]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "Describe the heavy-file handoff between two sub-agents: who writes what, who reads what, and what flows through state versus the artifact store?"
+    expected_keywords: [filename, save_artifact, load_artifact, output_key, state, shared session, artifact service]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q7
+    prompt: "Give two of the production gotchas this module names and the standard mitigation for each."
+    expected_keywords: [InMemory, lifecycle, TTL, signed URL, PII, cost, bytes, return, log]
+    accept_paraphrase: true
+    difficulty: hard

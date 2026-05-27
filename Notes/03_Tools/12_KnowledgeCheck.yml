@@ -1,0 +1,52 @@
+module: 03_Tools
+questions:
+  - id: q1
+    prompt: "What turns a Python function into a tool the LLM can see?"
+    expected_keywords: [FunctionTool, docstring, type hints, bare function]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Why does the docstring matter for a FunctionTool?"
+    expected_keywords: [schema, description, when to call, LLM]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "What does adding a `tool_context: ToolContext` parameter give your tool, and is it visible to the LLM?"
+    expected_keywords: [state, actions, escalate, hidden, not in schema, injected]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "Name two built-in tools and one use case each."
+    expected_keywords: [google_search, load_memory, exit_loop, transfer_to_agent]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What is an `AgentTool` and how is it shaped, from the calling agent's perspective?"
+    expected_keywords: [agent, wrapped, sub-agent, looks like a tool, composition]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "If a tool raises an exception, what happens in the agent loop?"
+    expected_keywords: [event, error, LLM sees, surfaces, retry]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q7
+    prompt: "In the Computer Use loop, how does Gemini decide where to click on the page?"
+    expected_keywords: [screenshot, pixel, coordinates, ComputerState, vision]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q8
+    prompt: "Which three abstractions does the ADK Computer Use surface consist of, and which one do YOU implement?"
+    expected_keywords: [BaseComputer, ComputerUseToolset, ComputerState, implement BaseComputer, Playwright]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q9
+    prompt: "You want to put `VertexAiRagRetrieval` and a BigQuery FunctionTool on the same agent. What goes wrong and how do you fix it?"
+    expected_keywords: [sole tool, only tool, sub-agent, AgentTool, ValueError, split]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q10
+    prompt: "How do you discover whether a new built-in tool has a single-instance constraint?"
+    expected_keywords: [docs, runtime ValueError, source, grep, cannot be used with]
+    accept_paraphrase: true
+    difficulty: medium

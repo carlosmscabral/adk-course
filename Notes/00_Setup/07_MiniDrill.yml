@@ -1,0 +1,38 @@
+module: 00_Setup
+exercise:
+  id: 00_Setup_mini
+  prompt: |
+    Open `adk-samples/python/agents/fun-facts/fun_facts/agent.py` and edit
+    the `instruction=` string to give the agent a totally different
+    personality (e.g., "speak only in haiku" or "answer like a 1920s
+    newsreel narrator"). Re-run `adk run fun_facts` and confirm the same
+    question now produces a visibly different style of answer.
+
+    Do NOT touch `model=`, `tools=`, or `name=`. Only the instruction
+    string.
+  scaffolding_hint: |
+    Make a backup first: `cp fun_facts/agent.py fun_facts/agent.py.bak`.
+    Ask the same question both times (e.g., "tell me a fact about whales")
+    so the *style* delta is obvious.
+  estimated_minutes: 15
+  verification:
+    type: script_output
+    expect_files: []
+    expect_run_output_contains: []
+    grading_rubric:
+      - "Student successfully edits `instruction=` and saves the file"
+      - "Re-running `adk run fun_facts` produces output in the new style"
+      - "Student can articulate what changed (the system prompt) and what stayed identical (model, tools, plumbing)"
+  solution_pointer: null
+  tutor_notes: |
+    The point is muscle memory: the instruction string IS the agent's
+    personality. Many students underestimate how much leverage one line
+    of text has.
+
+    Common mistake: editing the file but forgetting to save before
+    re-running `adk run`. The CLI re-imports on each invocation, so the
+    fix is just to save and re-run.
+
+    If the student is skeptical the change took effect, have them ask the
+    SAME question twice with both versions and read the responses
+    side-by-side. The style delta should be unmissable.

@@ -1,0 +1,46 @@
+                       HOW A STATE WRITE FLOWS
+                       ───────────────────────
+
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  Tool runs:                                                          │
+   │     tool_context.state["user:name"] = "Carlos"                       │
+   └──────────────────────┬───────────────────────────────────────────────┘
+                          │
+                          ▼
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  ADK packages the change as a `state_delta` on the tool-result       │
+   │  Event:                                                              │
+   │                                                                      │
+   │     Event(                                                           │
+   │       author="myagent",                                              │
+   │       content=Content(parts=[Part(function_response=...)]),          │
+   │       actions=EventActions(                                          │
+   │         state_delta={"user:name": "Carlos"},  ← here                 │
+   │       ),                                                             │
+   │     )                                                                │
+   └──────────────────────┬───────────────────────────────────────────────┘
+                          │
+                          ▼
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  Runner appends the Event to the Session and applies the delta:      │
+   │                                                                      │
+   │     "user:" prefix  →  written to user_state[user_id], visible       │
+   │                         across ALL of this user's future sessions    │
+   │     "app:"  prefix  →  written to app_state, visible to ALL users    │
+   │     "temp:" prefix  →  applied for this invocation only, dropped     │
+   │     (no prefix)     →  written to this Session only                  │
+   └──────────────────────┬───────────────────────────────────────────────┘
+                          │
+                          ▼
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  Next iteration of the agent loop:                                   │
+   │  When the Runner re-loads state for the next LLM call, the value     │
+   │  is visible. The LLM (and any tool) can read it via:                 │
+   │                                                                      │
+   │     instruction="Hi, {user:name}!"      ← prompt template            │
+   │     tool_context.state["user:name"]     ← direct read                │
+   └──────────────────────────────────────────────────────────────────────┘
+
+  Key insight: state isn't "mutated" — it's "appended via deltas attached
+  to events." The current view of state is the fold of all deltas in the
+  event log. Replayable, auditable, persisted-by-default.

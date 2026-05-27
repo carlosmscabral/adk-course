@@ -1,0 +1,75 @@
+# Mini-drill for Module 24 — Channel Integrations
+
+module: 24_ChannelIntegrations
+page: 13_MiniDrill
+
+exercise:
+  id: 24_ChannelIntegrations_mini
+  prompt: |
+    Wire your M1 todo agent behind a Slack OR Discord bot using the
+    webhook→Runner pattern. (Pick one; either is full credit.)
+
+    1. `Work/24_channels/bot_app.py` —
+       - Import (or copy) your M1 todo agent.
+       - Build a FastAPI handler at `/webhook/<platform>`.
+       - Verify the platform signature.
+       - Parse the incoming event into a normalized dict
+         (text, channel_user_id, thread/channel id).
+       - ACK in <500ms; do the agent work in a `BackgroundTasks` callback.
+       - Post the reply back to the platform using the appropriate SDK
+         (`slack-sdk` for Slack, `httpx` for Discord follow-up).
+
+    2. Local setup:
+       - For Slack: create a dev workspace + app per detour `[[Slack_Bots]]`.
+       - For Discord: create a server + app at discord.com/developers.
+       - Use `ngrok http 8000` to expose your local handler.
+
+    3. Demonstrate:
+       - DM the bot "add buy milk", "add walk dog", "list".
+       - Watch the placeholder edit pattern (page 02 UX pattern A).
+       - Show the handler ACK time stays <1s even when the agent
+         takes 3-5s to reply.
+
+  scaffolding_hint: |
+    See `Notes/24_ChannelIntegrations/03_SlackBot.md` (Slack) or
+    `Notes/24_ChannelIntegrations/05_DiscordBot.md` (Discord) for the
+    full handler shape. Both pages have copy-pasteable signature
+    verifiers. The `ambient-expense-agent` sample is the closest
+    real reference for the deferred/background pattern.
+
+  estimated_minutes: 120
+
+  verification:
+    type: code_review
+
+    expect_files:
+      - Work/24_channels/bot_app.py
+
+    grading_rubric:
+      - "Signature verifier runs BEFORE any JSON parsing or body inspection."
+      - "Handler returns within 500ms regardless of agent runtime (BackgroundTasks)."
+      - "user_id is namespaced (`slack:U...` or `discord:...`), not raw channel UID."
+      - "session_id keyed by thread/channel (not per-message, unless explicitly stateless)."
+      - "Self-message loop is guarded (Slack: check bot_id; Discord: not applicable)."
+      - "Placeholder message posts immediately; final reply edits in place (page 02 UX A)."
+      - "Bonus: rate-limit chat.update / interaction follow-up edits to platform limits."
+
+  tutor_notes: |
+    Common mistakes:
+    - Verifying after `await request.json()` consumed the body. The signature
+      check fails because the body bytes are gone. Fix: read body, verify,
+      THEN parse. Push back on any code that does the wrong order.
+    - Synchronous agent call in the handler → 5s ACK → platform retries →
+      student confused why 3 replies arrived. Easy to diagnose if you check
+      the platform's webhook delivery dashboard.
+    - Re-running on every message including the bot's own — infinite loop.
+      Make them watch the bot's behavior when they don't filter.
+    - Hardcoding the bot token in source. Fail until it's in env or
+      Secret Manager.
+    Stretch:
+    - Add a slash command (`/todo add X`) in addition to the @mention flow.
+    - Add multimedia: send the bot a photo of a sticky note with "add: X";
+      Gemini reads the text, the agent adds to the todo list. Uses page 09's
+      `fetch_and_attach` pattern.
+    - Persist with `DatabaseSessionService` so a restart doesn't lose the
+      todo lists.

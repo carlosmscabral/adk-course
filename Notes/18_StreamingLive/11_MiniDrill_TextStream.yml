@@ -1,0 +1,45 @@
+module: 18_StreamingLive
+exercise:
+  id: 18_StreamingLive_text_stream
+  prompt: |
+    Build a CLI that streams an agent reply token-by-token, printing each
+    chunk with a wall-clock timestamp relative to the start of the turn.
+
+    Requirements:
+    - Use `InMemoryRunner` + a single `Agent` on `gemini-2.5-flash`.
+    - Iterate `runner.run_async(...)` with `async for`.
+    - For each event, print `[<elapsed>s <TAG>] <text>` where TAG is
+      "chunk" if the event is partial and "FINAL" if `turn_complete`.
+    - Send the user prompt "Explain async generators in three sentences."
+    - At the end, print the total elapsed seconds.
+
+    Acceptance:
+    - stdout shows at least 3 lines tagged "chunk" with DIFFERENT
+      elapsed timestamps (not all equal within rounding).
+    - Exactly one line tagged "FINAL".
+    - Total elapsed printed at the end.
+  scaffolding_hint: |
+    Start from `Work/_template_run.py` (the basic InMemoryRunner skeleton).
+    Use `time.time()` snapshots; convert with `f"{t - t0:.2f}"`.
+  estimated_minutes: 30
+  verification:
+    type: script_output
+    expect_files: [Work/18_text_stream.py]
+    expect_run_output_contains: ["chunk", "FINAL"]
+    grading_rubric:
+      - "Uses `async for` over `runner.run_async(...)`, not collected into a list"
+      - "At least 3 distinct chunk timestamps appear"
+      - "FINAL event is detected via `event.turn_complete is True`, not by position"
+      - "Handles empty/no-content events without crashing"
+  solution_pointer: null
+  tutor_notes: |
+    Common mistakes:
+    - Filtering events on `event.author == "agent"` and missing chunks that
+      have no author set. Just check `event.content and event.content.parts`.
+    - Forgetting that `text` can be `None` for events that are only signaling
+      `turn_complete`. Default to empty string.
+    - Calling `list(runner.run_async(...))` (TypeError: object is not iterable).
+      That's the whole point — it's an *async* iterator.
+    If they only ever see ONE chunk: the model might be small enough that
+    the response fits in a single packet. Ask for a longer answer
+    ("explain in 5 paragraphs") to force multiple chunks.

@@ -1,0 +1,49 @@
+# Knowledge check for Module 23 — Frontend Integration
+# The tutor reads this file and asks ONE question at a time, never the whole list.
+# Grade against `expected_keywords` (or use LlmAsJudge with `accept_paraphrase: true`).
+
+module: 23_FrontendIntegration
+page: 13_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "What's the rule for where `user_id` comes from in a production frontend — does the client mint it?"
+    expected_keywords: [auth, verified, token, never invented, server-derived]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "Describe pattern A vs pattern B for who mints `session_id`."
+    expected_keywords: [frontend, backend, lazy create, round-trip, UUID]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "Why can't browser `EventSource` set an `Authorization: Bearer` header, and what are two common workarounds?"
+    expected_keywords: [spec, constructor, cookie, query string, fetch polyfill]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "How does a tool function see the authenticated user's email, given that tools don't see HTTP headers?"
+    expected_keywords: [session state, user prefix, ToolContext, write at session creation]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "If you naively render every SSE event's text into the chat bubble, what bug appears and why?"
+    expected_keywords: [partial, final, doubled, consolidated, append vs replace]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "When would you upload files via signed URL straight to GCS instead of through your FastAPI backend?"
+    expected_keywords: [large, OOM, body limit, backend memory, direct upload, >10MB]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q7
+    prompt: "What's the production migration path from `adk web` to a custom branded frontend, and what stays the same?"
+    expected_keywords: [api_server, same wire, get_fast_api_app, swap UI, sessions persist]
+    accept_paraphrase: true
+    difficulty: hard

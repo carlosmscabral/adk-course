@@ -1,0 +1,72 @@
+module: 16_ProductionSecurity
+exercise:
+  id: 16_ProductionSecurity_mini
+  prompt: |
+    Take your M4 auditor (critic + reviser + eval suite from module 14).
+
+    Add TWO guardrails:
+
+    1. **Input PII redaction** (Recipe 1 from the cookbook).
+       Use regex to redact emails and US-style SSNs (NNN-NN-NNNN)
+       BEFORE the prompt reaches the model.
+
+    2. **Output toxicity filtering** (Recipe 2 from the cookbook).
+       Use an LLM-as-judge (gemini-2.5-flash-lite is fine) that replies
+       SAFE / UNSAFE on the assistant's final reply. Replace UNSAFE replies
+       with a canned message.
+
+    Then test both:
+
+    A. Send: "My email is alice@example.com and my SSN is 123-45-6789.
+            Please review this code: ..."
+       Verify (via your OTel trace from module 15): the model-input span
+       carries `<email>` and `<ssn>` placeholders, not the originals.
+
+    B. Send: a prompt crafted to elicit a toxic reply
+       (the easiest is to ask the auditor to be deliberately cruel
+       in its critique; or use a known jailbreak prefix).
+       Verify the OUTPUT contains the canned safety message,
+       not the toxic content.
+
+    Also: log every guardrail decision with the structured shape from
+    page 08 § 4. Confirm at least one decision row exists per test.
+  scaffolding_hint: |
+    - Build the redactor as a `before_model_callback`.
+    - Build the toxicity filter as an `after_model_callback`.
+    - For the LLM-judge, use InMemoryRunner with the judge agent;
+      pass the model's reply as a single Content. Parse "UNSAFE" in
+      the judge response.
+    - For the guardrail log, write to stdout with a fixed JSON shape;
+      do NOT add it to the prompt or session state.
+  estimated_minutes: 90
+  verification:
+    type: script_output
+    expect_files:
+      - Work/16_ProductionSecurity/guarded_auditor.py
+      - Work/16_ProductionSecurity/test_pii_input.txt
+      - Work/16_ProductionSecurity/test_toxic_output.txt
+      - Work/16_ProductionSecurity/guardrail_decisions.jsonl
+    expect_run_output_contains:
+      - "<email>"
+      - "<ssn>"
+      - "safety filter"   # or your canned message text
+      - "guardrail_block" # the structured log row
+    grading_rubric:
+      - "PII regex covers emails AND SSNs (NNN-NN-NNNN format)."
+      - "Redaction happens BEFORE the model, verified via trace span attribute."
+      - "Toxicity judge uses a SEPARATE, smaller model (not the same model as the agent)."
+      - "Toxic output is REPLACED with a canned message, not just logged."
+      - "Each guardrail decision is logged with layer, reason, trace_id, session_id."
+      - "Session is NOT poisoned: a second turn after a blocked turn does NOT re-leak the redacted content."
+  solution_pointer: null  # not a gate-keeper
+  tutor_notes: |
+    Common mistakes:
+    - Redacting the response instead of the request (PII still leaks to model).
+    - Using the same model for the judge as for the agent (cost + injection risk).
+    - Forgetting that `before_model_callback` mutates `llm_request.contents` —
+      the student may rebind a local variable and wonder why nothing changes.
+    - For the toxicity test, students sometimes pick a prompt that the BASE
+      model refuses on its own; then the judge never fires. Suggest they
+      use the auditor's *critique* style — easier to push to "harsh" toxicity.
+    Stretch goal: add Recipe 4 (rate limit per user) and trigger it with
+    a tight loop of 11 requests in 60s.

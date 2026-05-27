@@ -1,0 +1,65 @@
+# Mini-drill for Module 23 — Frontend Integration
+
+module: 23_FrontendIntegration
+page: 14_MiniDrill
+
+exercise:
+  id: 23_FrontendIntegration_mini
+  prompt: |
+    Build a minimal vanilla-JS SPA that talks to your M1 todo agent over SSE.
+
+    1. `Work/23_frontend/todo_backend.py` —
+       - Import (or copy) your M1 todo agent.
+       - Wrap it in FastAPI with `get_fast_api_app(agents_dir=..., web=False)`.
+       - Add CORS middleware allowing your dev origin.
+       - Run on port 8000.
+
+    2. `Work/frontend/todo_spa.html` —
+       - One HTML file, no framework.
+       - On load: mint a `session_id` with `crypto.randomUUID()`; hardcode `user_id="dev-user"`.
+       - Text input + Send button.
+       - Stream `POST /run_sse` and render tokens to the page.
+       - Disable input while a turn is in flight, re-enable on `turn_complete`.
+       - Bonus: render tool calls as separate chips (page 10 pattern).
+
+    3. Open the HTML with `python -m http.server 9000`. Send three messages:
+       "add buy milk", "add walk dog", "list my todos".
+
+  scaffolding_hint: |
+    See `Notes/23_FrontendIntegration/05_CustomSPApattern.md` for the HTML
+    scaffold and `Notes/23_FrontendIntegration/08_StreamingPartialResults.md`
+    for the partial-vs-final pattern. The `deep-search` sample frontend
+    (`adk-samples/python/agents/deep-search/frontend/`) is a fuller example.
+
+  estimated_minutes: 90
+
+  verification:
+    type: code_review
+
+    expect_files:
+      - Work/23_frontend/todo_backend.py
+      - Work/frontend/todo_spa.html
+
+    grading_rubric:
+      - "Backend uses `get_fast_api_app(web=False)` (NOT `adk api_server` standalone)."
+      - "CORS middleware is configured with explicit origins (not '*')."
+      - "Frontend mints `session_id` with `crypto.randomUUID()` on page load."
+      - "Frontend's POST body matches ADK's `/run_sse` schema (`appName/app_name`, `userId/user_id`, `sessionId/session_id`, `newMessage`)."
+      - "SSE parser handles partial events (does not double-render the final consolidated event)."
+      - "Input is disabled until `turn_complete` arrives."
+      - "Tool call chips render distinctly from text (bonus)."
+
+  tutor_notes: |
+    Common mistakes:
+    - Hard-coding `user_id` is fine for the drill, but flag that in real apps
+      this comes from auth (page 02). Don't let the student internalize the
+      anti-pattern.
+    - Appending text from EVERY event (partial AND final) → doubled output.
+      They'll either show me the right fix (skip non-partial OR replace on
+      final) or they'll have the bug and need to find it.
+    - Forgetting `\n\n` SSE delimiter handling — they'll get one chunk per
+      `read()` call regardless of `\n\n` boundaries unless they buffer.
+    Stretch:
+    - Add an "abort" button that closes the EventSource mid-stream and tells
+      the backend to cancel (will need module 4B's cancel surface).
+    - Add Firebase Auth and replace the hard-coded user_id (page 02).

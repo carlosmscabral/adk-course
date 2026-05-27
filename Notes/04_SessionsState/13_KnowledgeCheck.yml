@@ -1,0 +1,67 @@
+module: 04_SessionsState
+questions:
+  - id: q1
+    prompt: "What's the difference between a Session and its state?"
+    expected_keywords: [container, conversation, events, dict, key-value]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Name the four state prefixes and the scope of each."
+    expected_keywords: [user, app, temp, none, session, invocation]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "How do you make a value in the instruction template optional vs. required?"
+    expected_keywords: [question mark, "?", optional, required, error]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "When you write `tool_context.state['x'] = 'y'` inside a tool, when does the change become visible to the next LLM call?"
+    expected_keywords: [state_delta, tool result event, next iteration, applied]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "What does `output_key='summary'` on an LlmAgent do?"
+    expected_keywords: [reply, text, state, summary, automatic, final response]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "Why is storing an API key in `state['user:api_key']` a bad idea?"
+    expected_keywords: [logged, events, dashboards, leak, persisted]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Which session backend should you use for a single-instance app that needs persistence, with the least infra?"
+    expected_keywords: [DatabaseSessionService, sqlite, db_url, file]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q8
+    prompt: "What does `ContextCacheConfig(min_tokens=2048, ttl_seconds=300)` do, and when does the cache invalidate?"
+    expected_keywords: [prefix, reuse, system instruction, tool schemas, TTL, instruction change, model change]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q9
+    prompt: "When does `ContextCompactionConfig` trigger a summarization pass, and what does it do with the original events?"
+    expected_keywords: [compaction_interval, keep_recent_events, summarizer, inactive, on disk, hidden from LLM]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q10
+    prompt: "Why is templating `{user:name}` into a system instruction bad for context caching?"
+    expected_keywords: [per-user, different prefix, cache miss, separate entry, no cross-user reuse]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q11
+    prompt: "What does `Runner.rewind(session_id=..., to_event_id=..., state_overrides=...)` do — and what does it NOT do?"
+    expected_keywords: [marks inactive, replays state, non-destructive, does not undo side effects, idempotency]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q12
+    prompt: "You ran `adk migrate session` from sqlite to Vertex AI. Sessions show up but tools that reference artifacts fail. Why?"
+    expected_keywords: [artifact bytes, references only, separate backend, GcsArtifactService, migrate artifacts first]
+    accept_paraphrase: true
+    difficulty: hard
+  - id: q13
+    prompt: "After a session rewind, your compaction summary still references events that are no longer active. What's the fix?"
+    expected_keywords: [re-summarize, disable compaction, recompute, branch interaction]
+    accept_paraphrase: true
+    difficulty: hard

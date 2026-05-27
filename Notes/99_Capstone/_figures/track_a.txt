@@ -1,0 +1,45 @@
+                       TRACK A — RESEARCH ASSISTANT
+
+                  ┌─────────────────────────────────────┐
+                  │           Workflow (graph)          │
+                  └────────────┬────────────────────────┘
+                               │
+              ┌────────────────┼─────────────────────┐
+              ▼                ▼                     ▼
+       ┌────────────┐   ┌────────────┐        ┌────────────┐
+       │ Researcher │   │ Summarizer │   ←──  │   Critic   │
+       └─────┬──────┘   └─────┬──────┘        └─────┬──────┘
+             │                │                     │
+             │ google_search  │                     │  rubric-based eval
+             │ MCPToolset(    │  output_schema=     │
+             │   doc-store)   │  Summary            │
+             │                │                     │
+             ▼                ▼                     ▼
+         events            events                 events
+              │                │                     │
+              └────────────────┴─────────────────────┘
+                               ▼
+                  ┌─────────────────────────────────┐
+                  │   Session  (SqliteSession)      │
+                  │   Memory   (VertexAi RAG)       │
+                  │   Artifacts (Cloud Storage)     │
+                  └─────────────────────────────────┘
+                               │
+                               ▼
+                  ┌─────────────────────────────────┐
+                  │  to_a2a(workflow_root)          │
+                  │  → AgentCard at /.well-known/   │
+                  │     agent.json                  │
+                  └─────────────────────────────────┘
+                               │
+                               ▼
+                          External clients
+                          (other ADK agents, web UI,
+                           CLI, RemoteA2aAgent peers)
+
+   Cross-cutting:
+     • LoggingPlugin + custom AnalyticsPlugin (BigQuery)
+     • before_model_callback (token budget guard)
+     • after_tool_callback (cite-source enforcement)
+     • OpenTelemetry → Cloud Trace
+     • AgentEvaluator: 8 eval cases, LlmAsJudge + TrajectoryEvaluator

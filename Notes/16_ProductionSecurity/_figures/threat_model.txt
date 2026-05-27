@@ -1,0 +1,35 @@
+Threat model for an LLM agent (STRIDE-ish, agent flavor)
+
+                          ┌─────────────┐
+   user prompt ─────────► │   AGENT     │ ◄───── tool outputs (web pages, DB rows, MCP results)
+                          │  (LLM + 🛠) │
+                          └──────┬──────┘
+                                 │
+                                 ▼
+                          (tool invocations,
+                           DB writes, $$$)
+
+Threats and where they enter:
+
+  ┌─────────────────────────┬───────────────────────────────┬───────────────────────┐
+  │ Threat                  │ Entry point                   │ Defended by           │
+  ├─────────────────────────┼───────────────────────────────┼───────────────────────┤
+  │ DIRECT prompt injection │ user prompt                   │ input filter (M16/02) │
+  │ INDIRECT injection      │ tool output (web/RAG/MCP)     │ output sanitizer +    │
+  │                         │                               │ structured outputs    │
+  │ JAILBREAK               │ user prompt                   │ system instruction +  │
+  │                         │                               │ LLM-judge filter      │
+  │ EXFILTRATION            │ model → tool args, model →    │ tool-arg whitelist,   │
+  │                         │ free-text user reply          │ output regex scrubber │
+  │ UNAUTHORIZED ACTION     │ model → tool call             │ auth on tool +        │
+  │                         │                               │ before_tool_callback  │
+  │ COST RUNAWAY            │ loop bug, prompt bloat        │ token-budget plugin,  │
+  │                         │                               │ session cost cap      │
+  │ HALLUCINATION-AS-FACT   │ model output                  │ eval suite +          │
+  │                         │                               │ grounding/citations   │
+  │ SESSION POISONING       │ stored harmful turn re-       │ never persist filtered│
+  │                         │ injected on next turn         │ content to session    │
+  └─────────────────────────┴───────────────────────────────┴───────────────────────┘
+
+Read this as a checklist when you draw your agent's architecture.
+Every arrow on the left is a place an attacker (or a confused tool) can poison the system.

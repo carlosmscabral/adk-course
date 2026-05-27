@@ -1,0 +1,37 @@
+module: 99_Capstone
+questions:
+  - id: q1
+    prompt: "Name 3 modules whose patterns you used in your capstone, and one sentence each on why."
+    expected_keywords: [agent, tool, state, memory, callback, plugin, A2A, MCP, eval, observability]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "Which shared requirement was hardest to satisfy, and what did you cut to make it work?"
+    expected_keywords: [trade-off, scope, evals, A2A, memory, callbacks, observability]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q3
+    prompt: "Looking at the decision flowchart from module 20, would your track's choice be different if you had to deploy on AWS instead of GCP? Why?"
+    expected_keywords: [LangGraph, ADK, cloud-neutral, Vertex, alternative, portability]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "Which OpenTelemetry span tells you something you couldn't have learned from logs alone?"
+    expected_keywords: [LLM call duration, tool execution, distributed, span tree, parent-child]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "If your eval pass rate is 80%, what's the right next step?"
+    expected_keywords: [analyze failures, root-cause, add cases, iterate, prompt tuning]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q6
+    prompt: "What's one thing that worked in your capstone that you don't fully understand yet?"
+    expected_keywords: [honesty, gap, follow-up, internals, future learning]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q7
+    prompt: "In the 'why ADK' paragraph in your README, what did you concede that LangGraph would have done as well or better?"
+    expected_keywords: [LangGraph, portability, ecosystem, tutorials, LangSmith, cloud-neutral]
+    accept_paraphrase: true
+    difficulty: medium

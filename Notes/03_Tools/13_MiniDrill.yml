@@ -1,0 +1,72 @@
+module: 03_Tools
+exercise:
+  id: 03_Tools_mini
+  prompt: |
+    Write `Work/calc_agent.py`. It must:
+
+      1. Define FOUR tools: `add`, `subtract`, `multiply`, `divide`. Each
+         takes two `float` args and returns a `float` (or a dict with
+         `{"error": ...}` for divide-by-zero).
+      2. Each tool has a one-line docstring saying what it does.
+      3. Build an `LlmAgent(name="calc", model="gemini-2.5-flash", ...)`
+         with `tools=[add, subtract, multiply, divide]`.
+      4. Build the Runner + InMemorySessionService skeleton from Module 02.
+      5. In a single `main()`, ask the agent the following four questions
+         IN ORDER, all in the same session:
+            - "What is 3 + 4?"
+            - "What is 7 * 5?"
+            - "What is 20 / 4?"
+            - "What is 10 - 5?"
+         Print each final response on its own line.
+
+    Expected final output should contain "7", "35", "5", "5" — though the
+    LLM may phrase them in sentences ("3 + 4 equals 7.").
+
+    Bonus: ask "What is 10 / 0?" as a fifth question. Verify your divide
+    tool's error handling shows through.
+  scaffolding_hint: |
+    - Start from your `Work/hello_agent.py` (Module 02 mini-drill).
+    - Add the four tool functions ABOVE the agent construction.
+    - Loop over four questions, calling `runner.run_async` for each.
+      Reuse the same `session_id` so the agent has context (not strictly
+      needed for arithmetic, but good practice).
+  estimated_minutes: 45
+  verification:
+    type: script_output
+    expect_files: [Work/calc_agent.py]
+    expect_run_output_contains: ["7", "35", "5"]
+    grading_rubric:
+      - "Each tool function has type hints on parameters AND return type"
+      - "Each tool has a one-line docstring describing the operation"
+      - "Tools are passed as `tools=[add, subtract, multiply, divide]` (bare functions OR wrapped — both fine)"
+      - "Agent successfully invokes the right tool for ≥3 of the 4 arithmetic questions (LLM picks correctly)"
+      - "Divide-by-zero either returns an error dict or is handled gracefully (no traceback printed)"
+      - "Runner is built ONCE, not once per question"
+      - "Same session_id is used for all four questions"
+  solution_pointer: Solutions/03_Tools/calc_agent.py
+  tutor_notes: |
+    This is the first GATE-KEEPER tool exercise. Common mistakes:
+
+    1. `def add(a, b):` with no type hints. The LLM might guess, but
+       reliability drops. Have them add `: float, : float, -> float` and
+       re-run; they should see better tool-picking.
+
+    2. `def add(a: float, b: float) -> float: pass` (forgot docstring).
+       Result: LLM may never call `add`. Have them add a one-liner.
+
+    3. Building a fresh Runner per question. Works but reveals
+       misunderstanding of Module 02. Probe and correct.
+
+    4. Different session_id per question. Works for arithmetic but
+       defeats the point — push them to reuse it.
+
+    5. Divide-by-zero raising `ZeroDivisionError`. The tool-error event
+       surfaces and the LLM apologizes; that's actually fine behavior
+       from the framework's standpoint. The cleaner pattern is to
+       return `{"error": "division_by_zero"}` — push them to refactor
+       once they see the messy version.
+
+    After they pass, ask: "what would you change to add a `power(a, b)`
+    tool?" (Answer: add one function with the right hints + docstring,
+    add it to the `tools=` list. Nothing else changes. THAT is the
+    reflex this module trains.)

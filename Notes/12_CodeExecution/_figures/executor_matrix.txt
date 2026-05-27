@@ -1,0 +1,30 @@
+CODE EXECUTORS — pick by environment, not by convenience
+=========================================================
+
+           |  Isolation  |  Network?  |  Latency  |  Where code runs    |  Use in prod?
+-----------+-------------+------------+-----------+---------------------+----------------
+ Unsafe    |  NONE       |  full      |  ~ms      |  your Python proc   |  ❌ dev only
+ Local     |  (your cwd) |            |           |                     |
+-----------+-------------+------------+-----------+---------------------+----------------
+ BuiltIn   |  Google     |  none      |  ~s       |  Gemini's sandbox   |  ✅ for math/
+ (Gemini)  |  internal   |            |           |  (model-side)       |     plot
+-----------+-------------+------------+-----------+---------------------+----------------
+ VertexAi  |  Google     |  configur. |  ~s       |  Vertex code        |  ✅ default
+ Code Exec |  managed    |            |           |  interpreter        |     prod choice
+-----------+-------------+------------+-----------+---------------------+----------------
+ Container |  Docker     |  per-      |  +startup |  your container     |  ✅ on-prem /
+           |  (yours)    |  policy    |  cost     |  runtime            |     full ctrl
+-----------+-------------+------------+-----------+---------------------+----------------
+ Gke       |  k8s pod    |  per-      |  +startup |  your GKE cluster   |  ✅ if already
+           |  (yours)    |  policy    |  cost     |                     |     on GKE
+-----------+-------------+------------+-----------+---------------------+----------------
+ Agent     |  Agent      |  configur. |  ~s       |  Agent Engine       |  ✅ Vertex prod
+ Engine    |  Engine     |            |           |  sandbox            |     deployments
+ Sandbox   |             |            |           |                     |
+
+Rule of thumb:
+  Dev local + you wrote the prompts:  UnsafeLocal (and only here).
+  Math / charts only, no I/O:         BuiltInCodeExecutor.
+  General Python in Vertex deploy:    VertexAiCodeExecutor.
+  Your infra, your sandbox:           Container or Gke.
+  Agent Engine deployment:            AgentEngineSandboxCodeExecutor.

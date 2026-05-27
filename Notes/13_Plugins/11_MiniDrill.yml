@@ -1,0 +1,51 @@
+module: 13_Plugins
+exercise:
+  id: 13_Plugins_mini
+  prompt: |
+    Build a custom `ToolCallSummaryPlugin` and prove it works end-to-end.
+
+    Spec:
+      1. Subclass `BasePlugin`. Track tool calls per tool name across the session.
+      2. Implement `before_tool_callback` to increment a counter on each call.
+      3. Implement an "on session end" or "after agent" hook to print the
+         summary: e.g. `tool_calls = {"search": 3, "calculator": 2}`.
+      4. Wire it onto an agent that has at least 2 different tools (re-use
+         M1's calc agent + add a `google_search` or stub `search(q)` tool).
+      5. Run a 5-turn conversation that triggers each tool at least once.
+      6. Verify the summary correctly reflects the 5 tool calls.
+
+    Stretch (if time):
+      - Compose your plugin alongside `LoggingPlugin()` and observe interleaved output.
+      - Move the counter to use `tool_context.state["app:tool_counts"]` instead
+        of `self`. Discuss the trade-off (cross-process vs in-memory).
+
+  scaffolding_hint: |
+    Start from Work/_template_run.py. The plugin can be just a class in a
+    single file:
+        class ToolCallSummaryPlugin(BasePlugin): ...
+    Pass it in plugins=[...] to Runner.
+
+  estimated_minutes: 60
+
+  verification:
+    type: script_output
+    expect_files: [Work/13_plugins/counter_plugin.py]
+    expect_run_output_contains: ["tool_calls", "search", "calculator"]
+    grading_rubric:
+      - "Plugin subclasses BasePlugin with `name` set in __init__"
+      - "before_tool_callback returns None (observe-only, no short-circuit)"
+      - "Summary prints at session end / after run"
+      - "Counts match the actual number of tool invocations from the run"
+      - "Stretch: state-backed counter shows up in session.state with `app:` prefix"
+
+  solution_pointer: null
+
+  tutor_notes: |
+    Common pitfalls:
+      - Forgetting `super().__init__(name=...)` → plugin fails to register.
+      - Defining the hook as `def` not `async def` → silently never fires.
+      - Returning a non-None from `before_tool_callback` and accidentally
+        short-circuiting the tool call. Walk through the contract.
+      - Trying to access self._counts across processes / requests in a
+        deployed setting. Use this as the segue to "where does plugin state
+        live in prod?" — answer: external store, not the instance.

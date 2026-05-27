@@ -1,0 +1,29 @@
+  WHAT YOU WRITE                              WHAT GEMINI SEES (auto-generated)
+  ──────────────                              ─────────────────────────────────
+
+  def get_weather(                            {
+      city: str,                                "name": "get_weather",
+      units: str = "metric",                    "description": "Return the current
+  ) -> dict:                                       weather for the given city.",
+      """Return the current                     "parameters": {
+      weather for the given                       "type": "object",
+      city.                                       "properties": {
+                                                    "city":  {"type": "string"},
+      Args:                                         "units": {
+        city: City name, e.g. "Paris".                "type": "string",
+        units: "metric" or "imperial".                "default": "metric"
+                                                    }
+      Returns:                                    },
+        Dict with `temp` and                      "required": ["city"]
+        `conditions`.                           }
+      """                                       // return type informs how ADK
+      ...                                       // serializes the tool result
+                                              }
+
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  type hint  →  parameters[name].type                                     │
+  │  default    →  parameters[name].default + drops from `required`          │
+  │  docstring  →  description (so the LLM knows WHEN to call it)            │
+  │  Args: section → property-level descriptions (best practice; optional)   │
+  │  return type → ADK serializes the return as JSON before feeding back     │
+  └──────────────────────────────────────────────────────────────────────────┘

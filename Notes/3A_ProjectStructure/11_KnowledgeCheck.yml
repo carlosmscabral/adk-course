@@ -1,0 +1,50 @@
+# Knowledge check for Module 3A — Project Structure
+# The tutor reads this file and asks ONE question at a time, never the whole list.
+# Grade against `expected_keywords` (or use LlmAsJudge with `accept_paraphrase: true`).
+# Record pass/fail per question id back into PROGRESS.md and student_profile.md.
+
+module: 3A_ProjectStructure
+page: 11_KnowledgeCheck
+
+questions:
+  - id: q1
+    prompt: "Name the three pressures that justify escalating from a single-file agent to the small (3-file) layout."
+    expected_keywords: [prompt sprawl, tool reuse, testability]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q2
+    prompt: "What two variable names does `adk web` look for at the top of an agent module, and what's the difference?"
+    expected_keywords: [root_agent, app, App, lifecycle, container]
+    accept_paraphrase: true
+    difficulty: easy
+
+  - id: q3
+    prompt: "Your agent appears in `adk web`'s dropdown but never responds. What's the most likely cause and the fix?"
+    expected_keywords: [__init__.py, from . import agent, empty, missing import]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q4
+    prompt: "In `pyproject.toml`, which line tells the build backend to actually include your agent code in the wheel?"
+    expected_keywords: [hatch, packages, build targets, wheel, packages=]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q5
+    prompt: "What's the single argument to `extra_packages=` in an Agent Engine `deploy.py`, and why do beginners get it wrong?"
+    expected_keywords: [package directory, __init__, agent folder, not file, not root]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q6
+    prompt: "Why should `eval/` be a separate top-level directory from `tests/`, instead of merged as `tests/eval/`?"
+    expected_keywords: [pytest discovery, adk eval, separate concerns, CI gating, behavior vs code]
+    accept_paraphrase: true
+    difficulty: medium
+
+  - id: q7
+    prompt: "When should you create a `shared/` directory inside an agent package?"
+    expected_keywords: [two callers, second sub-agent, actual reuse, not pre-emptive]
+    accept_paraphrase: true
+    difficulty: hard

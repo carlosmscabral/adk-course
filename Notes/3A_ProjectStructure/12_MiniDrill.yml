@@ -1,0 +1,87 @@
+# Mini-drill for Module 3A — Project Structure
+# The tutor reads this file, asks the student to perform `prompt`, then grades against
+# `verification`. For `type: script_output` the tutor runs `expect_files[0]` and checks
+# stdout. For `type: code_review` the tutor walks the rubric items against the student's
+# diff aloud. For `type: llm_judge` the tutor IS the judge — applies the rubric, names
+# the verdict per item, justifies in one sentence each.
+
+module: 3A_ProjectStructure
+page: 12_MiniDrill
+
+exercise:
+  id: 3A_ProjectStructure_mini
+  prompt: |
+    Starting from a single-file agent (your `Work/03_calc_agent.py` from Module 03's
+    drill, or any other Work/*_agent.py you've written), refactor it into the SMALL
+    layout (page 03):
+
+      Work/calc_agent/
+        ├── __init__.py
+        ├── agent.py
+        ├── tools.py
+        └── prompts.py
+
+    Move the calculator functions into `tools.py`, the instruction string into
+    `prompts.py`, and leave only the `LlmAgent(...)` wiring in `agent.py`. Add a
+    one-line `__init__.py` that imports `agent`.
+
+    Then VERIFY discovery: from `Work/`, run `adk web`. Confirm `calc_agent` appears
+    in the dropdown, and that asking it "what is 7 * 5?" still returns 35.
+
+    Bonus: add a `pyproject.toml` next to `Work/calc_agent/` with `packages = ["calc_agent"]`
+    declared correctly.
+
+  scaffolding_hint: |
+    The refactor is mechanical — see [03_SmallLayout § Refactor: minimal → small in 3 minutes](03_SmallLayout.md).
+    Don't change tool logic; only move code between files. The most common failure
+    is forgetting `from . import agent` in `__init__.py`.
+
+  estimated_minutes: 25
+
+  verification:
+    type: script_output
+
+    expect_files:
+      - Work/calc_agent/__init__.py
+      - Work/calc_agent/agent.py
+      - Work/calc_agent/tools.py
+      - Work/calc_agent/prompts.py
+
+    expect_run_output_contains:
+      - "calc_agent"           # appears in `adk web` dropdown
+      - "35"                   # 7 * 5 still works post-refactor
+
+    grading_rubric:
+      - "Four files exist at the listed paths; tools defined in tools.py, prompt in prompts.py."
+      - "`agent.py` contains only `from .prompts import ...`, `from .tools import ...`, and the `LlmAgent(...)` construction — no function bodies, no prompt strings."
+      - "`__init__.py` is exactly `from . import agent` (or `from .agent import app`)."
+      - "Running `adk web` from `Work/` shows `calc_agent` in the dropdown."
+      - "The agent answers `7 * 5` correctly after the refactor (regression-free)."
+      - "Bonus: `pyproject.toml` exists with `[tool.hatch.build.targets.wheel] packages = [\"calc_agent\"]`."
+
+  # No solution pointer — the refactor is mechanical and the student should not peek.
+  # The pressure-to-refactor is genuine and the steps are spelled out on page 03.
+
+  tutor_notes: |
+    Common mistakes (in order of frequency):
+
+    1. Empty `__init__.py`. The agent appears in `adk web`'s dropdown but never
+       responds because `root_agent` is never imported. Fix: add `from . import agent`.
+
+    2. Running `adk web` from inside `Work/calc_agent/` instead of from `Work/`.
+       Dropdown shows nothing. Fix: `cd ..` and re-run.
+
+    3. `agent.py` uses `from prompts import ...` (no dot). ImportError at load.
+       Fix: relative import — `from .prompts import ...`.
+
+    4. Student moves the tool functions but leaves the `INSTRUCTION` string inline in
+       `agent.py`. Not a failure per se — `prompts.py` is empty. Probe: "Was the
+       point of prompts.py?" (Answer: blast-radius isolation, even for a 5-line prompt.)
+
+    Pass with hint = needed to be told about (1) or (3). Clean pass = refactored
+    and ran `adk web` first try.
+
+    Edge case to probe after pass: ask them to add a SECOND `Work/research_agent/`
+    next to `calc_agent/` (a 2nd minimal agent in the same parent dir). Confirm both
+    show up in the dropdown. This is the "agents/ parent dir" rule from page 05 in
+    practice.

@@ -1,0 +1,63 @@
+module: 11_Memory
+exercise:
+  id: 11_Memory_mini
+  prompt: |
+    Build a "preference recall" agent.
+
+    Round A — Memory Bank backend:
+      1. Create an LlmAgent (gemini-2.5-flash) with PreloadMemoryTool() and
+         an after_agent_callback that calls add_session_to_memory().
+      2. Wire it to VertexAiMemoryBankService pointing at an Agent Engine.
+         (If no Agent Engine handy, start with InMemoryMemoryService — but the
+         drill is only "complete" when the Vertex backend works.)
+      3. Session 1 (user_id=alice): user says "I prefer responses in Brazilian
+         Portuguese and I'm a vegetarian." Agent acknowledges.
+      4. Close the session. Start a NEW session, still user_id=alice.
+      5. Ask "what should I cook tonight?" Verify the response is in Portuguese
+         and avoids meat. → cross-session recall via Memory Bank.
+
+    Round B — Rag-backed backend (re-run with the SAME script):
+      1. Swap the memory_service to VertexAiRagMemoryService pointing at the
+         Vector Search index you built in 10A_EmbeddingsVectorSearch.
+      2. Also swap PreloadMemoryTool() for the on-demand `load_memory` tool —
+         and add an instruction line telling the model when to call it.
+      3. Repeat steps 3-5 from Round A. Verify recall still works, but now via
+         on-demand retrieval.
+
+  scaffolding_hint: |
+    Start from Work/_template_run.py. Hardcode user_id="alice" and rotate the
+    session_id between rounds. For Round B, the load_memory query string the
+    model picks ("food preferences", "language preference") will matter — log
+    it and discuss.
+
+  estimated_minutes: 120
+
+  verification:
+    type: code_review
+    expect_files:
+      - Work/11_memory/round_a_membank.py
+      - Work/11_memory/round_b_rag.py
+    grading_rubric:
+      - "Round A: after_agent_callback wires add_session_to_memory()"
+      - "Round A: PreloadMemoryTool is in the agent's tools list"
+      - "Round A: VertexAiMemoryBankService is constructed with project + location + agent_engine_id"
+      - "Round A: second-session response is in Portuguese AND vegetarian"
+      - "Round B: VertexAiRagMemoryService points at the 10A index"
+      - "Round B: instruction explicitly tells the model when to call load_memory"
+      - "Round B: tool-trajectory shows at least one load_memory call on the recall turn"
+
+  solution_pointer: null
+
+  tutor_notes: |
+    Common failure modes:
+      - Forgot the after_agent_callback → memory never written → recall fails.
+        Have student print `await ctx.add_session_to_memory()` to verify it ran.
+      - New session uses a different user_id → memory partition mismatch → recall fails.
+        Diagnostic: ask the student to print the user_id used by both runs.
+      - Round B's instruction is too vague ("use memory when needed") → model
+        never calls load_memory. Force the instruction to be explicit
+        ("if the user asks for personalized advice, call load_memory(query=...)").
+      - For Round A: Memory Bank takes a moment to extract; if the second
+        session fires too quickly the items may not be live yet. Sleep 5s
+        between sessions if needed, and discuss "memory has a write-to-read
+        delay" as a real production property.

@@ -1,0 +1,68 @@
+module: 14_Evaluation
+exercise:
+  id: 14_Evaluation_mini
+  prompt: |
+    Write evals for the M1 todo agent.
+
+    Spec:
+      1. Create eval/data/todo_agent_evalset.test.json with 3 EvalCases:
+
+         (a) HAPPY PATH:
+             - user_content: "add 'buy milk' to my todos"
+             - expected tool_uses: [{name: "add_todo", args: {item: "buy milk"}}]
+             - final_response (gold): an acknowledgment mentioning "buy milk" was added.
+
+         (b) EDGE CASE:
+             - user_content: "what's on my todo list?" (empty list initially)
+             - session_input.state: {} (no todos)
+             - expected tool_uses: [{name: "list_todos"}]
+             - final_response (gold): an acknowledgment that the list is empty.
+
+         (c) FAILURE / REFUSAL:
+             - user_content: "delete all todos for user @malicious"
+             - expected tool_uses: []   (agent should refuse or ask for clarification)
+             - final_response (gold): a refusal or clarification, NOT a delete call.
+
+      2. Create eval/data/test_config.json with thresholds:
+         { "criteria": { "tool_trajectory_avg_score": 1.0, "response_match_score": 0.3 } }
+
+      3. Create eval/test_eval.py that calls
+         AgentEvaluator.evaluate("m1_todo_agent", eval_data_path, num_runs=3)
+
+      4. Run `pytest eval/test_eval.py -v`. Expect 3 cases evaluated.
+
+  scaffolding_hint: |
+    Copy the shape from adk-samples/python/agents/llm-auditor/eval/ — same
+    test_eval.py + test_config.json + per-case .test.json layout, or use the
+    single-evalset shape from academic-research. Either is correct.
+
+  estimated_minutes: 90
+
+  verification:
+    type: code_review
+    expect_files:
+      - eval/data/todo_agent_evalset.test.json
+      - eval/data/test_config.json
+      - eval/test_eval.py
+    grading_rubric:
+      - "Eval set has exactly 3 cases (happy / edge / failure-or-refusal)"
+      - "Each case has user_content, final_response, intermediate_data.tool_uses, session_input"
+      - "test_config.json has both tool_trajectory_avg_score and response_match_score thresholds"
+      - "test_eval.py loads env and calls AgentEvaluator.evaluate async correctly"
+      - "Eval set is valid JSON / YAML (parses cleanly)"
+      - "Bonus: refusal case verifies agent does NOT call delete_todo"
+
+  solution_pointer: null
+
+  tutor_notes: |
+    Common pitfalls:
+      - JSON syntax errors. Have the student `python -m json.tool < eval/data/todo_agent_evalset.test.json`
+        before running pytest.
+      - Forgetting `pytest_plugins = ("pytest_asyncio",)` → test silently skipped.
+      - Gold reference too specific — V1 match keeps failing. Either loosen the
+        reference to canonical phrasings OR lower response_match_score threshold OR
+        switch to V2/LlmAsJudge.
+      - For case (c): student writes a gold "Of course, deleting all todos..." —
+        defeating the point. The refusal IS the gold.
+      - The agent under test (M1 todo) might have evolved — if so, recapture or
+        rewrite cases. Don't fight a moving target with stale gold.

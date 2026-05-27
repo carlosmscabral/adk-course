@@ -1,0 +1,72 @@
+module: 17_AdvancedModels
+exercise:
+  id: 17_AdvancedModels_mini
+  prompt: |
+    Build a two-sub_agent graph where the sub_agents use DIFFERENT models:
+
+      - sub_agent A — Gemini Flash (gemini-2.5-flash)
+      - sub_agent B — Claude (via Vertex OR via LiteLlm; either is fine)
+
+    The root_agent can be any model — pick a cheap Flash-Lite.
+
+    Wire them under a single InMemoryRunner. Send a prompt that forces
+    BOTH sub_agents to participate (e.g., "draft and then critique a
+    haiku about pelicans" with A drafting and B critiquing).
+
+    Verification:
+      1. The OTel trace shows TWO LLM spans with DIFFERENT model.name
+         attributes (one gemini-*, one claude-*).
+      2. The event stream shows author=A for one event and author=B for
+         another within the same Runner.run_async() invocation.
+
+    Bonus: add a fallback — if Claude raises (timeout, 429, auth error),
+    the root retries the critic step on Gemini Flash. Capture the
+    fallback decision in the guardrail-decision log from module 16.
+  scaffolding_hint: |
+    - import patterns:
+        from google.adk.agents import LlmAgent
+        from google.adk.models import Gemini
+        # Pick ONE of:
+        from google.adk.models import ClaudeLlm
+        # or:
+        from google.adk.models.lite_llm import LiteLlm
+    - If you use ClaudeLlm directly, you need a GCP project with Claude
+      enabled in Vertex Model Garden and the location set to a Claude
+      region (e.g., us-east5).
+    - If you use LiteLlm, set ANTHROPIC_API_KEY in .env for the direct
+      Anthropic path, OR keep ADC for the vertex_ai/ path.
+    - Reuse your OTel exporter from module 15 to capture the trace.
+  estimated_minutes: 75
+  verification:
+    type: script_output
+    expect_files:
+      - Work/17_AdvancedModels/mixed_models.py
+      - Work/17_AdvancedModels/trace_with_two_models.txt
+    expect_run_output_contains:
+      - "gemini-2.5-flash"
+      - "claude"
+    grading_rubric:
+      - "Both sub_agents instantiated as LlmAgent with different model= values."
+      - "Trace file contains AT LEAST two distinct model.name attribute values across LLM spans."
+      - "Events list shows distinct authors for each sub_agent."
+      - "(Bonus) Fallback path triggered on simulated Claude error; verified by injecting a forced exception."
+  solution_pointer: null  # not a gate-keeper
+  tutor_notes: |
+    Common mistakes:
+    - Student uses ClaudeLlm without enabling Claude in Vertex Model Garden
+      first → permission error. Fall back to LiteLlm with the direct
+      Anthropic API key.
+    - Picks a prompt where the model only invokes one sub_agent. Coach
+      them to write a prompt that REQUIRES both (draft AND critique,
+      research AND write, etc.) — sequential or parallel sub_agent
+      transfer.
+    - Confuses LlmAgent's `model` argument with `name` — the trace
+      attribute they want is `model.name` (the model id), not the agent's
+      `name`.
+    - For the bonus: students often wrap the model in a try/except in
+      their own code; better is to use a thin BaseLlm wrapper or a
+      callback that catches the error and re-runs against the fallback
+      model. Either is acceptable; both build muscle memory.
+    Stretch:
+    - Have them measure latency per sub_agent from the trace. Was Claude
+      slower or faster? Was the cost worth it on the auditor task?

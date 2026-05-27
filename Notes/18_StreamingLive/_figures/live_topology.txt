@@ -1,0 +1,23 @@
+Live API topology — bidirectional (run_live)
+============================================
+
+  +-------------+        +--------------------+        +-------------+
+  |             |  send  |                    |  send  |             |
+  |   Client    |------->|  LiveRequestQueue  |------->| Gemini Live |
+  | (browser /  |        |  (in-process pipe) |        |  (gRPC bidi)|
+  |  Python)    |<-------|     run_live()     |<-------|             |
+  |             |  recv  |                    |  recv  |             |
+  +-------------+        +--------------------+        +-------------+
+        ^                          ^                          ^
+        |                          |                          |
+   WebSocket /            ADK in-process queue          gRPC streaming
+   audio device           — Runner threads its          RPC over HTTP/2
+   (PCM 16k mono in       outputs into the              with protobuf
+    PCM 24k mono out)     event stream                  frames
+
+  Two concurrent coroutines:
+    upstream_task   : reads from client, calls queue.send_realtime/send_content
+    downstream_task : `async for event in runner.run_live(...)`, sends to client
+
+  `asyncio.gather(upstream_task(), downstream_task())` runs both.
+  Either failing cancels the other. Always close the queue in finally.

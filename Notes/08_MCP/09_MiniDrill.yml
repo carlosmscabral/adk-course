@@ -1,0 +1,50 @@
+module: 08_MCP
+exercise:
+  id: 08_MCP_mini
+  prompt: |
+    Two-process MCP drill.
+
+    1. Write a FastMCP server `Work/weather_mcp_server.py` that exposes
+       ONE tool `fetch_weather(city: str) -> dict`. Mock implementation:
+       return `{"city": city, "temp_c": 21, "condition": "sunny"}` for any
+       city. Run on port 8080 over Streamable-HTTP.
+
+    2. Write a client agent `Work/weather_agent.py` that uses
+       `MCPToolset(StreamableHTTPConnectionParams(url=...))` to consume the
+       server. Model: `gemini-2.5-flash`. Instruction: "Answer weather
+       questions using the fetch_weather tool."
+
+    3. Add a driver block that runs the agent against the prompt
+       "What's the weather in Tokyo?" and prints the final reply.
+
+    4. Open the MCPToolset inside an `async with` block so it cleans up.
+  scaffolding_hint: |
+    See `currency-agent/mcp-server/server.py` for the FastMCP shape.
+    See `currency-agent/currency_agent/agent.py` for the consumer shape.
+    Start the server in one terminal; run the agent in another.
+  estimated_minutes: 90
+  verification:
+    type: script_output
+    expect_files:
+      - Work/weather_mcp_server.py
+      - Work/weather_agent.py
+    expect_run_output_contains: ["sunny", "Tokyo"]
+    grading_rubric:
+      - "Server uses `@mcp.tool()` decorator and exposes `fetch_weather`."
+      - "Server starts with `mcp.run_async(transport=\"http\", ...)`."
+      - "Client uses `StreamableHTTPConnectionParams` with the matching URL."
+      - "Client wraps the toolset in `async with` (no subprocess / connection leak)."
+      - "Run output ends with a reply containing weather info from the mock."
+  solution_pointer: Solutions/08_MCP/weather_drill.py
+  tutor_notes: |
+    Common mistakes:
+    - Wrong URL path: FastMCP HTTP transport exposes `/mcp` by default.
+      Student writes `http://localhost:8080` and the connection fails.
+    - Forgetting to install `fastmcp` (`pip install fastmcp httpx`).
+    - Starting the agent before the server is ready — connection is lazy
+      but first tool call fails immediately. Have them retry with the
+      server running.
+    - Skipping `async with` and wondering why a port stays bound after exit.
+    Stretch: ask them to add a `before_tool_callback` that injects a
+    fake `Authorization` header into the MCP call and confirm the
+    server sees it (add a `print(request.headers)` in the FastMCP tool).

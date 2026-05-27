@@ -1,0 +1,37 @@
+module: 15_Observability
+questions:
+  - id: q1
+    prompt: "Why are agents harder to debug from logs alone than ordinary services?"
+    expected_keywords: [non-deterministic, different, trace, run, reproduce]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q2
+    prompt: "What is the relationship between one Runner.run_async() call and an OTel trace?"
+    expected_keywords: [one trace, many spans, trace_id, parent]
+    accept_paraphrase: true
+    difficulty: easy
+  - id: q3
+    prompt: "Name three span attributes ADK emits automatically that you would rely on in production."
+    expected_keywords: [model.name, tool.name, tokens, agent.name, latency, status]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q4
+    prompt: "What goes wrong if you use session.id as a metric label?"
+    expected_keywords: [cardinality, explosion, index, cost, timeseries]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q5
+    prompt: "Why are traces, logs, and metrics complementary rather than redundant?"
+    expected_keywords: [logs, did, traces, shape, metrics, aggregate, time]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q6
+    prompt: "When BigQueryAgentAnalyticsPlugin is wired, what is the only piece of infra you must provision out-of-band?"
+    expected_keywords: [dataset, BigQuery, table auto, manual]
+    accept_paraphrase: true
+    difficulty: medium
+  - id: q7
+    prompt: "Why must the agent never block on the OTel collector being healthy?"
+    expected_keywords: [SPOF, single point, user request, dropped, buffer, BatchSpanProcessor]
+    accept_paraphrase: true
+    difficulty: hard

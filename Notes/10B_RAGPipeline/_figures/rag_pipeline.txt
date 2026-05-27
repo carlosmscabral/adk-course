@@ -1,0 +1,27 @@
+RAG pipeline — full loop:
+
+  ingest                                                       generate
+  ───────                                                      ────────
+  ┌──────┐    chunk    ┌─────┐   embed    ┌─────────┐
+  │  PDF │ ──────────► │chunk│ ──────────►│ vectors │
+  │  MD  │             │chunk│            │ vectors │
+  │ HTML │             │chunk│            │ vectors │
+  └──────┘             └─────┘            └────┬────┘
+                                               │ upsert
+                                               ▼
+                                       ┌───────────────┐
+                                       │ Vector Search │
+                                       │     Index     │
+                                       └───────┬───────┘
+                                               │
+                          ┌────────────────────┘
+                          │ retrieve top-k
+                          ▼
+  user ──► query  ──► [embed query] ──► top-k chunks ──► prompt ──► LLM ──► answer + cites
+                                              │                      ▲
+                                              └── augment ───────────┘
+
+Key insight: the LLM does NOT need fine-tuning. You inject
+the retrieved chunks into the prompt at query time. Freshness
+is just an ingest cadence. Citation comes free — you know
+which chunks you gave it.

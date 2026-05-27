@@ -1,0 +1,33 @@
+Three deployment paths for an ADK agent — what you give up, what you get
+
+                       ┌────────────────────────────────────────────┐
+                       │       Your agent (App + root_agent)        │
+                       │  (identical code under all three paths)    │
+                       └─────────────────┬──────────────────────────┘
+                                         │
+       ┌─────────────────────────────────┼─────────────────────────────────┐
+       │                                 │                                 │
+       ▼                                 ▼                                 ▼
+┌─────────────────┐            ┌─────────────────────┐          ┌────────────────────┐
+│   Cloud Run     │            │   Agent Engine      │          │       GKE          │
+│   ☁️ container   │            │   ☁️ managed        │          │   ☁️ Kubernetes    │
+├─────────────────┤            ├─────────────────────┤          ├────────────────────┤
+│ Dockerfile      │            │ AgentEngineApp      │          │ Helm chart         │
+│ adk deploy      │            │ adk deploy          │          │ adk deploy gke     │
+│   cloud_run     │            │   agent_engine      │          │   (renders YAML)   │
+│ uvicorn @ $PORT │            │ Vertex Runtime      │          │ kubectl apply      │
+├─────────────────┤            ├─────────────────────┤          ├────────────────────┤
+│ + cheap         │            │ + sessions for free │          │ + full control     │
+│ + scale to zero │            │ + auth wired in     │          │ + sidecars, mesh   │
+│ + custom routes │            │ + observability     │          │ + Workload Identity│
+│                 │            │ + safety classifier │          │                    │
+│ – you own auth  │            │                     │          │ – you run k8s      │
+│ – you own obs   │            │ – Google-shaped     │          │ – ops weight       │
+│ – cold start    │            │ – feature lag       │          │                    │
+│ – 60min req cap │            │ – costlier per req  │          │                    │
+└─────────────────┘            └─────────────────────┘          └────────────────────┘
+
+   default for                      default for                  default when you
+   "I just need it                  "build fast, ship             already run GKE
+    on the public                    fast, ride the                or need bespoke
+    internet"                        managed wave"                 networking

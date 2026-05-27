@@ -1,0 +1,58 @@
+Layout evolution — three sizes, two migration triggers
+========================================================
+
+    MINIMAL                          SMALL                              GROWING
+    (prototype, demo)                (~2-5 tools, one agent)            (sub-agents, many tools, eval)
+
+    my_agent/                        my_agent/                          my_agent/
+    └── agent.py                     ├── agent.py                       ├── agent.py
+        # everything here:           ├── tools.py                       ├── prompts/
+        #   - root_agent =           ├── prompts.py                     │   ├── __init__.py
+        #   - def my_tool()          └── __init__.py                    │   ├── root.py
+        #   - INSTR = "..."                                             │   └── critic.py
+        └── __init__.py                                                 ├── tools/
+                                                                        │   ├── __init__.py
+                                                                        │   ├── search.py
+                                                                        │   └── memory.py
+                                                                        ├── sub_agents/
+                                                                        │   ├── __init__.py
+                                                                        │   ├── critic/
+                                                                        │   │   ├── agent.py
+                                                                        │   │   └── prompt.py
+                                                                        │   └── reviser/
+                                                                        │       ├── agent.py
+                                                                        │       └── prompt.py
+                                                                        ├── shared/
+                                                                        │   ├── __init__.py
+                                                                        │   └── auth.py
+                                                                        └── __init__.py
+
+
+    │                                  │                                       │
+    ▼                                  ▼                                       ▼
+    works                              works                                   works
+    ─────────────                      ─────────────                           ─────────────
+    1 file, 1 agent,                   prompts no longer fit                   one of:
+    ≤2 tools, no                       inline; tools want                      • sub_agents appear
+    sub-agents                         their own tests                         • >5 tools (group them)
+                                                                               • shared utility lives
+                                                                                 in >1 sub-agent
+
+    │                                  │
+    │  TRIGGER:                        │  TRIGGER:
+    │  ─ instruction > 30 lines        │  ─ second LlmAgent added (sub-agent)
+    │  ─ adding 3rd tool               │  ─ tools need shared helpers
+    │  ─ tool needs its own test       │  ─ prompts.py grows past 200 lines
+    │  ─ prompt has variants           │
+    ▼                                  ▼
+
+    Move tools into                    Convert files into directories.
+    tools.py; prompts into             tools.py → tools/{search,memory}.py
+    prompts.py.                        prompts.py → prompts/{root,critic}.py
+                                       Add sub_agents/ with one folder per agent.
+
+
+Key invariants (all three layouts):
+  - The agents/ parent directory holds your agent package (e.g. agents/my_agent/).
+  - my_agent/__init__.py imports `agent` so adk CLI can find `root_agent`.
+  - my_agent/agent.py exposes `root_agent = ...` at module top.

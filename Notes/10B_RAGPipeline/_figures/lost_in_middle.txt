@@ -1,0 +1,26 @@
+"Lost in the middle" — relevance vs position-in-prompt:
+
+  recall
+   1.0 │ ●                                            ●
+       │  ●                                          ●
+   0.8 │   ●                                        ●
+       │    ●                                      ●
+   0.6 │     ●                                    ●
+       │      ●                                  ●
+   0.4 │       ● ●  ●  ●  ●  ●  ●  ●  ●  ●  ●  ●
+       │
+   0.2 │
+       │
+   0.0 ┼─────────────────────────────────────────────────►
+       1     5    10   15   20   25   30   35   40   45  position in prompt
+
+  Beginning and end of the context window:  HIGH attention.
+  Middle of the context window:             LOW  attention.
+
+So when you stuff top-10 chunks into the prompt, the LLM is
+~25% less likely to use chunk #5 than chunk #1 or chunk #10
+— even if #5 is the MOST relevant one your retriever found.
+
+Mitigations: re-rank to put best at start; cap top-k smaller
+than instinct says; use re-ranking models that score relevance
+not similarity.

@@ -1,0 +1,24 @@
+2D projection of a 768-dim embedding space (cosine neighbors cluster):
+
+         ^ dim_b
+         |
+         |        "king"  *
+         |              *
+         |          *  "queen"
+         |       *
+         |    "monarch"
+         |
+         |                            "pizza"  *
+         |                                 *
+         |                             "lasagna" *
+         |                                  *
+         |                            "burger"
+         +-------------------------------------> dim_a
+
+    cos(king, queen)   ~= 0.94   (near)
+    cos(king, pizza)   ~= 0.11   (far)
+    cos(pizza, burger) ~= 0.88   (near)
+
+Embeddings collapse 768 dims into a smooth space where
+"nearby" means "semantically related". Cosine sim ignores
+magnitude — only direction matters.

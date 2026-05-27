@@ -1,0 +1,58 @@
+module: 12_CodeExecution
+exercise:
+  id: 12_CodeExecution_mini
+  prompt: |
+    Build a "math homework solver" agent.
+
+    Step 1 — UnsafeLocalCodeExecutor:
+      1. Create an LlmAgent (gemini-2.5-flash) with code_executor=UnsafeLocalCodeExecutor().
+      2. Instruction: "For every math problem, write Python that computes the answer,
+         then explain the result."
+      3. Test with 3 algebra problems:
+           (a) "Solve 3x + 7 = 22 for x."
+           (b) "What is the sum of 1/n for n=1..100?"
+           (c) "Compute the area of a triangle with sides 3, 4, 5."
+         Confirm the executor ran Python (you'll see executable_code and
+         code_execution_result parts in the event log).
+
+    Step 2 — Swap the executor:
+      1. Swap UnsafeLocal for BuiltInCodeExecutor OR VertexAiCodeExecutor
+         (whichever is available in your environment).
+      2. Re-run the 3 problems. Verify same answers.
+      3. Note (in a comment): what changed in your event log / trace?
+
+    Step 3 — Disable and forget UnsafeLocal exists for prod work.
+
+  scaffolding_hint: |
+    Start from Work/_template_run.py. To see the executable_code parts in the
+    event stream, iterate runner.run_async(...) and print
+    `[(p.executable_code, p.code_execution_result) for p in event.content.parts]`
+    for every event.
+
+  estimated_minutes: 45
+
+  verification:
+    type: script_output
+    expect_files: [Work/12_code_execution/math_solver.py]
+    expect_run_output_contains: ["x = 5", "5.1873", "6.0"]
+    grading_rubric:
+      - "Agent has code_executor attached (not a tool wrapper)"
+      - "Three algebra problems all yield correct numerical answers"
+      - "Step 2 swaps the executor cleanly — only one line changes"
+      - "Student names a trade-off they observed between the two executors"
+
+  solution_pointer: null
+
+  tutor_notes: |
+    Common pitfalls:
+      - Student writes a `calculator(a, b, op)` tool instead of using
+        code execution. Push them to use the code path — that's the lesson.
+      - Student forgets the instruction line telling the model to *use* code.
+        Without it, gemini-2.5-flash may try to answer arithmetically. Diagnostic:
+        if no executable_code part appears, the instruction is too weak.
+      - Step 2: if VertexAi requires credentials and the student is in a pure-local
+        env, BuiltIn is the right swap. Both prove the point.
+      - Stretch: have the student ask "compute the SHA-256 of 'hello world'."
+        With UnsafeLocal: trivial. With BuiltIn: depends on allowlist. With
+        VertexAi sandbox: should work. Discuss why the executor's package
+        environment is part of the design choice.

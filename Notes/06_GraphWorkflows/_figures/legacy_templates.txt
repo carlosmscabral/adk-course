@@ -1,0 +1,59 @@
+Legacy workflow templates — composing by nesting
+
+────────────────────────────────────────────────────────────────────────
+story_teller (adk-samples/python/agents/story_teller/) nests all three:
+────────────────────────────────────────────────────────────────────────
+
+    SequentialAgent  (root)
+    │
+    ├── prompt_enhancer                       (LlmAgent)
+    │       writes state["enhanced_prompt"]
+    │
+    ├── LoopAgent  max_iterations=3 ─────────────────────────┐
+    │   └── SequentialAgent  ("chapter_cycle")               │
+    │       │                                                │
+    │       ├── ParallelAgent  ────────────────┐             │
+    │       │   ├── creative_writer  T=0.9     │ both run    │
+    │       │   │   writes state["creative_..."]│ concurrently│ each
+    │       │   └── focused_writer   T=0.2     │             │ iteration
+    │       │       writes state["focused_..."]│             │
+    │       │   ◀─────── join ─────────────────┘             │
+    │       │                                                │
+    │       └── critique_agent                               │
+    │           reads candidates, writes state["current_story"]
+    │                                                        │
+    │   ◀─── 3 iterations later ─────────────────────────────┘
+    │
+    └── editor_agent                          (LlmAgent)
+            writes state["final_story"]
+
+────────────────────────────────────────────────────────────────────────
+template semantics quick-ref
+────────────────────────────────────────────────────────────────────────
+
+SequentialAgent(sub_agents=[A, B, C])
+    A runs to completion → B runs → C runs.
+    Order is fixed.  No LLM voting.
+
+ParallelAgent(sub_agents=[A, B, C])
+    A, B, C launch concurrently.
+    Parent unblocks when all three finish.
+    State after = union of A's, B's, C's writes.
+    ⚠ Two parallel children writing the same output_key = race.
+
+LoopAgent(sub_agents=[A, B], max_iterations=N)
+    Per iteration: run A, then B.  Repeat.
+    Exits early if any child sets actions.escalate=True
+    or invokes the exit_loop built-in tool.
+    Always set max_iterations as a budget cap.
+
+────────────────────────────────────────────────────────────────────────
+when to upgrade to graph (WorkflowAgent, module 06 pages 04+)
+────────────────────────────────────────────────────────────────────────
+
+- need conditional routing (if/else between nodes)
+- need partial joins (k-of-n parallel children)
+- need per-node retries with backoff
+- need HITL pauses (user input mid-pipeline)
+- need cycles that aren't simple counter loops
+- nesting 3+ template levels just to express the shape
