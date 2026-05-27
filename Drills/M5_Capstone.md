@@ -27,7 +27,7 @@ Full spec, building plan, and grading rubric live in:
 
 ## Shared requirements (floor — every track)
 
-- **Composition**: ≥3 agents via `sub_agents` OR `WorkflowAgent` graph.
+- **Composition**: ≥3 agents via `sub_agents` OR `Workflow` graph (`workflow/_workflow.py:148`; re-exported from `google.adk` per `__init__.py:22`).
 - **Tools**: ≥2 (at least 1 not a built-in).
 - **Persistent state**: `DatabaseSessionService` or `SqliteSessionService`.
 - **Memory service**: Vertex Memory Bank, Vertex RAG, or InMemory (with prod-swap note).

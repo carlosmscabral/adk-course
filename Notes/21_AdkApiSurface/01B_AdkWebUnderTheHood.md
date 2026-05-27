@@ -70,12 +70,17 @@ This trips everyone. Two pieces of state, two reload behaviors:
 |-------------------------------|--------------------------------------------------------------------------|
 | The Angular **bundle**        | Cached by the browser. Hard-refresh to update.                            |
 | The **list of apps**          | Re-read on every `/list-apps` call — drop in a new dir, refresh, it's there. |
-| The **agent code itself**     | **Loaded once per process.** Edit `agent.py` → restart `adk web`.        |
+| The **agent code itself**     | Loaded once per process **by default**. Toggle with `--reload_agents` (see below). |
 | The **session state**         | In-memory by default — wiped on restart. Pass `--session_service_uri sqlite:///x.db` to persist across restarts. |
 
-So the dev loop is: edit code → Ctrl+C → `adk web` again. There is no `--reload` flag wired to uvicorn (the framework intentionally avoids it because agent boot can have heavy side effects).
+There are **two distinct reload flags** on `adk web`, and they do different things:
 
-> 🛠 **Have the student run:** start `adk web`, leave it running, edit `agent.py` to change the instruction, refresh the browser. The behavior does **not** change. Then restart `adk web` — now it changes.
+- `--reload/--no-reload` (default **`True`**) — wired straight into `uvicorn.Config(..., reload=reload)` at `cli/cli_tools_click.py:1839`. This is **uvicorn's process-level watcher**: any `.py` file change anywhere uvicorn is watching triggers a full server restart. Disabled on Windows automatically (`_check_windows_reload`).
+- `--reload_agents` (default **`False`**) — passed to `get_fast_api_app(..., reload_agents=...)` (`cli/fast_api.py:396`). This is the **agent-cache live reload**: the loader re-imports the agent package on each invocation instead of caching it in-process. No server restart.
+
+So the caveat on the table above: "agent code: loaded once per process" is only true when `--reload_agents` is **False** (the default). With `--reload_agents`, the loader re-imports per call. The two flags compose: `--no-reload --reload_agents` keeps the uvicorn process stable but still re-imports the agent each time.
+
+> 🛠 **Have the student run:** start `adk web` with all defaults, leave it running, edit `agent.py` to change the instruction. Because `--reload=True` is the default, **uvicorn will restart the process** and the change *will* land on next request. Now restart with `adk web --no-reload --no-reload_agents path/to/agents` and try the same edit — behavior does **not** change until manual Ctrl+C and restart. Finally try `adk web --no-reload --reload_agents` — agent edits land without restarting the server.
 
 ## 🔬 The port and the auth defaults
 
@@ -90,7 +95,7 @@ Bind to `0.0.0.0` only over a tunnel (`ngrok`, `gcloud compute start-iap-tunnel`
 
 ## 🔬 The Visual Builder, briefly
 
-If you launch with the Builder mode enabled, `cli/fast_api.py::_register_builder_endpoints` adds `/builder/*` routes for save/load of `AgentConfig`-style YAML. The Builder is *opt-in* in 2.0 GA and not on the default `adk web` surface yet. Cross-link: [[VisualBuilder]] detour.
+Builder endpoints (`/builder/*` — save/load of `AgentConfig`-style YAML) are wired conditionally inside `cli/fast_api.py`: the registration runs only when `adk web` is the launcher (i.e. `web=True`) **and** the optional `python-multipart` dependency is installed. If multipart is missing, the loader emits a warning and the routes are silently skipped — `adk api_server` never registers them at all. The Builder is *opt-in* in 2.0 GA and gated behind that extra dep. Cross-link: [[VisualBuilder]] detour.
 
 ## ⚠️ Gotcha — "the UI shows my agent but `/run` 404s"
 

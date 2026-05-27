@@ -96,10 +96,11 @@ That `Runner` is the *same class* you built by hand in module 04. The CLI just d
 ## 🔬 Step #5 — `run_interactively` is a 20-line REPL
 
 ```python
-# distilled — the actual function is in src/google/adk/cli/cli.py
+# distilled — the actual function is in src/google/adk/cli/cli.py (~line 208)
 async def run_interactively(runner, session, ...):
+    resume_invocation_id = None
     while True:
-        line = await aioconsole.ainput("[user]: ")
+        line = input("[user]: ")                 # plain sync input — see note below
         if not line:
             continue
         content = types.Content(role="user", parts=[types.Part.from_text(line)])
@@ -107,13 +108,19 @@ async def run_interactively(runner, session, ...):
             user_id=session.user_id,
             session_id=session.id,
             new_message=content,
+            invocation_id=resume_invocation_id,  # lets the loop resume an in-flight
+                                                 # invocation after a long-running tool
+                                                 # completes — None on fresh turns
         ):
             _print_event(event)
         # if event.actions had pending function_calls (long-running tools),
-        # prompt the human for the response
+        # prompt the human for the response and re-enter the loop with
+        # resume_invocation_id set, so the runner picks up where it paused
 ```
 
 `_print_event` is the formatter — it walks `event.content.parts` and prints text vs function-call vs function-response with author labels.
+
+> Note: the real loop uses **synchronous** `input()` — not `aioconsole.ainput`. That call *blocks the event loop* while waiting for the user, which is fine for the dev REPL but means you cannot drop `adk run`'s loop verbatim into a server: a blocking `input()` in an async server would stall every other request.
 
 > 🛠 **Have the student run:** open `src/google/adk/cli/cli.py` and find `run_interactively`. Have them count how many lines it is. The answer is *startling small* — the magic is the runner, not the CLI.
 

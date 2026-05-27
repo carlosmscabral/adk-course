@@ -82,8 +82,8 @@ CRUD verbs:
 
 | Method | Path                                                    | What it does                                        |
 |--------|---------------------------------------------------------|-----------------------------------------------------|
-| POST   | `/apps/{a}/users/{u}/sessions/{s}`                      | Create session with explicit ID. Body: `{"state": {...}}`. |
-| POST   | `/apps/{a}/users/{u}/sessions`                          | Create session with auto-generated ID.              |
+| POST   | `/apps/{a}/users/{u}/sessions`                          | **Modern create.** Body: `CreateSessionRequest{ session_id?, state?, events? }`. Auto-generates `session_id` if omitted. |
+| POST   | `/apps/{a}/users/{u}/sessions/{s}`                      | **Deprecated** (`@deprecated` in `cli/api_server.py:1083`) — use the modern endpoint with `session_id` in the body. Will be removed in a future release. |
 | GET    | `/apps/{a}/users/{u}/sessions/{s}`                      | Fetch full session + events.                        |
 | GET    | `/apps/{a}/users/{u}/sessions`                          | List sessions for that user.                        |
 | DELETE | `/apps/{a}/users/{u}/sessions/{s}`                      | Delete (irreversible in most backends).             |
@@ -102,8 +102,9 @@ APP = "research_assistant"
 USER = "alice"
 SESSION = "sess-001"
 
-# 1. Create session (idempotent: 200 if exists, 200 on first create)
-httpx.post(f"{BASE}/apps/{APP}/users/{USER}/sessions/{SESSION}", json={})
+# 1. Create session — modern endpoint (POST .../sessions with session_id in body)
+httpx.post(f"{BASE}/apps/{APP}/users/{USER}/sessions", json={"session_id": SESSION})
+# Legacy form (deprecated): httpx.post(f"{BASE}/apps/{APP}/users/{USER}/sessions/{SESSION}", json={})
 
 # 2. Send one turn
 resp = httpx.post(

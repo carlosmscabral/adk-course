@@ -4,7 +4,7 @@ page: M2_WorkflowEditor
 title: Milestone M2 — Workflow Editor (legacy vs graph, side by side)
 estimated_minutes: 720
 prereqs: [00_Setup/last, 01_Foundations/last, 02_FirstAgent/last, 03_Tools/last, 04_SessionsState/last, 05_MultiAgent/11, 06_GraphWorkflows/11]
-concepts: [SequentialAgent, ParallelAgent, LoopAgent, WorkflowAgent, dynamic-routing, side-by-side]
+concepts: [SequentialAgent, ParallelAgent, LoopAgent, Workflow, dynamic-routing, side-by-side]
 icon: 🏁
 in_production: false
 detours_suggested: []
@@ -27,7 +27,7 @@ A **research pipeline** that:
 You'll implement this pipeline **twice**:
 
 - **Version A (legacy):** `SequentialAgent` containing a `ParallelAgent` (researchers) followed by a `LoopAgent` (writer + reviewer cycle).
-- **Version B (graph):** a `WorkflowAgent` whose reviewer node yields `Event(route="REVISE")` to cycle back to the writer or `Event(route="APPROVE")` to exit.
+- **Version B (graph):** a `Workflow` (re-exported from `google.adk`; source: `workflow/_workflow.py:148`) whose reviewer node yields `Event(route="REVISE")` to cycle back to the writer or `Event(route="APPROVE")` to exit. (Sketch only — full imports in the canonical sample.)
 
 Then write a short side-by-side comparison.
 
@@ -66,7 +66,7 @@ Then write a short side-by-side comparison.
 Researcher fan-out:
 
 - **Version A** uses a `ParallelAgent` containing 3 fixed `researcher` instances, each with a different `instruction` that hard-codes "angle 1 of 3" / "angle 2 of 3" / "angle 3 of 3" and reads `state["angles"]`.
-- **Version B** uses `ParallelWorker(researcher)` with the upstream planner-equivalent node yielding the list of 3 angles.
+- **Version B** uses `ParallelWorker(researcher)` with the upstream planner-equivalent node yielding the list of 3 angles. (In ADK 2.0 GA, fan-out is achieved by yielding a list from a node — `_ParallelWorker` at `workflow/_parallel_worker.py:35` is the private machinery; you typically don't import it directly.)
 
 (That difference alone is instructive — graphs let you fan out on a dynamic list.)
 

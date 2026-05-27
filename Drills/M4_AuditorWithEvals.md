@@ -151,6 +151,8 @@ Also write `Work/M4/eval/data/test_config.json` with thresholds:
 
 Trajectory at 0.8 (not 1.0) because case 5's expected-empty trajectory creates ambiguity; relax just enough to avoid flakiness.
 
+> 🟡 The flat `criteria` dict shape above is **deprecated** per `agent_evaluator.py:135`. Modern `EvalConfig` shape is preferred: `EvalConfig(criteria={k: BaseCriterion(threshold=v)})`. The old shape is auto-mapped for now — see `agent_evaluator.py:140-143`.
+
 Write `Work/M4/eval/test_eval.py`:
 
 ```python
@@ -207,9 +209,9 @@ Work/M4/
 
 ## 🌟 Stretch goals
 
-1. **Add a `RubricBasedEvaluator`** alongside the default metrics — rubric criteria: "critic_called_search", "reviser_changed_answer", "citation_has_url". Compare your rubric scores against `FinalResponseMatchV1` over the 5 cases.
+1. **Add a `RubricBasedEvaluator`** alongside the default metrics — rubric criteria: "critic_called_search", "reviser_changed_answer", "citation_has_url". Compare your rubric scores against `FinalResponseMatchV2Evaluator` (metric key `final_response_match_v2`; source: `evaluation/final_response_match_v2.py:130`) over the 5 cases.
 2. **Make the safety guard a Plugin** instead of a callback. Subclass `BasePlugin`; override `before_tool_callback`. Notice the difference: now the guard fires for *every* agent in the runner, not just critic. Is that what you want?
-3. **Log eval runs to BigQuery.** Wire `BigQueryAgentAnalyticsPlugin` (module 13) and verify each eval run produces rows in your events table. Cross-link to 15_Observability.
+3. **Log eval runs to BigQuery.** Wire `BigQueryAgentAnalyticsPlugin` (module 13) and verify each eval run produces rows in your events table. Cross-link to 15_Observability. (Deep import required — not in `plugins/__init__.py __all__`: `from google.adk.plugins.bigquery_agent_analytics_plugin import BigQueryAgentAnalyticsPlugin`.)
 4. **Add a 6th case** that uses `LlmAsJudge` to score "is the revised A more accurate than the original A?" Compare judge stability across `num_runs=5` runs.
 
 ## 🤖 Tutor notes

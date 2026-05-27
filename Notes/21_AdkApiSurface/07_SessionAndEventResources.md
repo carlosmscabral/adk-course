@@ -28,8 +28,8 @@ The full CRUD:
 
 | Method | Path                                                    | Body              | Returns                            |
 |--------|---------------------------------------------------------|-------------------|------------------------------------|
-| POST   | `/apps/{a}/users/{u}/sessions/{s}`                      | `{"state": {...}}`| Created session (with `id=s`).     |
-| POST   | `/apps/{a}/users/{u}/sessions`                          | `{"state": {...}}`| Created session (auto-assigned id).|
+| POST   | `/apps/{a}/users/{u}/sessions`                          | `CreateSessionRequest{ session_id?, state?, events? }` | **Modern create.** Pass `session_id` for an explicit ID; omit it for auto-generation. Optionally seed `state` and prior `events`. |
+| POST   | `/apps/{a}/users/{u}/sessions/{s}`                      | `{"state": {...}}`| **Deprecated** (`@deprecated` in `cli/api_server.py:1083`) — use the modern form with `session_id` in the body. Will be removed in a future release. |
 | GET    | `/apps/{a}/users/{u}/sessions/{s}`                      | —                 | Full session + event list.         |
 | GET    | `/apps/{a}/users/{u}/sessions`                          | —                 | `list[Session]` (a JSON array) for that user. |
 | DELETE | `/apps/{a}/users/{u}/sessions/{s}`                      | —                 | `null` body — HTTP 200 with no payload (treat any 2xx as success). |
@@ -68,9 +68,11 @@ Notice **the full event history** is in the response. That can be large (KBs to 
 ## 📡 Creating a session with seed state
 
 ```bash
-curl -sS -X POST "http://localhost:8000/apps/research_assistant/users/alice/sessions/sess-onboard" \
+# Modern endpoint: POST .../sessions with session_id + state in the body.
+curl -sS -X POST "http://localhost:8000/apps/research_assistant/users/alice/sessions" \
   -H "content-type: application/json" \
   -d '{
+    "session_id": "sess-onboard",
     "state": {
       "user:preferred_units": "metric",
       "user:locale": "en-CA",

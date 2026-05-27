@@ -55,8 +55,8 @@ GET  /apps/{app_name}/app-info
 # Session CRUD (page 07)
 GET    /apps/{app_name}/users/{user_id}/sessions/{session_id}
 GET    /apps/{app_name}/users/{user_id}/sessions
-POST   /apps/{app_name}/users/{user_id}/sessions/{session_id}
-POST   /apps/{app_name}/users/{user_id}/sessions
+POST   /apps/{app_name}/users/{user_id}/sessions             ← modern create (body: CreateSessionRequest)
+POST   /apps/{app_name}/users/{user_id}/sessions/{session_id} ← DEPRECATED — use POST .../sessions with session_id in body
 DELETE /apps/{app_name}/users/{user_id}/sessions/{session_id}
 
 # Artifacts (link to 04A Artifacts module)
@@ -80,10 +80,11 @@ APP=research_assistant
 USER=alice
 SESSION=sess-001
 
-# 1. Create the session
+# 1. Create the session (modern endpoint: POST .../sessions with body)
 curl -sS -X POST \
-  "http://localhost:8000/apps/${APP}/users/${USER}/sessions/${SESSION}" \
-  -H "content-type: application/json" -d '{}'
+  "http://localhost:8000/apps/${APP}/users/${USER}/sessions" \
+  -H "content-type: application/json" \
+  -d "{\"session_id\": \"${SESSION}\"}"
 
 # 2. Hit /run with one user turn
 curl -sS -X POST "http://localhost:8000/run" \
@@ -123,7 +124,7 @@ The `app_name` field in the JSON body of `/run` must match.
 | `GET /health`  | `{"status": "ok"}`                                              | Cloud Run / k8s readiness probe.     |
 | `GET /version` | ADK version + Python version                                     | Debug "which build is running".      |
 | `GET /list-apps` | `["app_name_1", "app_name_2"]`                                | Service discovery for your frontend. |
-| `GET /apps/{app_name}/app-info` | Per-app metadata (agent name, model, tools) | UI rendering or auth gate decisions. |
+| `GET /apps/{app_name}/app-info` | Per-app metadata (agent name, model, tools) — **experimental, subject to change** (decorated `@experimental` in `cli/api_server.py:1034`). | UI rendering or auth gate decisions. |
 
 ## 🚀 In Production
 

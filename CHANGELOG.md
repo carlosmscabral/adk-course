@@ -4,6 +4,54 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.5] - 2026-05-27
+
+Dogfood Wave 4 — student-facing reference surface. Five parallel read-only verification agents covered the surfaces waves 1-3 hadn't sampled: all 7 cheatsheets, all 5 milestone drills, the entire `21_AdkApiSurface` module, every module-local `AGENTS.md`, and top-level `AGENTS.md`/`MAP.md`/`Contents.md`. Three parallel fix agents then corrected 17 files. (Top-level `AGENTS.md`/`MAP.md` verified clean. `Contents.md` is severely stale — ~70 broken links + ~50 orphan pages — deferred to v0.3.6 as a focused rewrite.)
+
+### Fixed
+
+**Cheatsheets (`Reference/CheatSheets/*.md` — all 7 had findings)**
+- `a2a_mcp_quickref.md` — wrong A2A import (`google.adk.a2a` is empty; real: `from google.adk.a2a.utils.agent_to_a2a import to_a2a` at `agent_to_a2a.py:79`), legacy well-known path replaced with modern `/.well-known/agent-card.json` (a2a-sdk `constants.py:3`) + legacy fallback note, wrong `RemoteA2aAgent` import (`agents/__init__.py:34` doesn't export it), wrong kwarg `agent_card_url=` → `agent_card=` (`remote_a2a_agent.py:145`), wrong MCP import (`StdioServerParameters` is from `mcp` not ADK; `StdioConnectionParams` from `google.adk.tools.mcp_tool.mcp_session_manager`). Added `MCPToolset(header_provider=...)` row (`mcp_toolset.py:112-114`) and expanded auth-schemes row with the 5 concrete `*SecurityScheme` classes + snake_case rule.
+- `callback_signatures.md` — "nine callback slots on `LlmAgent`" corrected to 8 (2 from `BaseAgent`: `before/after_agent_callback` per `base_agent.py:123,137`; 6 from `LlmAgent` per `llm_agent.py:391,406,420,435,450,465`). Added the `Union[_Single, list[_Single]]` stacking shape from waves 1-3 (`llm_agent.py:75-87`). Clarified `CallbackContext`/`ToolContext` are aliases of the same `Context` class (`callback_context.py:22`, `tool_context.py:29`), not subtypes.
+- `event_actions.md` — removed folklore "`None` deletes the key" (`State.__setitem__` at `sessions/state.py:91-98` just stores `None`); removed wrong "order not guaranteed" claim (insertion order preserved); added missing public fields `end_of_agent` and `requested_tool_confirmations` (`event_actions.py:93-105`); dropped `requested_auth_configs` "(Auth flows)" qualifier.
+- `llmagent_signature.md` — `tools: list[BaseTool]` → `tools: list[ToolUnion]` where `ToolUnion = Union[Callable, BaseTool, BaseToolset]` (`llm_agent.py:134,294`). Added missing kwargs: `global_instruction` (deprecated; `:230`), `static_instruction` (`:243`), `mode` (`:307`), `parallel_worker` (`:318`), `disallow_transfer_to_parent`/`_peers` (`:322,330`).
+- `runner_session_lifecycle.md` — added `app=` modern path (`runners.py:209`); added `try/finally` + `await runner.close()` story (`runners.py:2135-2144`, `_cleanup_toolsets`); added optional `run_async` kwargs (`invocation_id`, `state_delta`, `run_config`, `yield_user_message` per `runners.py:914-924`) with resume gloss.
+- `state_prefixes.md` — `ToolContext` detection note rewritten: annotation takes priority, param-name `tool_context` is fallback (`function_tool.py:87-88`).
+- `tool_authoring.md` — same `ToolContext` detection fix; corrected "name + type" claim.
+
+**Drills**
+- `M2_WorkflowEditor.md` + `M5_Capstone.md` — `WorkflowAgent` → `Workflow` (`workflow/_workflow.py:148`, re-exported `google/adk/__init__.py:22`). M2 added "yield-list fan-out" note clarifying `_ParallelWorker` is private machinery.
+- `M3_FederatedPlanner.md` — legacy `/.well-known/agent.json` → modern `/.well-known/agent-card.json` (4 sites) with `PREV_AGENT_CARD_WELL_KNOWN_PATH` fallback note. Added `MCPToolset` deprecation comment (use `McpToolset` per `mcp_toolset.py:66,500`).
+- `M4_AuditorWithEvals.md` — `FinalResponseMatchV1` → `FinalResponseMatchV2Evaluator` (`final_response_match_v2.py:130`; metric key `final_response_match_v2`). Flagged deprecated `criteria` dict shape in `test_config.json` (modern: `EvalConfig(criteria={k: BaseCriterion(threshold=v)})` per `agent_evaluator.py:134-143`). Added deep-import note for `BigQueryAgentAnalyticsPlugin` (not in `plugins/__init__.py __all__`).
+
+**21_AdkApiSurface**
+- `01A_AdkRunUnderTheHood.md` — `aioconsole.ainput("[user]: ")` corrected to plain blocking `input()` (`cli/cli.py:210`); added `invocation_id=` kwarg to the `run_async` snippet for long-running-tool resume (`cli/cli.py:223-228`).
+- `01B_AdkWebUnderTheHood.md` — "no `--reload` flag" claim corrected: both `--reload/--no-reload` (default True, passed to `uvicorn.Config(reload=)` at `cli_tools_click.py:1839`) and `--reload_agents` (default False, toggles agent-cache hot-reload via `get_fast_api_app(reload_agents=)` at `fast_api.py:396`) exist. Dropped uncited `_register_builder_endpoints` function-name claim; rewrote to accurate "wired conditionally inside `cli/fast_api.py` gated on `web=True` AND `python-multipart` installed" (`fast_api.py:74-85,644`).
+- `02_AdkApiServer.md`, `03_RestShapes.md`, `07_SessionAndEventResources.md` — deprecated session-create route `POST .../sessions/{session_id}` (`@deprecated` at `api_server.py:1083-1086`) replaced as primary teaching with modern `POST .../sessions` + `CreateSessionRequest{session_id?, state?, events?}` body (`api_server.py:389-403`). Legacy form kept as one-line note. `GET .../app-info` marked experimental (`api_server.py:1034`).
+
+**Module-local AGENTS.md**
+- `Notes/06_GraphWorkflows/AGENTS.md` — dissection-answer text still drilled `ParallelWorker` semantics the module page had moved past. Answers 1 and 3 rewritten to drill the yield-list fan-out pattern instead, consistent with the existing line-20 "don't import `_ParallelWorker`" warning.
+
+### Verified-only (no edits required)
+- Top-level `AGENTS.md` — clean.
+- `MAP.md` — every module/detour box matches disk; tracks correctly grouped; milestones at correct gates.
+- 34 of 35 module-local `AGENTS.md` files — clean; waves 1-3 fixes propagated.
+
+### Method
+- **Wave 4 dogfood** (read-only, 5 parallel agents, `git status --short` clean post-run): cheatsheets / drills / 21 / module-local AGENTS.md / top-level meta.
+- **Wave 4 fix** (3 parallel agents with non-overlapping scopes): cheatsheets / drills / 21+06-AGENTS.
+- **Pre-fix discrepancy reconciled**: Wave 4-B agent flagged `/.well-known/agent.json` as canonical per `remote_a2a_agent.py:54`. Verified against a2a-sdk: modern canonical IS `/.well-known/agent-card.json` (`a2a-sdk: constants.py:3`); the hardcoded `:54` constant in ADK is only the fallback used when the a2a-sdk import fails. Wave 2's earlier fix was correct.
+
+### Why
+- User: "let's continue our strategy" + "let's dispatch the fixes." Reference surface (cheatsheets, drills, API-surface module) is where students lean hardest for quick lookups; these had accumulated the most pre-2.0 drift because they were authored to be terse one-pagers without anchor links back to source.
+
+### Deferred to v0.3.6
+- `Contents.md` near-total rewrite (~70 broken links, ~50 orphan pages on disk).
+- `MCPToolset` → `McpToolset` deprecation sweep across the corpus.
+- All 🟡s from Wave 4 (folded into the v0.3.6 polish pass).
+
+---
+
 ## [0.3.4] - 2026-05-27
 
 Dogfood Wave 3. Six parallel verification agents (read-only, `git status` clean post-run) covered the modules and detours 0.3.2/0.3.3 did not sample: 10A Embeddings, 10B RAG, 15 Observability, 19 Internals, 20 Framework Comparison, 22 Deployment, 24 Channel Integrations, 99 Capstone, and detours Grounding / OpenTelemetry / WebSockets / gRPC. Same severity rubric as prior waves. Five parallel fix agents then corrected 23 files surgically against `/home/carloscabral/study/adk-python/src/`. Both 🔴 and 🟡 landed in this bump (no split — the residue is small enough).

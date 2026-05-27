@@ -1,6 +1,8 @@
 # 📋 Cheat Sheet — Callback signatures
 
-ADK exposes nine callback slots on `LlmAgent`. Each has a specific signature, a specific return-value contract (`None` = pass through, non-`None` = override), and specific context types. Get the signature wrong → the runtime swallows it silently and your guardrail does nothing.
+ADK exposes **8 callback slots** — 2 from `BaseAgent` (`before/after_agent_callback`) + 6 model/tool/error slots on `LlmAgent` (`before/after_model`, `before/after_tool`, `on_model_error`, `on_tool_error`). Each has a specific signature, a specific return-value contract (`None` = pass through, non-`None` = override), and specific context types. Get the signature wrong → the runtime swallows it silently and your guardrail does nothing.
+
+Every slot accepts either a single callable OR a `list[...]` of callables (a "stack"). When a list is given, callbacks fire in order until one returns non-`None`. The type aliases are e.g. `BeforeModelCallback = Union[_SingleBeforeModelCallback, list[_SingleBeforeModelCallback]]` (and analogous for the other slots).
 
 ```python
 from google.adk.agents.callback_context import CallbackContext
@@ -8,7 +10,7 @@ from google.adk.tools import ToolContext, BaseTool
 from google.adk.models import LlmRequest, LlmResponse
 ```
 
-## The nine slots
+## The 8 slots
 
 | Slot | Signature (param types) | Return-value semantics |
 |---|---|---|
@@ -42,8 +44,7 @@ agent = LlmAgent(
 
 ## Context object cheatsheet
 
-- **`CallbackContext`** — read/write `.state`, read `.user_content`, mutate `.actions` (state_delta etc.). Used by model + agent callbacks.
-- **`ToolContext`** — superset of `CallbackContext` plus artifact I/O. Used by tool callbacks.
+- **`CallbackContext`** and **`ToolContext`** are aliases of the same `Context` class (`CallbackContext = Context` in `callback_context.py`; `ToolContext = Context` in `tool_context.py`). Same object — different conventional name depending on where it's used (model/agent callbacks vs. tool callbacks). Both expose `.state`, `.user_content`, `.actions`, and artifact I/O.
 - **`LlmRequest`** — what the LLM is about to be called with: `.contents`, `.config`, `.tools`. Mutate to inject system messages, redact, etc.
 - **`LlmResponse`** — what the LLM returned: `.content` (with `.parts`), `.usage_metadata`, `.error`. Mutate to redact, append, etc.
 - **`BaseTool`** — `.name`, `.description`. Useful for routing on tool identity in a generic callback.

@@ -10,12 +10,14 @@ from google.adk.events import EventActions
 
 | Field | Type | Semantics |
 |---|---|---|
-| `state_delta` | `dict[str, Any]` | Key→value pairs to merge into `session.state`. The runner applies these in-order and persists via the session service. Keys can use any of the four prefixes (`user:`, `app:`, `temp:`, none). A `None` value deletes the key. |
+| `state_delta` | `dict[str, Any]` | Key→value pairs to merge into `session.state`. The runner applies these in-order and persists via the session service. Keys can use any of the four prefixes (`user:`, `app:`, `temp:`, none). Setting a value to `None` stores `None` — it does not delete the key. |
 | `artifact_delta` | `dict[str, int]` | Map of artifact name → version. The runner records that the artifact was written. Used in conjunction with `ArtifactService` to track outputs (files, images). |
 | `transfer_to_agent` | `str \| None` | Name of the agent to transfer control to. The runner halts the current agent's turn and routes the next user-equivalent input to the named agent. Used by the `transfer_to_agent` built-in tool. |
 | `escalate` | `bool` | When `True`, signals "I cannot handle this — escalate up the agent tree." Often surfaces to a parent agent or to a human-in-the-loop. |
 | `skip_summarization` | `bool` | When `True` on a tool result Event, prevents the LLM from summarizing — the raw tool output flows straight through. Useful for tools that already return user-facing text. |
-| `requested_auth_configs` | `dict[str, AuthConfig]` | (Auth flows) Lists auth configs the tool needs the user to satisfy before it can proceed. The runner surfaces these to the client. |
+| `requested_auth_configs` | `dict[str, AuthConfig]` | Lists auth configs the tool needs the user to satisfy before it can proceed. The runner surfaces these to the client. |
+| `requested_tool_confirmations` | `dict[str, ToolConfirmation]` | Tool confirmations requested by this event, keyed by function call id. Used by tools that require user confirmation before running. |
+| `end_of_agent` | `Optional[bool]` | When `True`, signals the current agent has finished its run. May fire multiple times within one invocation for loops. Set only by ADK workflow primitives. |
 
 ## How they're set
 
@@ -67,7 +69,7 @@ for event in async for ...:
     # 5. persist session via session_service
 ```
 
-The order of fields in `state_delta` is not guaranteed across services — write keys you care about independently.
+`State.update(...)` preserves dict insertion order (CPython 3.7+), so keys land in the order you set them.
 
 ## Common confusions
 

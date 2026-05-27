@@ -32,9 +32,9 @@
 
 ## Dissection (page 08) — comprehension check answers
 
-1. Without `ParallelWorker`, an `LlmAgent` receiving a list of 4 items would either error or treat the list as one prompt. `ParallelWorker` is what unpacks the list and runs the agent once per element concurrently.
-2. So that downstream nodes (especially the parallel worker, which uses `{topic}` substitution in its instruction) can reach the topic. State is the bus; `node_input` is the immediate parameter.
-3. Yes, the order of yields within one function doesn't strictly matter — the runtime collects all yields. By convention content goes first and routing Event last for readability.
+1. Fan-out in 2.0 is **not** done by importing a public `ParallelWorker` class — there isn't one. Instead, a node `yield`s a **list** of values (one per item to process), and the workflow runtime forwards each element to the next node, scheduling them concurrently. Ask the student to point at the exact `yield [...]` line in page 08's fan-out node and explain what each element of the list becomes downstream. (Internally there is a private `_ParallelWorker` that implements the scheduling — but it's an implementation detail; the public contract is the yield-list pattern.)
+2. So that downstream nodes (especially the fan-out node, which substitutes `{topic}` into its instruction) can reach the topic from state. State is the bus; `node_input` is the immediate parameter — they are not the same channel.
+3. Yes, the order of yields within one function doesn't strictly matter — the runtime collects all yields. By convention content goes first and routing `Event` last for readability. Ask the student to predict what happens if a node yields a list **and** then a route `Event` — the route still fires once, and the list is dispatched element-wise to the routed edge.
 
 ## Legacy mixed (page 02) — comprehension check answers
 

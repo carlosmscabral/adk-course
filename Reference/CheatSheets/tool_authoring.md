@@ -57,7 +57,7 @@ def add_todo(item: str, tool_context: ToolContext) -> dict:
     return {"added": item, "total": len(todos)}
 ```
 
-The `tool_context: ToolContext` parameter is **detected by name + type** — the LLM does NOT see it as an argument. The runtime injects it.
+The context parameter is **detected by `ToolContext` annotation (preferred), with a param literally named `tool_context` as a fallback** (`function_tool.py:87-88`: `find_context_parameter(func) or 'tool_context'`). Either of these works: `def f(ctx: ToolContext)` or `def f(tool_context)` (no annotation). The LLM does NOT see this param as an argument — the runtime injects it.
 
 `ToolContext` exposes:
 - `.state` — dict-like read/write on the active session state.

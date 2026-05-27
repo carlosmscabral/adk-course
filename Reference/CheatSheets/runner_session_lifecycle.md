@@ -42,7 +42,9 @@ How one turn flows from `runner.run_async(...)` to a final `Event`. Print this a
 │      async for event in runner.run_async(                                  │
 │          user_id="alice",                                                  │
 │          session_id=session.id,                                            │
-│          new_message=user_msg,                                             │
+│          new_message=user_msg,    # Optional[types.Content]                │
+│          # invocation_id=None,    # set to resume an interrupted run       │
+│          # state_delta=None, run_config=None, yield_user_message=False,    │
 │      ):                                                                    │
 │                                                                            │
 │          # Each Event has:                                                 │
@@ -90,6 +92,8 @@ async def main():
     session_service = InMemorySessionService()
     agent = LlmAgent(name="hello", model="gemini-2.5-flash",
                      instruction="Greet the user.")
+    # Modern: pass an App object via `app=` (recommended path per runners.py:209).
+    # Legacy (still supported): pass app_name=/agent= separately, as below.
     runner = Runner(app_name="demo", agent=agent,
                     session_service=session_service)
 
@@ -97,14 +101,24 @@ async def main():
         app_name="demo", user_id="u1",
     )
 
-    async for event in runner.run_async(
-        user_id="u1",
-        session_id=session.id,
-        new_message=types.Content(role="user",
-                                  parts=[types.Part(text="hi")]),
-    ):
-        if event.is_final_response():
-            print(event.content.parts[0].text)
+    try:
+        async for event in runner.run_async(
+            user_id="u1",
+            session_id=session.id,
+            new_message=types.Content(role="user",
+                                      parts=[types.Part(text="hi")]),
+            # Optional kwargs (defaults shown):
+            # invocation_id=None,   # set to resume an interrupted invocation
+            # state_delta=None,     # extra state to merge before this turn
+            # run_config=None,      # RunConfig overrides
+            # yield_user_message=False,
+        ):
+            if event.is_final_response():
+                print(event.content.parts[0].text)
+    finally:
+        # Walks the agent tree and closes MCP toolsets via _cleanup_toolsets
+        # (runners.py:2094-2144). Always wrap run_async in try/finally.
+        await runner.close()
 
 asyncio.run(main())
 ```

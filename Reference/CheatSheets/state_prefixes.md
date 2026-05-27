@@ -33,9 +33,12 @@ LlmAgent(
 In a tool / callback via `ToolContext` / `CallbackContext`:
 
 ```python
-def my_tool(ctx: ToolContext, arg: str) -> str:
-    name = ctx.state.get("user:name", "stranger")  # dict-like read
-    ctx.state["current_step"] = "thinking"          # dict-like write — staged
+def my_tool(arg: str, tool_context: ToolContext) -> str:
+    # The context parameter is detected by the `ToolContext` annotation
+    # (preferred); a param literally named `tool_context` is the fallback
+    # if the annotation is missing.
+    name = tool_context.state.get("user:name", "stranger")  # dict-like read
+    tool_context.state["current_step"] = "thinking"          # dict-like write — staged
     return f"Hello {name}"
 ```
 

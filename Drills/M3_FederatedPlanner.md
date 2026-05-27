@@ -176,6 +176,7 @@ from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.agents import LlmAgent
 from google.adk.skills import load_skill_from_dir
 from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+# NOTE: `MCPToolset` is deprecated in favor of `McpToolset` per `mcp_toolset.py:66,500`.
 from google.adk.tools.skill_toolset import SkillToolset
 
 from .callbacks import price_ceiling_guard
@@ -241,7 +242,7 @@ a2a_app = to_a2a(root_agent, port=10002)
 
 Run it: `uvicorn Work.M3.planner.agent:a2a_app --host localhost --port 10002`.
 
-Verify the AgentCard: `curl http://localhost:10002/.well-known/agent.json | jq`. The card should mention `travel_planner` and reflect the sub-agent topology.
+Verify the AgentCard: `curl http://localhost:10002/.well-known/agent-card.json | jq` (modern canonical path — `AGENT_CARD_WELL_KNOWN_PATH` from `a2a/utils/constants.py:3`). Legacy fallback is `/.well-known/agent.json` (`PREV_AGENT_CARD_WELL_KNOWN_PATH`). The card should mention `travel_planner` and reflect the sub-agent topology.
 
 ### Part 4 — `planner/callbacks.py` (the price-ceiling policy)
 
@@ -325,13 +326,13 @@ Run order matters. Three terminals:
 |---|---|---|---|
 | 1 | T1 (MCP) | `python Work/M3/hotels_mcp/server.py` | "MCP server running on port 8090" or equivalent. |
 | 2 | T2 (Planner) | `uvicorn Work.M3.planner.agent:a2a_app --host localhost --port 10002` | Uvicorn boots, listens on 10002. |
-| 3 | T3 (curl) | `curl http://localhost:10002/.well-known/agent.json` | JSON `AgentCard` with `name: travel_planner`, version, skills array. |
+| 3 | T3 (curl) | `curl http://localhost:10002/.well-known/agent-card.json` | JSON `AgentCard` with `name: travel_planner`, version, skills array. |
 | 4 | T3 (client) | `python Work/M3/client.py` | Final response mentions a Lisbon itinerary AND a hotel confirmation id (e.g. `CONF-lis-1-3`). |
 
 | Check | Pass criterion |
 |---|---|
 | MCP server reachable | Curl on `http://localhost:8090/mcp` returns the MCP handshake, not a 404. |
-| AgentCard is real | `/.well-known/agent.json` returns a non-empty card whose `name` is `travel_planner`. |
+| AgentCard is real | `/.well-known/agent-card.json` returns a non-empty card whose `name` is `travel_planner`. |
 | End-to-end round-trip | `client.py` final response contains BOTH a 3-day itinerary AND a confirmation id starting with `CONF-lis-`. |
 | Skill actually loaded | Planner log shows `load_skill('hotel-booking-flow')` was invoked (look for the skill_toolset trace). |
 | MCP tool actually called | Planner log shows `book_hotel` was called with `nights=3`. |
@@ -369,7 +370,7 @@ Common pitfalls — call them out before they bite:
 
 > ❓ **After the planner boots but before the client runs:**
 > 1. Read the AgentCard. Which sub-agents are reflected in it? Are MCP tools surfaced as skills?
-> 2. Hit `curl http://localhost:10002/.well-known/agent.json | jq '.skills'`. Did the booking sub-agent's MCP tools propagate up, or only the planner's own tools?
+> 2. Hit `curl http://localhost:10002/.well-known/agent-card.json | jq '.skills'`. Did the booking sub-agent's MCP tools propagate up, or only the planner's own tools?
 
 > ❓ **After the round-trip works:**
 > 1. Trace one full request in your head: which process did the LLM token at each step originate in? Count the network hops (client → planner; planner → MCP; MCP → planner; planner → client).
