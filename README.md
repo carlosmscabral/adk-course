@@ -135,4 +135,4 @@ See [MAP.md](MAP.md) for the visual.
 
 ## License & lineage
 
-Pedagogy gratefully borrowed from [Practical Python Programming](https://github.com/dabeaz-course/practical-python) by David Beazley (CC BY-SA 4.0). This course covers Google ADK Python 2.0 GA against the docs snapshot at [`Reference/docs_snapshot.md`](Reference/docs_snapshot.md).
+Licensed under the [Apache License 2.0](LICENSE) — aligns with [`adk-python`](https://github.com/google/adk-python) and [`adk-samples`](https://github.com/google/adk-samples). Pedagogical shape (engine-first, breadcrumb navigation, sparse solutions, spiral curriculum) is inspired by [Practical Python Programming](https://github.com/dabeaz-course/practical-python) by David Beazley. This course covers Google ADK Python 2.0 GA against the docs snapshot at [`Reference/docs_snapshot.md`](Reference/docs_snapshot.md).
