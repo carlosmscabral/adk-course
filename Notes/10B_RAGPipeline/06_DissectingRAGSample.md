@@ -37,6 +37,8 @@ Real files. Open each one and follow along:
 
 The sample is a thin agent over `VertexAiRagRetrieval` + a one-shot setup script that builds a corpus from a single PDF (Alphabet's 10-K).
 
+> ⚠ **Preview-era sample** — verified against `/home/carloscabral/study/adk-samples/python/agents/RAG/`: `agent.py` and `prepare_corpus_and_data.py` both import `from vertexai.preview import rag`, and the setup script uses the flat `rag.EmbeddingModelConfig(publisher_model="...text-embedding-004")` shape with top-level `chunk_size=`/`chunk_overlap=` kwargs on `upload_file`/`import_files`. The GA surface uses `from vertexai import rag` with `RagVectorDbConfig` + `RagEmbeddingModelConfig` + `VertexPredictionEndpoint` for the corpus, and `TransformationConfig(ChunkingConfig(...))` for chunking — see [04_VertexAIRAGEngine.md](04_VertexAIRAGEngine.md). The sample still runs but should be modernized before production use; also swap `text-embedding-004` (deprecated 2026-01-14) for `gemini-embedding-001`. Read the line-by-line below as a **shape** to learn from, not code to copy.
+
 ## 🔎 Trace the 7-stage loop through the sample
 
 | Stage (from page 01) | Where in the sample |

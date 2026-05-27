@@ -47,7 +47,7 @@ researcher → summarizer ⇄ critic
                     └──→ END  (when critic returns APPROVED)
 ```
 
-Use the `WorkflowAgent` graph primitive. Define edges with triggers (Critic's `APPROVED` → END; `REJECTED` → back to Summarizer with state delta carrying the critique).
+Use the `Workflow` graph primitive (exported as `google.adk.Workflow` from `google/adk/workflow/_workflow.py:148`). Define edges with triggers (Critic's `APPROVED` → END; `REJECTED` → back to Summarizer with state delta carrying the critique).
 
 ### Tools (≥2)
 
@@ -71,7 +71,7 @@ Build an `EvalSet` with cases like:
 - Adversarial: a question whose answer requires the private doc store (verifies MCP plumbing).
 - Long-tail: a multi-hop question forcing 2+ critique cycles.
 
-Use `LlmAsJudge` for the open-ended ones, `FinalResponseMatchV1` for keyword ones, `TrajectoryEvaluator` for the multi-hop one.
+Use `LlmAsJudge` for the open-ended ones, `FinalResponseMatchV2Evaluator` (metric key `final_response_match_v2`) for keyword ones, `TrajectoryEvaluator` for the multi-hop one.
 
 ### Plugins (≥1) and callbacks (≥2)
 

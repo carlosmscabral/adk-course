@@ -84,7 +84,7 @@ Vertex injects the Cloud Trace exporter automatically when you call `vertexai.in
 ```python
 # Work/22_DeploymentModels/research_assistant/agent.py
 from google.adk.apps import App
-from google.adk.plugins.analytics.bigquery import BigQueryAgentAnalyticsPlugin
+from google.adk.plugins.bigquery_agent_analytics_plugin import BigQueryAgentAnalyticsPlugin
 
 bq_logging = BigQueryAgentAnalyticsPlugin(
     project_id=PROJECT_ID,

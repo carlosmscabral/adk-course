@@ -31,7 +31,11 @@ class WeatherReport(BaseModel):
 agent = Agent(
     "openai:gpt-4o",
     output_type=WeatherReport,
-    system_prompt="Return a WeatherReport for the requested city.",
+    instructions="Return a WeatherReport for the requested city.",
+    # NB: `system_prompt=` is the older kwarg and still accepted; `instructions=`
+    # is the newer form (Pydantic AI 0.0.40+) and is the preferred way to pass
+    # the system message. Verify against current pydantic-ai docs for your
+    # installed version.
 )
 
 result = agent.run_sync("What's the weather in Tokyo?")

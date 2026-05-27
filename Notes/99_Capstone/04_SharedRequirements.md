@@ -30,7 +30,7 @@ Regardless of track, your capstone MUST satisfy all of the below. These are also
 ## Tests
 
 - [ ] **≥5 eval cases** in an `EvalSet`.
-- [ ] At least 2 distinct evaluator types (e.g., `LlmAsJudge` + `FinalResponseMatchV1`).
+- [ ] At least 2 distinct evaluator types (e.g., `LlmAsJudge` + `FinalResponseMatchV2Evaluator` / metric key `final_response_match_v2`).
 - [ ] `adk eval` runs and reports.
 
 ## Cross-cutting

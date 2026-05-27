@@ -22,7 +22,9 @@ The user didn't ask. The agent decided to tell them. This is the 2026 "AI as a n
 
 ## ADK's Pub/Sub trigger
 
-ADK 2.0 ships first-class Pub/Sub triggers via `get_fast_api_app(trigger_sources=["pubsub"])`. The framework registers `POST /trigger/pubsub` automatically. Pub/Sub push deliveries land there, ADK parses the envelope, constructs a session keyed by subscription name, and invokes your agent with the message body as the user input.
+ADK 2.0 ships first-class Pub/Sub triggers via `get_fast_api_app(trigger_sources=["pubsub"])`. The framework registers `POST /apps/{app_name}/trigger/pubsub` automatically. Pub/Sub push deliveries land there, ADK parses the envelope, constructs a session keyed by subscription name, and invokes your agent with the message body as the user input.
+
+> Pub/Sub trigger derives `user_id` from the subscription path: `subscription.replace("/", "--")`. Use this to correlate ambient events with a stable session.
 
 ```python
 # Work/24_channels/ambient_app.py — run with: uv run uvicorn Work.24_channels.ambient_app:app --port 8080
@@ -35,7 +37,7 @@ AGENTS_DIR = os.path.dirname(os.path.abspath(__file__))
 app = get_fast_api_app(
     agents_dir=AGENTS_DIR,
     web=False,
-    trigger_sources=["pubsub"],          # opt in to /trigger/pubsub
+    trigger_sources=["pubsub"],          # opt in to /apps/{app_name}/trigger/pubsub
 )
 
 if __name__ == "__main__":
@@ -84,7 +86,7 @@ The agent reads the Pub/Sub message (delivered as the user input), decides what 
 gcloud pubsub topics create expense-reports
 gcloud pubsub subscriptions create review \
   --topic=expense-reports \
-  --push-endpoint="https://my-agent-xyz.run.app/trigger/pubsub" \
+  --push-endpoint="https://my-agent-xyz.run.app/apps/expense_agent/trigger/pubsub" \
   --push-auth-service-account=pubsub-pusher@my-project.iam.gserviceaccount.com
 
 # 2. Grant the pusher SA the right to invoke Cloud Run
@@ -98,7 +100,7 @@ gcloud pubsub topics publish expense-reports \
   --message='{"amount": 750, "vendor": "Hotel X", "description": "trip"}'
 ```
 
-The push delivery hits `/trigger/pubsub`, ADK invokes `expense_reviewer`, the agent decides "amount over 500", calls `post_to_slack(...)`, and a message appears in your Slack ops channel — **without** a user typing anything.
+The push delivery hits `/apps/expense_agent/trigger/pubsub`, ADK invokes `expense_reviewer`, the agent decides "amount over 500", calls `post_to_slack(...)`, and a message appears in your Slack ops channel — **without** a user typing anything.
 
 ## Session keying for ambient agents
 
@@ -142,6 +144,6 @@ The agent doesn't care how it was triggered.
 >
 > (Answer: Pub/Sub uses a *push auth service account*; that SA needs `roles/run.invoker` on the Cloud Run service; Cloud Run verifies the SA's OIDC token at the door. The bash snippet shows all three steps.)
 
-> 🛠 **Have the student run:** locally — POST a fake Pub/Sub envelope to `localhost:8080/trigger/pubsub` with `curl -X POST ... -d '{"message": {"data": "..."}}'`. Watch the agent fire and (if Slack creds are set) post.
+> 🛠 **Have the student run:** locally — POST a fake Pub/Sub envelope to `localhost:8080/apps/expense_agent/trigger/pubsub` with `curl -X POST ... -d '{"message": {"data": "..."}}'`. Watch the agent fire and (if Slack creds are set) post.
 
 [← Prev: 06_WhatsAppEmail](06_WhatsAppEmail.md)  [↑ Map](../../MAP.md)  [Next: 08_AuthAndPerUserSession →](08_AuthAndPerUserSession.md)

@@ -134,6 +134,8 @@ trace.set_tracer_provider(provider)
 
 Run an agent → spans flow to your Collector (port 4317 is OTLP/gRPC's default). On GCP, the `CloudTraceSpanExporter` skips the Collector and posts directly to Cloud Trace. Module `15_Observability` walks the full setup including metrics.
 
+> 📦 **Install note.** `opentelemetry-sdk` ships only the SDK plus the console exporter. The OTLP exporter (`opentelemetry.exporter.otlp.proto.grpc.trace_exporter` above) lives in a **separate** package: `pip install opentelemetry-exporter-otlp` (which pulls in both the gRPC and HTTP variants), or `opentelemetry-exporter-otlp-proto-grpc` / `opentelemetry-exporter-otlp-proto-http` for just one transport. Cloud Trace, Jaeger, Zipkin exporters are all separate packages too. Stack-trace `ModuleNotFoundError: No module named 'opentelemetry.exporter.otlp'` always means "you didn't install the exporter package."
+
 ---
 
 ## 📊 6. Pitfalls

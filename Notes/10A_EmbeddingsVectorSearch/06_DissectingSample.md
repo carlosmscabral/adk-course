@@ -72,6 +72,8 @@ embedding_model_config = rag.EmbeddingModelConfig(
 
 Embedding model is pinned at corpus creation. Re-embedding later means recreating the corpus.
 
+> ⚠ **Sample drift** — the sample still pins `text-embedding-004`, which was **deprecated 2026-01-14** (see page 02). For new corpora prefer `publishers/google/models/gemini-embedding-001`. The sample will keep working until the model is fully removed; flag this for the student rather than silently fixing it in the upstream sample.
+
 ## 🔎 Walkthrough — `prepare_corpus_and_data.py`
 
 This is a one-shot setup script. The pattern:

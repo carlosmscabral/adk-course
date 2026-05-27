@@ -4,6 +4,49 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.4] - 2026-05-27
+
+Dogfood Wave 3. Six parallel verification agents (read-only, `git status` clean post-run) covered the modules and detours 0.3.2/0.3.3 did not sample: 10A Embeddings, 10B RAG, 15 Observability, 19 Internals, 20 Framework Comparison, 22 Deployment, 24 Channel Integrations, 99 Capstone, and detours Grounding / OpenTelemetry / WebSockets / gRPC. Same severity rubric as prior waves. Five parallel fix agents then corrected 23 files surgically against `/home/carloscabral/study/adk-python/src/`. Both 🔴 and 🟡 landed in this bump (no split — the residue is small enough).
+
+### Fixed
+- **Pub/Sub trigger route** — real path is `/apps/{app_name}/trigger/pubsub`, not `/trigger/pubsub` (`cli/trigger_routes.py:401`). `user_id` is derived from the subscription resource name: `subscription.replace("/", "--")` (`trigger_routes.py:414-415`). Nine mentions updated across `Notes/24_ChannelIntegrations/07_AmbientAgentsAsChannels.md` (5) and `10_DissectingSample.md` (4); user_id note added once per file.
+- **`BigQueryAgentAnalyticsPlugin` import path** — corrected from fabricated `google.adk.plugins.analytics.bigquery` to real `google.adk.plugins.bigquery_agent_analytics_plugin` (`plugins/bigquery_agent_analytics_plugin.py:1967`). Affected `Notes/22_DeploymentModels/07_ObservabilityWiring.md`.
+- **19 Internals line-citation drift** — `base_session_service.py:141` → `:114` (four occurrences across `09_DissectingOneCall.md`, `11_TracingOneStateMutation.md`: `async def append_event` is at line 114, not 141). `llm_agent.py:340` → `:294` for the `tools` field declaration in `02_LlmAgentSource.md`. Other Internals citations spot-verified and confirmed accurate.
+- **Capstone API name drift** — `FinalResponseMatchV1` → `FinalResponseMatchV2Evaluator` (metric key `final_response_match_v2`; class at `evaluation/final_response_match_v2.py:130`; registered at `metric_evaluator_registry.py:148-149`). `WorkflowAgent` → `Workflow` (real export at `workflow/_workflow.py:148`, re-exported in `google/adk/__init__.py`). Brief incorrectly identified the class as `RougeEvaluator` — that's the legacy v1 evaluator; agent flagged and used the correct v2 class. Affected `Notes/99_Capstone/01_TrackA_ResearchAssistant.md`, `04_SharedRequirements.md`.
+- **Vertex AI RAG Engine GA migration** — preview surface (`vertexai.preview.rag`, flat `embedding_model_config=` / `chunk_size=` kwargs) replaced with GA surface (`vertexai.rag` with `backend_config=RagVectorDbConfig(rag_embedding_model_config=RagEmbeddingModelConfig(vertex_prediction_endpoint=VertexPredictionEndpoint(...)))` and `transformation_config=TransformationConfig(chunking_config=ChunkingConfig(chunk_size=, chunk_overlap=))`). Default embedding model now `gemini-embedding-001`. ⚠️ Preview-era callout added to `06_DissectingRAGSample.md` since the `adk-samples/python/agents/RAG/` sample still pins the preview namespace (verified at `agent.py:26`, `prepare_corpus_and_data.py:23,64`). Affected `Notes/10B_RAGPipeline/04_VertexAIRAGEngine.md`, `06_DissectingRAGSample.md`.
+- **Embedding model deprecation** — `text-embedding-004` deprecated 2026-01-14; `text-embedding-005` is legacy. Recommended default is `gemini-embedding-001` (3072 dims, supports `task_type`). Switching model families requires re-embedding the entire corpus. Callouts added in `Notes/10A_EmbeddingsVectorSearch/02_VertexAITextEmbeddings.md` (model table reordered) and `06_DissectingSample.md` (flag without rewriting quoted sample); model swapped in `04_BuildingAnIndex.md` and `Notes/10B_RAGPipeline/03_HandRolledRAG.md`. Default index dimensions bumped 768 → 3072.
+- **IndexDatapoint proto note** — added one-line clarification in `Notes/10A_EmbeddingsVectorSearch/04_BuildingAnIndex.md` that Vector Search `upsert_datapoints` takes `IndexDatapoint` proto objects (`from google.cloud.aiplatform_v1 import IndexDatapoint`), not dicts.
+- **`LoggingPlugin` output format** — corrected from implied structured JSON to actual ANSI-colored stdout via `print(f"\033[90m...\033[0m")` (`plugins/logging_plugin.py:284-288`). Course now points students at `structlog` / `logging.dictConfig` for production. Affected `Notes/15_Observability/02_StructuredLogging.md`.
+- **OpenTelemetry span attribute names** — replaced generic placeholders with the actual GenAI-semconv-compliant attribute names ADK emits: `gen_ai.request.model`, `gen_ai.usage.input_tokens`/`output_tokens`, `gen_ai.agent.name`, `gen_ai.tool.name`, plus GCP-specific `gcp.vertex.agent.session_id` and `gcp.vertex.agent.invocation_id` (`telemetry/tracing.py:44-58, 331-334`). Affected `Notes/15_Observability/04_TracingAnAgentRun.md`, `05_Metrics.md`.
+- **Grounding multi-tool restriction inverted** — `google_search` cannot be combined with other tools on **Gemini 1.x** only (`tools/google_search_tool.py:74-78`); on 2.x the check is bypassed, and `bypass_multi_tools_limit` flag exists (`:42`). Course previously stated the inverse. Fixed prose at L69 and the flowchart at L175 in `Notes/Detours/Grounding.md`.
+- **OpenAI Agents SDK idiom** — `handoffs=[handoff(researcher)]` → `handoffs=[researcher]` with inline note that `sub_agents=` is ADK terminology and `handoff(...)` wrapping is only for customization. Affected `Notes/20_FrameworkComparison/05_OpenAIAgentsSDK.md`.
+- **Pydantic AI idiom** — `system_prompt="..."` → `instructions="..."` (newer preferred form in pydantic-ai 0.0.40+; both kwargs still exist). Affected `Notes/20_FrameworkComparison/06_PydanticAI.md`.
+- **OpenTelemetry exporter install note** — `opentelemetry-sdk` only ships the SDK + console exporter; OTLP needs separate `pip install opentelemetry-exporter-otlp`. Install callout added to `Notes/Detours/OpenTelemetry.md`.
+- **WebSockets 64KB claim** — RFC 6455 allows payloads up to 2^63 bytes; "64 KB" was a library-default fragment size, not a protocol limit. Python `websockets` library defaults to `max_size=2**20` (1 MiB), tunable via `max_size`/`write_limit`. Affected `Notes/Detours/WebSockets.md`.
+- **gRPC HTTP/2 frame diagram** — replaced conflated HEADERS/DATA frame depiction with correct sequence: opening HEADERS (`:path`), interleaved bidirectional DATA frames, trailing HEADERS with `grpc-status`. Caption clarifies single bidi RPC = one stream id with bidirectional frames. Affected `Notes/Detours/gRPC.md`.
+
+### Verified-only (no edits required)
+- **Skills knowledge check Q2** — brief said Q2 cited 3 invocation patterns; actual Q2 is about the 3 SkillToolset auto-exposed tools (`list_skills`, `load_skill`, `load_skill_resource`), which is correct per source (`skill_toolset.py:93,186,262`). Q4 already correctly says 4 invocation patterns matching `00_Overview.md`. No fix needed.
+- **`Notes/11_Memory/03_VertexAIMemoryBank.md` model pin** — already uses `gemini-2.5-flash`, the dominant in-course model (256 occurrences vs 32 for 2.5-pro). No change.
+
+### Method
+- **Wave 3 dogfood** (read-only): 6 parallel agents covered 10A/B, 15, 19, 20, 22/24, 99, and 4 detours. `git status` clean post-run.
+- **🔴 + 🟡 combined fix wave**: 5 parallel fix agents with non-overlapping file scopes:
+  - **A** — 24 Channel Integrations Pub/Sub + 22 BQ import
+  - **B** — 19 Internals citations + 99 Capstone class names
+  - **C** — 10B Vertex AI RAG Engine GA migration
+  - **D** — 10A embeddings deprecation + 15 OTel/Logging plumbing
+  - **E** — Grounding inversion + framework idioms + detour 🟡s
+- **Brief deviations followed source**:
+  1. Capstone v2 evaluator class is `FinalResponseMatchV2Evaluator` (not `RougeEvaluator`, which is the legacy v1).
+  2. Pub/Sub mentions were 9 across two files, not "~5" as estimated in the brief.
+  3. Skills Q2 was already correct; the inverted-count claim was a Wave-3 dogfood misread.
+
+### Why
+- User: "let's dispatch" — fire all Wave 3 fixes (🔴 and 🟡 together, residue small enough not to split).
+
+---
+
 ## [0.3.3] - 2026-05-27
 
 🟡 second pass after dogfood Wave 2. Four parallel fix agents corrected the imprecise-but-not-broken drift items deferred from 0.3.2. Same source-grounded methodology against `/home/carloscabral/study/adk-python/src/` plus the `a2a-sdk` source for the A2A path/scheme fixes.

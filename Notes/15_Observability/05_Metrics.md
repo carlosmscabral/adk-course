@@ -20,10 +20,12 @@ You are here: 🗺 Production Track ▸ 15 Observability ▸ 05 Metrics
 
 Traces let you debug *one* request. Metrics let you watch *all* requests over time. The four agents care about:
 
-1. **Tokens per turn** — distribution. Watch the tail. A turn jumping from 2k to 50k tokens is a context-bloat regression.
-2. **Latency per tool** — p50/p95/p99 per `tool.name`. Your slow user complaint is almost always one tool.
-3. **Error rate per tool** — `errors / total` per `tool.name`. A tool silently failing is the second most common bug.
-4. **Cost per model** — `(tokens.in * price_in + tokens.out * price_out)` rolled up by `model.name`. Finance will ask.
+1. **Tokens per turn** — distribution of `gen_ai.usage.input_tokens` + `gen_ai.usage.output_tokens`. Watch the tail. A turn jumping from 2k to 50k tokens is a context-bloat regression.
+2. **Latency per tool** — p50/p95/p99 per `gen_ai.tool.name`. Your slow user complaint is almost always one tool.
+3. **Error rate per tool** — `errors / total` per `gen_ai.tool.name`. A tool silently failing is the second most common bug.
+4. **Cost per model** — `(input_tokens * price_in + output_tokens * price_out)` rolled up by `gen_ai.request.model`. Finance will ask.
+
+(The `gen_ai.*` attribute names follow the OpenTelemetry GenAI semantic conventions — see `google/adk/telemetry/tracing.py:44-58`.)
 
 ## 🛠 Emitting metrics via OTel
 
@@ -51,10 +53,10 @@ Path A is cheaper and recommended unless you need a metric the spans don't expos
 
 ## ⚠️ Gotcha — cardinality kills
 
-Metric labels are *aggregated* in the backend. Putting `session.id` as a label = one timeseries per session = bill explosion + index collapse.
+Metric labels are *aggregated* in the backend. Putting `gcp.vertex.agent.session_id` as a label = one timeseries per session = bill explosion + index collapse.
 
-Allowed as labels: `model.name`, `tool.name`, `agent.name`, `tenant_id` (if low cardinality).
-**Never** as labels: `session.id`, `user.id`, `request.id`, `trace.id`.
+Allowed as labels: `gen_ai.request.model`, `gen_ai.tool.name`, `gen_ai.agent.name`, `tenant_id` (if low cardinality).
+**Never** as labels: `gcp.vertex.agent.session_id`, `gcp.vertex.agent.invocation_id`, `user.id`, `request.id`, `trace.id`.
 
 Those high-cardinality IDs belong on *spans* (where they help you jump from a metric anomaly into a specific trace).
 

@@ -55,12 +55,14 @@ app = get_fast_api_app(
 )
 ```
 
-That single call registers `POST /trigger/pubsub`. ADK does the webhook→Runner mapping; you don't write it.
+That single call registers `POST /apps/{app_name}/trigger/pubsub`. ADK does the webhook→Runner mapping; you don't write it.
+
+> Pub/Sub trigger derives `user_id` from the subscription path: `subscription.replace("/", "--")`. Use this to correlate ambient events with a stable session.
 
 ```python
 @app.middleware("http")
 async def normalize_pubsub_subscription(request, call_next):
-    if request.url.path.endswith("/trigger/pubsub") and request.method == "POST":
+    if request.url.path.endswith("/apps/expense_agent/trigger/pubsub") and request.method == "POST":
         body = await request.body()
         data = json.loads(body)
         sub = data.get("subscription", "")
@@ -140,7 +142,7 @@ This is exactly the **HITL frontend pattern** from [23/10 OptimisticUI](../23_Fr
 
 ### `terraform/` — the deployment
 
-For the student already in the deployment headspace: this folder shows the full prod wiring — Cloud Run service, Pub/Sub topic + subscription pointing at the service's `/trigger/pubsub` URL, IAM bindings, secrets. Module 22 (Deployment) is where this lives in depth.
+For the student already in the deployment headspace: this folder shows the full prod wiring — Cloud Run service, Pub/Sub topic + subscription pointing at the service's `/apps/expense_agent/trigger/pubsub` URL, IAM bindings, secrets. Module 22 (Deployment) is where this lives in depth.
 
 ## Trace one expense
 
@@ -149,7 +151,7 @@ For the student already in the deployment headspace: this folder shows the full 
    {"amount": 450, "submitter": "alice@co", "category": "travel",
     "description": "client dinner", "date": "2026-05-25"}
 
-2. Pub/Sub push delivery hits POST /trigger/pubsub
+2. Pub/Sub push delivery hits POST /apps/expense_agent/trigger/pubsub
    Middleware normalizes subscription path → "review"
    ADK constructs session: user_id="review", session_id=<auto>
    ADK invokes root_agent (the Workflow)

@@ -22,7 +22,7 @@ A standalone script — **no ADK yet** — that:
 
 1. Loads a PDF.
 2. Chunks it (sentence-aware from page 02).
-3. Embeds chunks with `text-embedding-005` (`RETRIEVAL_DOCUMENT`).
+3. Embeds chunks with `gemini-embedding-001` (`RETRIEVAL_DOCUMENT`).
 4. Upserts to a Vertex AI Vector Search index (from 10A/04).
 5. Accepts a question, embeds it (`RETRIEVAL_QUERY`).
 6. Retrieves top-k, augments the prompt, calls Gemini, prints + cites.
@@ -57,7 +57,7 @@ Reuse `chunk_sentences` from page 02. Chunk size = 600 chars for this drill.
 ## ☁️ Step 3 — embed (asymmetric!)
 
 ```python
-EMBED_MODEL = "text-embedding-005"
+EMBED_MODEL = "gemini-embedding-001"  # text-embedding-004 deprecated 2026-01-14; -005 legacy
 
 def embed_documents(texts: list[str]) -> list[list[float]]:
     model = TextEmbeddingModel.from_pretrained(EMBED_MODEL)

@@ -37,7 +37,7 @@ Client                                Server
 
 ## Frames
 
-Two types you care about: **text** (UTF-8) and **binary** (arbitrary bytes). The protocol also has control frames: **ping**, **pong**, **close**. Each frame carries a payload up to ~64 KB by default; bigger payloads are split into "continuation" frames.
+Two types you care about: **text** (UTF-8) and **binary** (arbitrary bytes). The protocol also has control frames: **ping**, **pong**, **close**. RFC 6455 allows a frame payload up to 2^63 bytes — there is **no 64 KB cap in the protocol itself**. Individual libraries impose their own caps for memory safety: the Python `websockets` library defaults to `max_size=2**20` (1 MiB) per message and will fragment messages above its `write_limit` into continuation frames. (The "64 KB" figure that circulates in tutorials is the default *fragment* size in some libraries — including older versions of `websockets` — not a protocol limit. Tune `max_size` and `write_limit` on `serve()` / `connect()` if you need larger messages.)
 
 For Gemini Live, the binary frame carries PCM audio bytes. The text frame carries JSON envelopes. You saw both in `bidi-demo/app/main.py:182-227`.
 

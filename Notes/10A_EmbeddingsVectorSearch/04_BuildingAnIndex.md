@@ -37,7 +37,7 @@ aiplatform.init(project="YOUR-PROJECT", location="us-central1")
 
 index = aiplatform.MatchingEngineIndex.create_tree_ah_index(
     display_name="adk-course-10a-index",
-    dimensions=768,                          # match text-embedding-005
+    dimensions=3072,                         # match gemini-embedding-001 (or 768 for the legacy text-embedding-* family)
     approximate_neighbors_count=10,           # default top-k
     distance_measure_type="COSINE_DISTANCE",  # default for text
     leaf_node_embedding_count=500,
@@ -97,6 +97,8 @@ Two paths:
 
 ### Stream upsert (small batches, real-time)
 
+> 🧠 **Note** — `upsert_datapoints` expects a list of `IndexDatapoint` proto objects (`from google.cloud.aiplatform_v1 import IndexDatapoint`), not plain dicts. The SDK accepts dict-shaped input in some versions for convenience, but the proto form is the contract.
+
 ```python
 # Work/04d_stream_upsert.py — run with: uv run python Work/04d_stream_upsert.py
 from google.cloud.aiplatform.matching_engine.matching_engine_index_endpoint import (
@@ -107,7 +109,7 @@ index.upsert_datapoints(
     datapoints=[
         {
             "datapoint_id": "doc_001",
-            "feature_vector": [0.012, -0.034],   # 768 floats in real use
+            "feature_vector": [0.012, -0.034],   # 3072 floats for gemini-embedding-001
             "restricts": [{"namespace": "topic", "allow_list": ["python"]}],
         },
         # ... up to 1000 per call
@@ -134,7 +136,7 @@ index.upsert_datapoints(
 If quota is the blocker, write the index code but **don't deploy**. Replace `endpoint.deploy_index(...).result()` with a print + sleep and proceed to mock the query. The drill page (09) documents both the real and the mocked path.
 
 ```python
-def build_or_get_index(name: str, dims: int = 768) -> aiplatform.MatchingEngineIndex:
+def build_or_get_index(name: str, dims: int = 3072) -> aiplatform.MatchingEngineIndex:
     """Idempotent: returns existing if display_name matches, else creates."""
     existing = aiplatform.MatchingEngineIndex.list(
         filter=f'display_name="{name}"'

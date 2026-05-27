@@ -40,17 +40,17 @@ print(result.final_output)
 ## Multi-agent — "handoffs"
 
 ```python
-from agents import Agent, handoff
+from agents import Agent
 
 researcher = Agent(name="Researcher", instructions="Find facts.")
 writer = Agent(
     name="Writer",
     instructions="Write briefs. Hand off to Researcher if you need facts.",
-    handoffs=[handoff(researcher)],
+    handoffs=[researcher],   # NOT `sub_agents=` — that's ADK's name
 )
 ```
 
-`handoff(agent)` is registered as a tool; when the model "calls" it, control passes. Same idea as ADK's `transfer_to_agent`.
+The agent in `handoffs=[...]` is registered as a tool; when the model "calls" it, control passes. Same idea as ADK's `transfer_to_agent`. For customization (filters, callbacks, custom input types) you can wrap with `handoff(researcher, on_handoff=...)` from `agents.handoffs`, but the bare-agent form is the common case. Note: the kwarg is `handoffs=` — `sub_agents=` is ADK terminology and will not work here.
 
 ## Guardrails
 

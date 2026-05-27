@@ -4,7 +4,7 @@ page: 02_VertexAITextEmbeddings
 title: ☁️ Vertex AI text embeddings — the SDK
 estimated_minutes: 30
 prereqs: [10A_EmbeddingsVectorSearch/01]
-concepts: [text-embedding-005, task-type, RETRIEVAL_QUERY, RETRIEVAL_DOCUMENT, batch-embedding]
+concepts: [gemini-embedding-001, task-type, RETRIEVAL_QUERY, RETRIEVAL_DOCUMENT, batch-embedding]
 icon: ☁️
 in_production: true
 detours_suggested: []
@@ -20,13 +20,15 @@ You are here: 🗺 Data & GCP Track ▸ 10A Embeddings & Vector Search ▸ 02 Ve
 
 | Model | Dims | Notes |
 |---|---|---|
-| `text-embedding-005` | 768 | Default. Cheapest. English + code. |
-| `text-embedding-004` | 768 | Slightly older; widely supported by RAG Engine. |
+| `gemini-embedding-001` | up to 3072 | **Current default for new work.** Matryoshka — truncate dims to fit cost. Supports `task_type`. |
 | `text-multilingual-embedding-002` | 768 | 100+ languages. |
-| `gemini-embedding-001` | up to 3072 | Newest; matryoshka — truncate dims to fit cost. |
+| `text-embedding-005` | 768 | Legacy. English + code. |
+| `text-embedding-004` | 768 | **Deprecated 2026-01-14.** Widely supported by RAG Engine, but on the sunset path. |
+
+> ⚠ **Model deprecation** — `text-embedding-004` was deprecated 2026-01-14 and `text-embedding-005` is legacy. For new work, use `gemini-embedding-001` (3072 dims, supports `task_type` parameter). Existing indexes are incompatible across embedding-model families — switching model requires re-embedding the entire corpus.
 
 > 🚀 **In Production**
-> Pin the model in config; `text-embedding-005` today is `005`-something next year. Changing the model means **re-embedding the whole corpus**. See `07_InProduction`.
+> Pin the model in config. Changing the model means **re-embedding the whole corpus** (vectors from different model families are not comparable). See `07_InProduction`.
 
 ## 🛠 Embedding a single string
 
@@ -36,7 +38,7 @@ import vertexai
 from vertexai.language_models import TextEmbeddingModel, TextEmbeddingInput
 
 vertexai.init(project="YOUR-PROJECT", location="us-central1")
-model = TextEmbeddingModel.from_pretrained("text-embedding-005")
+model = TextEmbeddingModel.from_pretrained("gemini-embedding-001")
 
 embeddings = model.get_embeddings([
     TextEmbeddingInput("Python is a programming language", task_type="RETRIEVAL_DOCUMENT"),
@@ -46,7 +48,7 @@ print(embeddings[0].values[:5])
 ```
 
 ```text
-768
+3072
 [0.0234, -0.0119, 0.0573, 0.0411, 0.0188]
 ```
 
@@ -82,7 +84,7 @@ import vertexai
 from vertexai.language_models import TextEmbeddingModel, TextEmbeddingInput
 
 vertexai.init(project="YOUR-PROJECT", location="us-central1")
-_MODEL = TextEmbeddingModel.from_pretrained("text-embedding-005")
+_MODEL = TextEmbeddingModel.from_pretrained("gemini-embedding-001")
 
 
 def embed_documents(texts: list[str]) -> list[list[float]]:
@@ -97,8 +99,8 @@ def embed_query(q: str) -> list[float]:
 
 if __name__ == "__main__":
     docs = embed_documents(["Python is a programming language"])
-    print(len(docs), len(docs[0]))           # 1 768
-    print(len(embed_query("What is Python?")))  # 768
+    print(len(docs), len(docs[0]))           # 1 3072
+    print(len(embed_query("What is Python?")))  # 3072
 ```
 
 Two functions. Two task types. **Wire them carefully.**
@@ -117,9 +119,9 @@ Two functions. Two task types. **Wire them carefully.**
 
 ## 💸 Cost & throughput
 
-- ~$0.000025 per 1k input chars for `text-embedding-005` (verify on the pricing page).
+- Check the Vertex AI pricing page — `gemini-embedding-001` is priced per 1k input chars; rates differ from the legacy `text-embedding-*` family.
 - Default 600 RPM, 250k input chars/min — request increase early.
-- Batch up to **250 inputs per call** for `text-embedding-005`.
+- Batch up to **250 inputs per call** for the legacy `text-embedding-*` family; `gemini-embedding-001` currently caps batches lower — check the SDK error if you exceed it.
 
 > 🚀 **In Production**
 > A nightly batch job at 600 RPM gets you ~36M chars/hour. If you have a 10M-doc corpus, plan for hours-to-days of embed time, or request quota up front.

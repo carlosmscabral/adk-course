@@ -57,7 +57,7 @@ runner.run_async()                        runners.py:914
                                 — ctx.set_agent_state(end_of_agent=True)
                                 — yield end-of-agent event
           (NodeRunner finalizes; emits node-output event with branch + author)
-  └─ session_service.append_event(session, event)    sessions/base_session_service.py:141
+  └─ session_service.append_event(session, event)    sessions/base_session_service.py:114
         └─ apply event.actions.state_delta to session.state
   └─ yield event   ← consumer of run_async receives it
 ```
@@ -65,7 +65,7 @@ runner.run_async()                        runners.py:914
 ## Three checkpoints to memorize
 
 1. **The LLM call is at `base_llm_flow.py:1192` (`_call_llm_async`).** That's the bottleneck. If a request is slow, your profile points here.
-2. **State is applied at `base_session_service.py:141` (`append_event`).** Every state mutation happens **after** the event leaves the agent — *not* inside the tool.
+2. **State is applied at `base_session_service.py:114` (`append_event`).** Every state mutation happens **after** the event leaves the agent — *not* inside the tool.
 3. **The actual `LlmAgent → node` wrapping happens at `runners.py:981` (`build_node(agent_to_run)`).** This is why even single-agent runs go through the workflow scheduler in 2.0.
 
 ## What's NOT in the trace
@@ -75,7 +75,7 @@ runner.run_async()                        runners.py:914
 - No transfer (no `sub_agents`).
 - No streaming partials (depends on the model; Gemini does stream by default — page 18).
 
-> 🛠 **Have the student run:** open three terminals/buffers — `runners.py:914`, `base_llm_flow.py:818`, `base_session_service.py:141`. Follow the call by jumping between them on a real session. Use grep/code-nav rather than reading top to bottom.
+> 🛠 **Have the student run:** open three terminals/buffers — `runners.py:914`, `base_llm_flow.py:818`, `base_session_service.py:114`. Follow the call by jumping between them on a real session. Use grep/code-nav rather than reading top to bottom.
 
 > ❓ **Ask the student:** "If I want to log every LLM request payload (for debugging), what's the cheapest hook?" *(Answer: `before_model_callback` on the agent, or a `Plugin` with `on_model_request`. Both fire at `base_llm_flow.py` around `_handle_before_model_callback`.)*
 

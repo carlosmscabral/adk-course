@@ -57,7 +57,7 @@ The delta hitched a ride on the event.
 
 ## Step 3 — Runner persists; state is applied
 
-The runner's `async for event in agent.run_async(...)` loop hands the event to `session_service.append_event(session, event)`. In `sessions/base_session_service.py` around line **141**:
+The runner's `async for event in agent.run_async(...)` loop hands the event to `session_service.append_event(session, event)`. In `sessions/base_session_service.py` around line **114**:
 
 ```python
 def append_event(self, session, event):

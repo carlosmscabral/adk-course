@@ -39,14 +39,21 @@ The point: you see *what happened*, *in what order*, *for how long*, all under o
 
 ## 🧠 Span attributes you will rely on
 
+ADK emits attributes from two namespaces:
+
+- `gen_ai.*` — the OpenTelemetry **GenAI semantic conventions** (cross-vendor; Honeycomb / Datadog / Cloud Trace all index these as first-class).
+- `gcp.vertex.agent.*` — ADK-specific extensions for things the OTel spec does not cover (session, invocation, raw request/response payloads).
+
 | Attribute | Where | Why it matters |
 |---|---|---|
-| `model.name` | LLM span | Per-model cost rollups. |
-| `tokens.in` / `tokens.out` | LLM span | Cost and prompt-bloat detection. |
-| `tool.name` | Tool span | Slowest-tool rollups. |
-| `tool.status` | Tool span | Error-rate per tool. |
-| `session.id` | Runner span | Correlate with the user's complaint. |
-| `agent.name` | Agent span | Which sub_agent did what. |
+| `gen_ai.request.model` | LLM span | Per-model cost rollups. |
+| `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens` | LLM span | Cost and prompt-bloat detection. |
+| `gen_ai.tool.name` | Tool span | Slowest-tool rollups. |
+| `gen_ai.agent.name` | Agent span | Which sub_agent did what. |
+| `gcp.vertex.agent.session_id` | Agent/tool spans | Correlate with the user's complaint. |
+| `gcp.vertex.agent.invocation_id` | Agent/tool spans | One `runner.run_async` call → one invocation. |
+
+(Source: `google/adk/telemetry/tracing.py:44-58` for the `gen_ai.*` constants and lines 328-340 for the `gcp.vertex.agent.*` setters.)
 
 These attributes are emitted automatically by ADK. You can add custom attributes from a callback via `tool_context` / `callback_context` — useful for tagging traces with `request_id`, `user_tier`, etc.
 
@@ -54,9 +61,9 @@ These attributes are emitted automatically by ADK. You can add custom attributes
 
 ## ⚠️ Gotcha — span cardinality
 
-`agent.name`, `tool.name`, `model.name` are *low* cardinality (a handful of values). Backend indices love them.
+`gen_ai.agent.name`, `gen_ai.tool.name`, `gen_ai.request.model` are *low* cardinality (a handful of values). Backend indices love them.
 
-`session.id`, `user.id`, `request.id` are *high* cardinality (one per request). They are *useful* as span IDs / labels but should **not** be used as metric labels — see page 05.
+`gcp.vertex.agent.session_id`, `gcp.vertex.agent.invocation_id`, `user.id`, `request.id` are *high* cardinality (one per request/session). They are *useful* as span attributes (for lookup) but should **not** be used as metric labels — see page 05.
 
 > 🚀 **In Production**
 >

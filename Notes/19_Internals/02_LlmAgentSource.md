@@ -28,7 +28,7 @@ Skim lines 193-480. `LlmAgent` is a **pydantic model**, so every "field" you set
 | `instruction: Union[str, InstructionProvider]` | 216 | dynamic, supports `{state_key}` substitution |
 | `global_instruction` | 230 | deprecated — moved to `GlobalInstructionPlugin` |
 | `static_instruction` | 243 | sent once for caching |
-| `tools: list[BaseTool \| Callable \| BaseToolset]` | ≈340 | tools / toolsets |
+| `tools: list[BaseTool \| Callable \| BaseToolset]` | 294 | tools / toolsets |
 | `sub_agents: list[BaseAgent]` | inherited from BaseAgent | child agents |
 | `before/after_model_callback` and similar | ≈400 | callback hooks |
 
