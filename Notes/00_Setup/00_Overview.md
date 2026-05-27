@@ -31,6 +31,60 @@ The smallest possible loop from a fresh machine to a talking agent. We install A
 * Python 3.11+ (`python3 --version`).
 * Comfortable in a terminal: `cd`, `pip`/`uv`, `git`, `export`.
 * A Gemini API key (free tier is fine for this module). Get one from https://aistudio.google.com/apikey.
+* **A workspace directory decided.** The course assumes three sibling repos — `adk-course/`, `adk-samples/`, `adk-python/` — under one parent (canonical: `~/study/`, but anywhere works). Page 01 walks you through cloning the two companion repos; just pick the parent dir before you start.
+
+## 🗺 Workspace layout — the authoritative answer
+
+**Every "where does this go?" question in this course resolves to this diagram.** Read it once now; refer back whenever a page asks you to create a file.
+
+```
+<workspace>/                                  ← e.g., ~/study/  (or ~/_demos/, ~/code/ — any parent)
+│
+├── .venv/                                    ← Python virtualenv. ONE per workspace. Activated from
+│                                                workspace root: `source .venv/bin/activate`.
+│                                                Contains the `adk` CLI after `pip install google-adk`.
+│
+├── adk-course/                               ← THIS REPO (read-only EXCEPT Work/)
+│   ├── Notes/                                ← Lessons. You read these; you do not edit them.
+│   ├── Solutions/                            ← Gate-keeper solutions. Read-only until you've tried.
+│   ├── Reference/                            ← Cheat sheets.
+│   ├── Drills/                               ← Milestone integration exercises (M1–M5).
+│   └── Work/                                 ← 🟢 YOUR scratch dir. Gitignored. EVERYTHING you write
+│       │                                        from Module 02 onward goes here. For an exercise
+│       │                                        called "calc_agent", that's `Work/calc_agent/`.
+│       └── _template_run.py                  ← starter scaffolding (copy when starting a drill)
+│
+├── adk-samples/                              ← Canonical agents (read-only). You DISSECT these.
+│   └── python/agents/
+│       └── fun-facts/                        ← Module 00's sample lives here.
+│           └── fun_facts/                    ← the agent package (note: hyphen → underscore)
+│               ├── agent.py
+│               ├── __init__.py
+│               └── .env                      ← 🟢 Module 00's .env goes HERE. Nowhere else.
+│                                                Created on page 02. NOT on page 01. NOT in
+│                                                workspace root. NOT in adk-course/.
+│
+└── adk-python/                               ← Framework source (read-only). Opened from Module 19.
+```
+
+### The three rules that cover every page in this course
+
+1. **Course pages are read-only.** You never edit anything under `adk-course/Notes/`, `adk-course/Solutions/`, `adk-course/Reference/`, or `adk-course/Drills/`. If a lesson asks you to write code, it goes in `Work/`.
+2. **Samples are read-only.** You never edit `adk-samples/python/agents/<whatever>/` source. You can drop a `.env` next to a sample's agent module (as you'll do for `fun-facts` on page 02) — that's not "editing," that's local config the sample's `load_dotenv()` call expects.
+3. **`.env` files live next to the agent module that needs them.** Not in the workspace root. Not in the course root. Next to the `agent.py` (or wherever `load_dotenv()` is called). For `fun-facts`, that's `adk-samples/python/agents/fun-facts/fun_facts/.env`. For your own agents in `Work/my_agent/`, it'd be `Work/my_agent/.env`.
+
+### Quick reference — "where do I create X?"
+
+| Thing | Where it goes |
+|---|---|
+| Virtualenv | `<workspace>/.venv/` |
+| Cloned `adk-samples`, `adk-python` | siblings of `adk-course/` under `<workspace>/` |
+| `.env` for **`fun-facts`** (this module) | `<workspace>/adk-samples/python/agents/fun-facts/fun_facts/.env` |
+| `.env` for **your own** agents (Module 02+) | next to your agent file, e.g. `<workspace>/adk-course/Work/my_agent/.env` |
+| Your hand-written exercise code | `<workspace>/adk-course/Work/<exercise_name>/` |
+| Notes you take while learning | anywhere you want — they aren't part of the course |
+
+> 🤖 **Tutor — MANDATORY before page 01:** walk the student through this layout diagram and the three rules. Confirm they understand which directories are read-only and where their own work will live. **Do not improvise alternate locations.** If the student's actual workspace doesn't match `~/study/` (e.g., they're at `~/_demos/`), substitute the parent path in commands — the *layout* (three siblings + shared `.venv/`) is load-bearing; the *parent path* is not. If a later page seems to contradict this layout, the page is wrong — flag it, do not paper over it.
 
 ## Estimated time
 

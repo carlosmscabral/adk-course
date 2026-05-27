@@ -4,6 +4,65 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.2] - 2026-05-27
+
+Phase-0 dogfood fix #2 — v0.4.1 didn't go far enough. Second live tutor session (Antigravity, same `~/_demos/adk-course/` checkout) STILL produced "Let's create a `.env` file in the root of your workspace" — directly contradicting page 01's "don't create one yet" text. Two root causes:
+
+1. **Tutor skipped my v0.4.1 workspace-section on page 01.** It auto-detected the `.venv` existed and shortcut past the prose that explained the layout. The workspace spec needs to be where the tutor cannot skip it — i.e., on page 00, which the tutor reads first as the module entry point.
+2. **Tutor improvised against an explicit "don't" instruction.** The v0.4.1 hook said "Don't create one yet; it'd have no agent to attach to" — soft language that the tutor's optimize-for-momentum bias rolled over. Stronger hooks needed.
+
+### Fixed
+
+- **`Notes/00_Setup/00_Overview.md`** — added a **"🗺 Workspace layout — the authoritative answer"** section between Prereqs and Estimated time, ~70 lines of source-of-truth content the tutor cannot shortcut past. Contents:
+  - Full ASCII tree of `<workspace>/` showing every directory the student will touch in Module 00 (and forward-references for Module 02+), with read-only / writable annotations and explicit `.env` locations called out with 🟢 markers.
+  - **Three rules** that cover every "where?" question for the rest of the course: (1) course pages read-only except `Work/`; (2) samples read-only; (3) `.env` lives next to the agent module.
+  - **Quick-reference table** mapping every "thing" the student creates (venv, cloned repos, `.env` for fun-facts, `.env` for student's own agents, hand-written exercise code, notes) to its canonical path.
+  - **Mandatory tutor hook** at the end of the section: *"walk the student through this layout diagram and the three rules BEFORE page 01. Do not improvise alternate locations. If a later page seems to contradict this layout, the page is wrong — flag it, do not paper over it."*
+- **`Notes/00_Setup/01_InstallingADK.md`** — replaced the soft "Don't create one yet" sentence with a hard tutor hook: *"DO NOT have the student create a `.env` on this page under any circumstances ... Any instruction phrased as 'create a `.env` in your workspace root,' 'create a `.env` in adk-course/,' or 'create a `.env` here' is wrong — `load_dotenv()` would not find it, the agent would fail to authenticate, and the student would have a broken setup blamed on the course."* Section header relabeled from `## 🧠 Where your API key will live` to `## 🧠 Where your API key will live (preview — do nothing yet)` so even a tutor skimming headers gets the signal. Added the full canonical path inline.
+- **`Notes/00_Setup/02_HelloFunFacts.md`** — restructured the `.env` block: full canonical path inline (no path-arithmetic), an explicit `ls -la` + `cat` verification step, and a tutor hook with **four numbered location rules** the tutor can repeat verbatim if the student asks (covering: where the file goes, why dotenv looks there, what to do if it was created in the wrong place, cross-reference back to the 00_Overview layout diagram).
+
+### Why
+
+The user explicitly asked: *"I am looking for an authoritative answer on where things should be created!"* The defect was that v0.4.1's answer lived inside `01_InstallingADK.md` — buried in a section the tutor could and did skip. The authoritative answer must live where the tutor cannot shortcut past it: the Overview, which is the first thing read at module entry. The new section is structured as a reference (diagram + rules + table) rather than a narrative, so it functions as a citation target for every downstream page.
+
+The secondary lesson: hooks at the level of "Don't do X" lose to tutor optimization. Hooks at the level of "DO NOT do X. If you find yourself wanting to do X, that's a signal Y" survive. The course is teaching the tutor as much as it's teaching the student.
+
+### Method
+
+Read live transcript from second Antigravity session, traced where the tutor's `.env`-location ad-lib came from (it was generating from prior-fix language it skimmed past), restructured: (a) elevate canonical layout to 00_Overview where it's unmissable, (b) harden the page-01 anti-improvisation hook with explicit forbidden phrases the tutor might generate, (c) restructure page-02 around verification + repeatable rules. Five `Edit`s total across 3 files.
+
+### Deferred
+
+- A `_figures/workspace_layout.txt` asset mirroring the 00_Overview tree — postponed because the inline version is already authoritative and a duplicate asset risks drift. If subsequent modules need to forward-reference the layout from a different angle, materialize it then.
+- Auditing other Foundation Track modules (`03_Tools`, `04_SessionsState`, `1A_AppAndRunner`) for path-assumption defects. The same class of bug may exist where they introduce student-written agents in `Work/`. Verify-and-fix when those modules surface in dogfood.
+
+---
+
+## [0.4.1] - 2026-05-27
+
+Phase-0 dogfood fix #1 — workspace layout was implicit. First live tutor session (Antigravity, running against a fresh `~/_demos/adk-course/` checkout without sibling `adk-samples`) had to ad-lib `git clone adk-samples` mid-lesson and confused the student with conflicting `.env` instructions across pages 01 and 02. Root cause: pages 00–02 assumed `~/study/adk-course/`, `~/study/adk-samples/`, `~/study/adk-python/` were all present, but the course never told the student that or walked them through the clone. Fix is surgical (3 pages, no structural change).
+
+### Fixed
+
+- **`Notes/00_Setup/01_InstallingADK.md`** — added an opening "Pick a workspace, clone the two companion repos" section that introduces the `<workspace>/` ↔ `~/study/` convention with an `ADK_WORKSPACE` env var, walks the clone of `adk-samples` and `adk-python` as siblings, and includes a tutor hook telling the AI to adapt paths if the student's machine layout differs (the *layout* is load-bearing; the *parent path* is not). Replaced the orphan `.env` creation block (which had no destination path) with a "your `.env` will live next to the agent module, on the next page" pointer — eliminates the dual-`.env` confusion that surfaced in the dogfood transcript.
+- **`Notes/00_Setup/02_HelloFunFacts.md`** — removed the redundant `git clone adk-samples` step (page 01 now handles it) and the "if you already cloned it, skip" branch. Replaced with a direct `cd "$ADK_WORKSPACE/adk-samples/python/agents/fun-facts"`. Tightened the `.env`-creation block to explicitly name "alongside `agent.py`" and added a tutor hook for the common workspace-root vs agent-dir confusion. Added a `source "$ADK_WORKSPACE/.venv/bin/activate"` reminder before `adk run` because the venv lives in workspace root while the command is run from the sample dir — easy to forget.
+- **`Notes/00_Setup/00_Overview.md`** — added a fourth Prereq line: "A workspace directory decided." Names the 3-sibling layout convention upfront so the student arrives at page 01 knowing what's coming.
+
+### Why
+
+The defect was uncovered by the first real Phase-0 dogfood run (Antigravity teaching Module 00 to Carlos on a fresh `~/_demos/` checkout). The tutor's behavior was correct *given the source* — it noticed the `adk-samples` was missing and improvised cloning instructions — but the AGENTS.md contract explicitly forbids ad-libbing structure. This means the page, not the tutor, was the bug. The fix preserves the implicit `~/study/` canonical layout for the rest of the course (the `repo_tour.txt` figure and Module 19 cross-references all still resolve) while making the layout an explicit step the student walks through rather than an unstated assumption.
+
+### Method
+
+Read the live transcript, traced the tutor's improvisations back to the source pages, identified two coupled defects (missing clone instructions + orphan `.env` block on page 01), patched with 4 surgical `Edit`s. No new pages, no structural split. Plan: not separately authored — the fix is small enough that the CHANGELOG entry IS the plan.
+
+### Deferred
+
+- A broader pass on the `<workspace>` convention to other Foundation Track modules (`03_Tools`, `04_SessionsState`, `1A_AppAndRunner`, `2A_AgentConfig`) — they may also hardcode `~/study/`-style paths without the explicit setup. Verify-and-fix when those modules surface in dogfood.
+- The `_figures/repo_tour.txt` figure still shows `~/study/` as the literal parent. Leave for now — the page 01 fix introduces `<workspace>/` as the abstract concept, and the figure remains a valid concrete example. Revisit if dogfood shows confusion.
+
+---
+
 ## [0.4.0] - 2026-05-27
 
 Module 12 (Code Execution) — content-depth pass. Net new ≈ 1100 lines across 11 lesson pages, 2 YAML files, 1 AGENTS.md, and 2 figures, plus a structural split. Backlog-closer of the type 0.3.13's "next natural work is content depth" line called out: this is the first content-depth pass, executed against the highest-value module that was running thin (504 lines pre-pass for 6 executors + a sample dissection — page 02 alone needed 80 more lines to land the "in-process is not a sandbox" point with primary sources). Plan file at `.claude/plans/module-12-code-execution-depth-pass.md`.
