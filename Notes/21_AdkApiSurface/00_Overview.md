@@ -10,7 +10,7 @@ in_production: true
 detours_suggested: [FastAPI_for_ADK]
 ---
 
-[← Prev: 20_FrameworkComparison/99_ChoosingAFramework](../20_FrameworkComparison/99_ChoosingAFramework.md)  [↑ Map](../../MAP.md)  [Next: 01_AdkRunCli →](01_AdkRunCli.md)
+[← Prev: 20_FrameworkComparison/99_ChoosingAFramework](../20_FrameworkComparison/09_ChoosingAFramework.md)  [↑ Map](../../MAP.md)  [Next: 01_AdkRunCli →](01_AdkRunCli.md)
 
 You are here: 🗺 Deployment & Integration Track ▸ 21 ADK API Surface ▸ 00 Overview
 
@@ -68,4 +68,4 @@ By the end of this module you will:
 
 ---
 
-[← Prev: 20_FrameworkComparison/99_ChoosingAFramework](../20_FrameworkComparison/99_ChoosingAFramework.md)  [↑ Map](../../MAP.md)  [Next: 01_AdkRunCli →](01_AdkRunCli.md)
+[← Prev: 20_FrameworkComparison/99_ChoosingAFramework](../20_FrameworkComparison/09_ChoosingAFramework.md)  [↑ Map](../../MAP.md)  [Next: 01_AdkRunCli →](01_AdkRunCli.md)

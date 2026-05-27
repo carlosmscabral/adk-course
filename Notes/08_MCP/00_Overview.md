@@ -10,7 +10,7 @@ in_production: true
 detours_suggested: [FastMCP, PY_async]
 ---
 
-[← Prev: 07_Callbacks](../07_Callbacks/09_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 08_MCP/01_WhatIsMCP →](01_WhatIsMCP.md)
+[← Prev: 07_Callbacks](../07_Callbacks/12_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 08_MCP/01_WhatIsMCP →](01_WhatIsMCP.md)
 
 You are here: 🗺 Integration Track ▸ 08 MCP ▸ 00 Overview
 
@@ -63,4 +63,4 @@ You can write Python functions and turn them into ADK tools (Module 03). That's 
 
 > 🤖 **Tutor:** if the student already used `FunctionTool` in Module 03, lead with "MCP is the same idea, but over the network and with a standard contract." That's the engineering hook.
 
-[← Prev: 07_Callbacks](../07_Callbacks/09_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 08_MCP/01_WhatIsMCP →](01_WhatIsMCP.md)
+[← Prev: 07_Callbacks](../07_Callbacks/12_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 08_MCP/01_WhatIsMCP →](01_WhatIsMCP.md)

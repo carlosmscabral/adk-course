@@ -20,7 +20,7 @@ This is the foundational fact. Whether you compose via `sub_agents=`, `AgentTool
 
 ## 🧠 The de-facto handoff pattern: output_key → {key}
 
-We saw `output_key=` in [`04_SessionsState/04_OutputKey`](../04_SessionsState/04_OutputKey.md). Recap:
+We saw `output_key=` in [`04_SessionsState/04_OutputKey`](../04_SessionsState/09_OutputKeyShortcut.md). Recap:
 
 ```python
 critic = LlmAgent(

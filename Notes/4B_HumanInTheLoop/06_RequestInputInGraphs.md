@@ -22,7 +22,7 @@ Two primitives so far:
 
 The third — **`RequestInput`** — pauses an entire **graph workflow** at a *node*. Use it when the human needs to interject *between* steps, not approve a single tool action.
 
-This page is a tight recap; the long teaching lives at [06_GraphWorkflows/04_HumanInTheLoop](../06_GraphWorkflows/04_HumanInTheLoop.md). Open both side by side.
+This page is a tight recap; the long teaching lives at [06_GraphWorkflows/04_HumanInTheLoop](../06_GraphWorkflows/07_HumanInTheLoop.md). Open both side by side.
 
 ## The shape
 
@@ -49,7 +49,7 @@ Conceptually all three are "pause + checkpoint + resume." Mechanically:
 |---|---|---|---|
 | `ctx.request_confirmation` | one tool call inside an LlmAgent | `ToolConfirmation` (approve/reject + payload) | here (pages 02-04) |
 | `LongRunningFunctionTool` | one tool call, generic | whatever your tool returns | here (page 05) |
-| `RequestInput` | a workflow node | dict matching `response_schema` | [06 Graph Workflows/04](../06_GraphWorkflows/04_HumanInTheLoop.md) |
+| `RequestInput` | a workflow node | dict matching `response_schema` | [06 Graph Workflows/04](../06_GraphWorkflows/07_HumanInTheLoop.md) |
 
 The split exists because the three live at different abstraction layers (tool → tool → graph node) and the runtime surfaces them on different fields (`event.actions.requested_tool_confirmations` for the first two flavors of tool pause; the `RequestInput` is a content event in its own right).
 
@@ -115,7 +115,7 @@ Two `RequestInput` pauses in one workflow. The agent can loop back to itself bas
 
 > ❓ **Ask the student:** "An e-commerce agent needs the user to confirm a cart before checkout. Tool confirmation or `RequestInput`?" (Either works. `RequestInput` is cleaner if checkout is its own node downstream of cart-builder; `request_confirmation` is cleaner if checkout is a single `place_order` tool call. Trade-off: graph nodes are heavier but more reusable.)
 
-> 🛠 **Have the student:** read [06_GraphWorkflows/04_HumanInTheLoop](../06_GraphWorkflows/04_HumanInTheLoop.md) end to end if they haven't yet — page 11's dissection sample uses both flavors and we'll need to know the difference cold.
+> 🛠 **Have the student:** read [06_GraphWorkflows/04_HumanInTheLoop](../06_GraphWorkflows/07_HumanInTheLoop.md) end to end if they haven't yet — page 11's dissection sample uses both flavors and we'll need to know the difference cold.
 
 ## 🚀 In Production
 

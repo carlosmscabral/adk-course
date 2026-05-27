@@ -8,7 +8,7 @@ concepts: [bit-depth, dynamic-range, quantization-noise, Nyquist, formants, ASR-
 icon: 🔉
 ---
 
-[← Triggered from: 18_StreamingLive/04_AudioIO]  [↑ Map](../MAP.md)
+[← Triggered from: 18_StreamingLive/04_AudioIO]  [↑ Map](../../MAP.md)
 
 You are here: 🗺 Detours ▸ Audio Quantization
 
@@ -122,4 +122,4 @@ Now imagine asking Live to transcribe these. The original works; the rest get pr
 - The PCM 16 kHz / 16-bit input the API asks for is the **lowest config you can use without losing accuracy.** Don't try to "save bandwidth" with 8 kHz or 8-bit. The 256 kbps you'd save is nothing; the accuracy you'd lose matters.
 - Output at 24 kHz from native-audio models exists because TTS sounds noticeably better with 12 kHz of frequency headroom vs 8 kHz of 16 kHz output.
 
-[← Back: 18_StreamingLive/04_AudioIO](../18_StreamingLive/04_AudioIO.md)  [↑ Map](../MAP.md)
+[← Back: 18_StreamingLive/04_AudioIO](../18_StreamingLive/04_AudioIO.md)  [↑ Map](../../MAP.md)

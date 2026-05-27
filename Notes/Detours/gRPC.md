@@ -8,7 +8,7 @@ concepts: [gRPC, HTTP-2, protobuf, streaming-rpc, channel, REST-comparison]
 icon: 📡
 ---
 
-[← Triggered from: 18_StreamingLive/06_VideoInput, 19_Internals]  [↑ Map](../MAP.md)
+[← Triggered from: 18_StreamingLive/06_VideoInput, 19_Internals]  [↑ Map](../../MAP.md)
 
 You are here: 🗺 Detours ▸ gRPC
 
@@ -161,4 +161,4 @@ Each `DATA` frame is an audio chunk in flight. The stream ID stays the same beca
 - The `runner.run_live(...)` async iterator is **a bidirectional WebSocket stream wrapped in Python's async syntax** (the underlying Live service is gRPC-defined; the SDK transport is WebSocket — see `google/genai/live.py:48`). The `LiveRequestQueue.send_*` calls put frames onto the upload side of that stream; the `async for event` reads frames from the download side.
 - This is also why `session_resumption` matters — a TCP/WebSocket connection that drops takes the whole session with it. Resumption lets you start a fresh session at the same logical position.
 
-[← Back: 18_StreamingLive/06_VideoInput](../18_StreamingLive/06_VideoInput.md) · [Forward: [[ProtocolBuffers]]]  [↑ Map](../MAP.md)
+[← Back: 18_StreamingLive/06_VideoInput](../18_StreamingLive/06_VideoInput.md) · [Forward: [[ProtocolBuffers]]]  [↑ Map](../../MAP.md)

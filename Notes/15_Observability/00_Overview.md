@@ -10,7 +10,7 @@ in_production: true
 detours_suggested: []
 ---
 
-[← Prev: 14_Evaluation/10_MiniDrill](../14_Evaluation/10_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 15_Observability/01_WhyObservability →](01_WhyObservability.md)
+[← Prev: 14_Evaluation/10_MiniDrill](../14_Evaluation/12_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 15_Observability/01_WhyObservability →](01_WhyObservability.md)
 
 You are here: 🗺 Production Track ▸ 15 Observability ▸ 00 Overview
 
@@ -60,4 +60,4 @@ By the end of this module you will:
 
 ---
 
-[← Prev: 14_Evaluation/10_MiniDrill](../14_Evaluation/10_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 15_Observability/01_WhyObservability →](01_WhyObservability.md)
+[← Prev: 14_Evaluation/10_MiniDrill](../14_Evaluation/12_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 15_Observability/01_WhyObservability →](01_WhyObservability.md)

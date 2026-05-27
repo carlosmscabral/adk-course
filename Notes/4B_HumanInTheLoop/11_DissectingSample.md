@@ -141,7 +141,7 @@ Pub/Sub message {"amount": 250, "submitter": "alice@x.com", ...}
 | Module concept | Where in the sample |
 |---|---|
 | HITL — pause-then-resume | `expense_agent/agent.py:197` (`request_approval` yields `RequestInput`) |
-| `App.resumability_config` | `expense_agent/fast_api_app.py` (and recap [Module 1A](../1A_AppAndRunner/04_ResumabilityConfig.md)) |
+| `App.resumability_config` | `expense_agent/fast_api_app.py` (and recap [Module 1A](../1A_AppAndRunner/04_WiringResumability.md)) |
 | Ambient trigger (Pub/Sub) | `terraform/` Pub/Sub push to Cloud Run + ADK trigger endpoint |
 | Frontend-driven resume | `frontend/` posts to backend; backend calls `runner.run_async(invocation_id=...)` |
 | In-state stash for HITL payload | `expense_agent/agent.py:100` (`route_by_amount` writes `ctx.state["expense_data"]`) |

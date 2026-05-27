@@ -133,10 +133,10 @@ asyncio.run(main())
 
 ## Where it's covered in the course
 
-- Engine-first walk: [Notes/02_FirstAgent/02_RunnerAndSession](../../Notes/02_FirstAgent/02_RunnerAndSession.md), [Notes/02_FirstAgent/03_RunAsyncAndEvents](../../Notes/02_FirstAgent/03_RunAsyncAndEvents.md)
-- Session services: [Notes/04_SessionsState/01_SessionLifecycle](../../Notes/04_SessionsState/01_SessionLifecycle.md)
-- Event deltas: [Notes/04_SessionsState/03_EventDeltas](../../Notes/04_SessionsState/03_EventDeltas.md)
-- Internals trace: [Notes/19_Internals/01_TracingRunAsync](../../Notes/19_Internals/01_TracingRunAsync.md)
+- Engine-first walk: [Notes/02_FirstAgent/02_RunnerAndSession](../../Notes/02_FirstAgent/02_RunnerAndSession.md), [Notes/02_FirstAgent/03_RunAsyncAndEvents](../../Notes/02_FirstAgent/03_RunAsyncIsAGenerator.md)
+- Session services: [Notes/04_SessionsState/01_SessionLifecycle](../../Notes/04_SessionsState/01_SessionVsState.md)
+- Event deltas: [Notes/04_SessionsState/03_EventDeltas](../../Notes/04_SessionsState/04_WritingStateFromTools.md)
+- Internals trace: [Notes/19_Internals/01_TracingRunAsync](../../Notes/19_Internals/09_DissectingOneCall.md)
 
 ---
 

@@ -94,9 +94,9 @@ You are here: 🗺 Integration Track ▸ 23 Frontend Integration ▸ 12 In Produ
 
 - [16 Production & Security](../16_ProductionSecurity/) — the full security checklist (auth, secrets, network).
 - [22 Deployment Models](../22_DeploymentModels/) — where the backend runs (Cloud Run, GKE, Agent Engine).
-- [21 ADK API Surface](../21_ApiSurface/) — what your frontend is consuming.
+- [21 ADK API Surface](../21_AdkApiSurface/) — what your frontend is consuming.
 - [24 Channel Integrations](../24_ChannelIntegrations/) — Slack/Discord/Google Chat: a different "frontend" with the same backend constraints.
-- [4B Human-in-the-Loop](../4B_HITL/) — backend half of the optimistic-UI / approval pattern.
+- [4B Human-in-the-Loop](../4B_HumanInTheLoop/) — backend half of the optimistic-UI / approval pattern.
 
 > 🚀 **In Production** — composite reminder
 >

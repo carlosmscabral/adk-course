@@ -30,7 +30,7 @@ The course teaches production-readiness inline (brief rule #14); this is the con
 
 - **Risk**: pause survives process restart only if the session backend persists. `InMemorySessionService` (the default in many examples) loses everything on Cloud Run scale-to-zero.
 - **Mitigation**: production runs must use `DatabaseSessionService`, `SqliteSessionService`, or `VertexAiSessionService`. Verify in your `Runner(...)` construction.
-- **Inline source**: [04_RunnerResumeAndCancel § 🚀 In Production](04_RunnerResumeAndCancel.md#-in-production), and the broader [04_SessionsState/06_PersistentSessions](../04_SessionsState/06_PersistentSessions.md).
+- **Inline source**: [04_RunnerResumeAndCancel § 🚀 In Production](04_RunnerResumeAndCancel.md#-in-production), and the broader [04_SessionsState/06_PersistentSessions](../04_SessionsState/10_PersistentSessions.md).
 
 ### 2. `resumability_config.is_resumable = True`
 

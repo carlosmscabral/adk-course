@@ -58,7 +58,7 @@ The six mistakes that turn artifact handling from "works in dev" into a Sev-1 pa
 ## Cross-references
 
 - [16 Production & Security](../16_ProductionSecurity/) — synthesises every module's checklist, including artifact-specific safety scanning.
-- [22 Deployment Models / 03 Agent Engine](../22_DeploymentModels/03_AgentEngine.md) — which GCS bucket your agent talks to depends on the deployment shape; Agent Engine provides one automatically.
+- [22 Deployment Models / 03 Agent Engine](../22_DeploymentModels/03_AgentEnginePath.md) — which GCS bucket your agent talks to depends on the deployment shape; Agent Engine provides one automatically.
 - [15 Observability](../15_Observability/) — wire `artifact_delta` into structured logs from day one.
 - [Detour: SignedUrls_GCS](../Detours/SignedUrls_GCS.md) — deep dive on V4 signing, browser-direct uploads, audience-restricted URLs.
 

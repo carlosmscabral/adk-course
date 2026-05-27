@@ -113,7 +113,7 @@ To reject, pass `ToolConfirmation(confirmed=False, ...)`. The tool body will run
 App(name="...", root_agent=..., resumability_config=ResumabilityConfig(is_resumable=True))
 ```
 
-Without `is_resumable=True`, the runtime won't store the checkpoint and `invocation_id=` on resume raises. This is wired in the **App container** ([1A_AppAndRunner/04_ResumabilityConfig](../1A_AppAndRunner/04_ResumabilityConfig.md)) — we re-state it here so the surface is in one place.
+Without `is_resumable=True`, the runtime won't store the checkpoint and `invocation_id=` on resume raises. This is wired in the **App container** ([1A_AppAndRunner/04_ResumabilityConfig](../1A_AppAndRunner/04_WiringResumability.md)) — we re-state it here so the surface is in one place.
 
 ## Abandoning a pending invocation
 

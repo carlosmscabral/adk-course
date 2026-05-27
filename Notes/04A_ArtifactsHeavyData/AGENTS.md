@@ -37,7 +37,7 @@
 | "Wait, what's `gs://` and how do I auth?" | [[Cloud_Run]] (deployment context) or [[SignedUrls_GCS]] for the URL deep-dive — both cover GCS basics. |
 | "What's a signed URL for, really?" | [[SignedUrls_GCS]] — covers V4 signing, browser-direct uploads, audience-restricted URLs in ~20 min. |
 | "Why is artifact_delta on the event and not a callback?" | Skip the detour, point at [Module 19 / Internals](../19_Internals/) — the framework-source trace lives there. |
-| "How does Agent Engine handle artifacts?" | [22 Deployment Models / 03 Agent Engine](../22_DeploymentModels/03_AgentEngine.md) — Agent Engine provides a GCS bucket automatically. |
+| "How does Agent Engine handle artifacts?" | [22 Deployment Models / 03 Agent Engine](../22_DeploymentModels/03_AgentEnginePath.md) — Agent Engine provides a GCS bucket automatically. |
 
 If the same detour is suggested and declined twice (check `student_profile.md`), stop offering it.
 

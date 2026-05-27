@@ -10,7 +10,7 @@ in_production: true
 detours_suggested: []
 ---
 
-[← Prev: 08_MCP/02_McpToolset](02_McpToolset.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/04_LifecycleManagement →](04_LifecycleManagement.md)
+[← Prev: 08_MCP/02_McpToolset](02_MCPToolset.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/04_LifecycleManagement →](04_LifecycleManagement.md)
 
 You are here: 🗺 Integration Track ▸ 08 MCP ▸ 03 Transports
 
@@ -105,4 +105,4 @@ This is what `currency-agent` and `travel-planner-google-maps-mcp` use. Modern H
 >
 > For HTTP transports, **always set a timeout**. The default 5 s for connect is usually fine, but the long read timeouts (5 min on SSE) can hide a stuck server for minutes. Pair with `on_tool_error_callback` to surface the failure quickly.
 
-[← Prev: 08_MCP/02_McpToolset](02_McpToolset.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/04_LifecycleManagement →](04_LifecycleManagement.md)
+[← Prev: 08_MCP/02_McpToolset](02_MCPToolset.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/04_LifecycleManagement →](04_LifecycleManagement.md)

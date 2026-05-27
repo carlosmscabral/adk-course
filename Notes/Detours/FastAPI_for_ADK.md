@@ -291,6 +291,6 @@ Now add a 1-line auth middleware that requires `X-API-Key: secret` on `/adk/*` o
 
 ---
 
-[← Back to: 21_ADK_API_Surface/04_CustomizingTheServer](../21_ADK_API_Surface/04_CustomizingTheServer.md)  [↑ Map](../../MAP.md)
+[← Back to: 21_ADK_API_Surface/04_CustomizingTheServer](../21_AdkApiSurface/06_WrappingInFastAPI.md)  [↑ Map](../../MAP.md)
 
 **When you're done:** head back to module 21. The In-Production page (`06_InProduction.md`) revisits middleware ordering and the "where to put auth" question with the deployment context from [[Cloud_Run]].

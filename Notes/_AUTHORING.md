@@ -61,9 +61,9 @@ Find at least one earlier module whose page should reference yours ("we'll see t
 
 Use the link conventions from the brief:
 - Same module: `[link](04_NextPage.md)`
-- Other module: `[link](../05_MultiAgent/03_AgentAsTool.md)`
+- Other module: `[link](../05_MultiAgent/04_AgentAsTool.md)`
 - Detour: `[[PY_async]]` (the tutor resolves)
-- Cheat sheet: `[link](../../Reference/CheatSheets/state_prefixes.md)`
+- Cheat sheet: `[link](../Reference/CheatSheets/state_prefixes.md)`
 
 ### (f) Bump `CHANGELOG.md`
 

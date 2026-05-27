@@ -16,7 +16,7 @@ You are here: 🗺 Composition Track ▸ 05 Multi-Agent ▸ 04 AgentTool
 
 ## 🧠 The other composition primitive
 
-We previewed `AgentTool` in [`03_Tools/03_AgentAsTool`](../03_Tools/03_AgentAsTool.md). Here is the full story.
+We previewed `AgentTool` in [`03_Tools/03_AgentAsTool`](../03_Tools/08_AgentToolPreview.md). Here is the full story.
 
 ```python
 from google.adk.agents import LlmAgent

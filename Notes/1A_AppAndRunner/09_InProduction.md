@@ -53,7 +53,7 @@ The course teaches production-readiness inline (rule #14 in the [authoring brief
 ### 5. Context cache hit rate is observed before celebrated
 
 - **Risk**: Caching has per-cache overhead. Low hit rate (< 30%) means you are paying for writes with no read benefit. Caching is silently expensive when it does not work.
-- **Mitigation**: Wire the cache-hit-rate metric ([Module 15 § Metrics](../15_Observability/04_MetricsAndDashboards.md)) before flipping on `context_cache_config` in prod. Tune `min_tokens` and `ttl_seconds` based on real hit data, not guesses.
+- **Mitigation**: Wire the cache-hit-rate metric ([Module 15 § Metrics](../15_Observability/05_Metrics.md)) before flipping on `context_cache_config` in prod. Tune `min_tokens` and `ttl_seconds` based on real hit data, not guesses.
 - **Inline source**: [05 Wiring Context Cache § 🚀 In Production](05_WiringContextCache.md#-in-production)
 
 ### 6. Compaction uses a cheap summarizer model

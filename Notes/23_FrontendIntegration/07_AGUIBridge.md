@@ -91,7 +91,7 @@ Skip AG-UI when:
 
 ## Cross-reference
 
-- [21 ADK API Surface](../21_ApiSurface/) — what AG-UI sits *above*. The shim translates AG-UI ↔ that surface.
+- [21 ADK API Surface](../21_AdkApiSurface/) — what AG-UI sits *above*. The shim translates AG-UI ↔ that surface.
 - [10 A2A](../10_A2A/) — same shape, different audience: A2A is agent↔agent, AG-UI is agent↔frontend.
 
 > 🚀 **In Production**

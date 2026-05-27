@@ -127,7 +127,7 @@ The dotted path is a **Python import path** — ADK uses `importlib` to resolve 
 
 > **🚀 In Production**
 >
-> `adk create` writes secrets into `.env`. The CLI warns about adding `.env` to `.gitignore`, but that warning is easy to miss in CI. Standard mitigation: add `.env` to your repo's root `.gitignore` **before** the first `adk create` call, and use a secret-manager (GCP Secret Manager, Vault) for production deploys — never ship the dev `.env` to prod. See [16 Production & Security § 02 Secrets Handling](../16_ProductionSecurity/02_SecretsHandling.md).
+> `adk create` writes secrets into `.env`. The CLI warns about adding `.env` to `.gitignore`, but that warning is easy to miss in CI. Standard mitigation: add `.env` to your repo's root `.gitignore` **before** the first `adk create` call, and use a secret-manager (GCP Secret Manager, Vault) for production deploys — never ship the dev `.env` to prod. See [16 Production & Security § 02 Secrets Handling](../16_ProductionSecurity/04_SecretsHandling.md).
 
 > 🛠 **Have the student run:** `adk create scratch_yaml --type config --model gemini-2.5-flash --api_key $GOOGLE_API_KEY`. Then `adk run scratch_yaml` and confirm the agent replies. The whole loop should take under two minutes — that is the point of the scaffold. (Flag names verified against `cli_tools_click.py:436-498`.)
 

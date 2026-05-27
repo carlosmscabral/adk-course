@@ -96,7 +96,7 @@ async def upload_and_run(
 
 **Pros:** simple, one round-trip from the user's perspective. **Cons:** files traverse your backend → memory pressure, request body limits.
 
-Cross-reference: [04A Artifacts & Heavy Data](../04A_Artifacts/) covers `ArtifactService` types (`InMemory`, `GcsArtifactService`) and versioning semantics in depth.
+Cross-reference: [04A Artifacts & Heavy Data](../04A_ArtifactsHeavyData/) covers `ArtifactService` types (`InMemory`, `GcsArtifactService`) and versioning semantics in depth.
 
 ## Path B — large files, direct to GCS via signed URL
 

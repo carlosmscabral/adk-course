@@ -58,7 +58,7 @@ print(corpus.name)
 projects/123/locations/us-central1/ragCorpora/4567890
 ```
 
-Embedding model is **pinned at corpus creation**. Changing it = recreate the corpus. (Same constraint as the hand-rolled pipeline, just enforced.) The recommended default is `gemini-embedding-001` — see [10A/03](../10A_VectorSearch/03_EmbeddingsDeepDive.md). The `text-embedding-004` family is deprecated 2026-01-14; old samples that hardcode it will keep running for now but should be migrated.
+Embedding model is **pinned at corpus creation**. Changing it = recreate the corpus. (Same constraint as the hand-rolled pipeline, just enforced.) The recommended default is `gemini-embedding-001` — see [10A/03](../10A_EmbeddingsVectorSearch/01_WhatIsAnEmbedding.md). The `text-embedding-004` family is deprecated 2026-01-14; old samples that hardcode it will keep running for now but should be migrated.
 
 ## ☁️ Upload files (chunking + embedding happen server-side)
 

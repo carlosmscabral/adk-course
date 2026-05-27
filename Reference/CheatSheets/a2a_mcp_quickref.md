@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 - MCP module: [Notes/08_MCP/](../../Notes/08_MCP/)
 - A2A module: [Notes/10_A2A/](../../Notes/10_A2A/)
-- The explicit comparison page: [Notes/10_A2A/04_A2A_vs_MCP](../../Notes/10_A2A/04_A2A_vs_MCP.md)
+- The explicit comparison page: [Notes/10_A2A/04_A2A_vs_MCP](../../Notes/10_A2A/05_A2A_vs_MCP.md)
 - FastMCP detour: [Notes/Detours/FastMCP.md](../../Notes/Detours/FastMCP.md)
 - Milestone that integrates both: [Drills/M3_FederatedPlanner.md](../../Drills/M3_FederatedPlanner.md)
 

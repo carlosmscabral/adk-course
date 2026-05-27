@@ -219,6 +219,6 @@ You should see SSE events stream back. Now:
 
 ---
 
-[← Back to: 22_DeploymentModels/03_DeployCloudRun](../22_DeploymentModels/03_DeployCloudRun.md)  [↑ Map](../../MAP.md)
+[← Back to: 22_DeploymentModels/03_DeployCloudRun](../22_DeploymentModels/02_CloudRunPath.md)  [↑ Map](../../MAP.md)
 
 **When you're done:** head back to `22_DeploymentModels`. The `04_AgentEngineDeploy` page builds the contrast — same agent, managed runtime.

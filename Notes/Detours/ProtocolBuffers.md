@@ -8,7 +8,7 @@ concepts: [protobuf, schema, varint, tag, code-generation, schema-evolution]
 icon: 📦
 ---
 
-[← Triggered from: 18_StreamingLive (Live transport), 19_Internals]  [↑ Map](../MAP.md)
+[← Triggered from: 18_StreamingLive (Live transport), 19_Internals]  [↑ Map](../../MAP.md)
 
 You are here: 🗺 Detours ▸ Protocol Buffers
 
@@ -166,4 +166,4 @@ Now try printing the raw bytes and pick out the tags/lengths by hand. The exerci
 - `event.content.parts[0].inline_data.data` for audio is a `bytes` field that came over as a length-delimited protobuf field — same wire shape as the `"laundry"` example above, just bigger.
 - When you see `event.model_dump_json(...)` in `bidi-demo`, that call re-serializes the SDK's typed event (whose shape comes from the protobuf service definition) to JSON for the browser WebSocket — same wire format the SDK already uses to talk to Vertex Live (see `google/genai/live.py:997` for the SDK side and the bidi-demo source for the browser side).
 
-[← Back: 18_StreamingLive](../18_StreamingLive/00_Overview.md) · [Back: [[gRPC]]]  [↑ Map](../MAP.md)
+[← Back: 18_StreamingLive](../18_StreamingLive/00_Overview.md) · [Back: [[gRPC]]]  [↑ Map](../../MAP.md)

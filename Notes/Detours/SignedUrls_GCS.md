@@ -294,6 +294,6 @@ Each failure reinforces what the signature actually binds.
 
 ---
 
-[← Back to: 04A_ArtifactsHeavyData/04_SignedURLPattern](../04A_ArtifactsHeavyData/04_SignedURLPattern.md)  [↑ Map](../../MAP.md)
+[← Back to: 04A_ArtifactsHeavyData/04_SignedURLPattern](../04A_ArtifactsHeavyData/07_SignedUrlsHandoff.md)  [↑ Map](../../MAP.md)
 
 **When you're done:** return to module 04A. The dissecting-sample page shows the same flow inside an agent that processes user-uploaded receipts.

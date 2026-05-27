@@ -92,7 +92,7 @@ function renderApprovalCard(call) {
 }
 ```
 
-Cross-reference: [4B Human-in-the-Loop & Resume/Cancel](../4B_HITL/) — the backend half. The frontend half lives here.
+Cross-reference: [4B Human-in-the-Loop & Resume/Cancel](../4B_HumanInTheLoop/) — the backend half. The frontend half lives here.
 
 ## Optimistic *messages* — risky, sometimes worth it
 

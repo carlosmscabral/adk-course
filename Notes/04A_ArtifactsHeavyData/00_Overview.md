@@ -10,7 +10,7 @@ in_production: false
 detours_suggested: []
 ---
 
-[← Prev: 04_SessionsState/10_MiniDrill](../04_SessionsState/10_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04A_ArtifactsHeavyData/01_WhyArtifacts →](01_WhyArtifacts.md)
+[← Prev: 04_SessionsState/10_MiniDrill](../04_SessionsState/14_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04A_ArtifactsHeavyData/01_WhyArtifacts →](01_WhyArtifacts.md)
 
 You are here: 🗺 Foundation Track ▸ 04A Artifacts & Heavy Data ▸ 00 Overview
 
@@ -67,4 +67,4 @@ After this module: → **[04B Human-in-the-Loop](../4B_HumanInTheLoop/00_Overvie
 
 ---
 
-[← Prev: 04_SessionsState/10_MiniDrill](../04_SessionsState/10_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04A_ArtifactsHeavyData/01_WhyArtifacts →](01_WhyArtifacts.md)
+[← Prev: 04_SessionsState/10_MiniDrill](../04_SessionsState/14_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04A_ArtifactsHeavyData/01_WhyArtifacts →](01_WhyArtifacts.md)

@@ -67,7 +67,7 @@ This is the **only** structural argument that matters in production. Everything 
 
 > **🚀 In Production**
 >
-> The minute the agent is behind a `/run` endpoint that real callers depend on, *split for blast radius first, then for ergonomics*. A diff that touches only `prompts.py` is a safer rollout than one that touches `agent.py`. We pick this up in [10_InProduction](10_InProduction.md) and [06 In Production for Multi-Agent](../05_MultiAgent/06_InProduction.md).
+> The minute the agent is behind a `/run` endpoint that real callers depend on, *split for blast radius first, then for ergonomics*. A diff that touches only `prompts.py` is a safer rollout than one that touches `agent.py`. We pick this up in [10_InProduction](10_InProduction.md) and [06 In Production for Multi-Agent](../05_MultiAgent/09_InProduction.md).
 
 > 🧭 **If the student looks stuck:** suggest detour [[PY_packaging]] — covers how Python actually resolves `from .tools import X`, which makes the rest of this module feel obvious.
 

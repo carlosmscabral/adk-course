@@ -8,7 +8,7 @@ concepts: [WebSocket, frame, ping-pong, close-code, SSE-comparison]
 icon: 🌐
 ---
 
-[← Triggered from: 18_StreamingLive/03_TextStreaming, 18_StreamingLive/06_VideoInput]  [↑ Map](../MAP.md)
+[← Triggered from: 18_StreamingLive/03_TextStreaming, 18_StreamingLive/06_VideoInput]  [↑ Map](../../MAP.md)
 
 You are here: 🗺 Detours ▸ WebSockets
 
@@ -126,4 +126,4 @@ Bonus: have the client send a 100 KB binary payload (`b'\x00' * 100000`) and con
 - For text streaming, you actually don't need WebSockets — SSE in `03_TextStreaming` is simpler.
 - For voice/video Live, the WebSocket layer is exactly what `bidi-demo/app/main.py` puts between the browser and the ADK runner. With this detour done, you should read that file as "WebSocket frame in → blob to queue → event from runner → JSON frame out."
 
-[← Back: 18_StreamingLive/03_TextStreaming](../18_StreamingLive/03_TextStreaming.md) · [Back: 18_StreamingLive/06_VideoInput](../18_StreamingLive/06_VideoInput.md)  [↑ Map](../MAP.md)
+[← Back: 18_StreamingLive/03_TextStreaming](../18_StreamingLive/03_TextStreaming.md) · [Back: 18_StreamingLive/06_VideoInput](../18_StreamingLive/06_VideoInput.md)  [↑ Map](../../MAP.md)

@@ -133,7 +133,7 @@ await artifact_service.save_artifact(
 # Tools can later load it by name
 ```
 
-For one-shot ("what's in this photo?" → reply → done), inline is fine. For "OK now compare this to the one I sent yesterday", artifacts win. See [04A Artifacts & Heavy Data](../04A_Artifacts/) for the deep dive.
+For one-shot ("what's in this photo?" → reply → done), inline is fine. For "OK now compare this to the one I sent yesterday", artifacts win. See [04A Artifacts & Heavy Data](../04A_ArtifactsHeavyData/) for the deep dive.
 
 ## Sending media back
 

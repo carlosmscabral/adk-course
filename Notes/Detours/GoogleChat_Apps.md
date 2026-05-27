@@ -283,6 +283,6 @@ End-to-end Google Chat bot on Cloud Run:
 
 ---
 
-[← Back to: 24_ChannelIntegrations/03_GoogleChatIntegration](../24_ChannelIntegrations/03_GoogleChatIntegration.md)  [↑ Map](../../MAP.md)
+[← Back to: 24_ChannelIntegrations/03_GoogleChatIntegration](../24_ChannelIntegrations/04_GoogleChatApp.md)  [↑ Map](../../MAP.md)
 
 **When you're done:** return to module 24. The In-Production page compares Slack vs Google Chat trade-offs and points to the dissecting-sample for a working Chat agent.

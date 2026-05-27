@@ -8,7 +8,7 @@ concepts: [PCM, sample-rate, mono-stereo, mu-law, Opus, MP3, raw-bytes]
 icon: 🔊
 ---
 
-[← Triggered from: 18_StreamingLive/04_AudioIO]  [↑ Map](../MAP.md)
+[← Triggered from: 18_StreamingLive/04_AudioIO]  [↑ Map](../../MAP.md)
 
 You are here: 🗺 Detours ▸ Audio Encoding
 
@@ -123,4 +123,4 @@ $ hexdump -C rec.wav | head -3
 - The `sounddevice` callback in `04_AudioIO` produces `float32` in [-1, 1] and we multiplied by 32767 to make it `int16`. Now you know why both steps are necessary: `float32` is the API's natural shape; `int16` PCM is what Live wants on the wire.
 - The output side reads model-emitted `audio/pcm` blobs and writes them straight to an `OutputStream(dtype="int16")`. No decode. That's the point.
 
-[← Back: 18_StreamingLive/04_AudioIO](../18_StreamingLive/04_AudioIO.md)  [↑ Map](../MAP.md)
+[← Back: 18_StreamingLive/04_AudioIO](../18_StreamingLive/04_AudioIO.md)  [↑ Map](../../MAP.md)

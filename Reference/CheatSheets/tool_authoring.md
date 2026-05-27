@@ -108,8 +108,8 @@ Different from `sub_agents=`: `AgentTool` is **explicitly invoked** by the paren
 ## Where it's covered in the course
 
 - Engine-first walk: [Notes/03_Tools/02_FunctionTool](../../Notes/03_Tools/02_FunctionTool.md)
-- Built-in tools: [Notes/03_Tools/04_BuiltInTools](../../Notes/03_Tools/04_BuiltInTools.md)
-- `AgentTool` vs `sub_agents=`: [Notes/05_MultiAgent/03_AgentAsTool](../../Notes/05_MultiAgent/03_AgentAsTool.md)
+- Built-in tools: [Notes/03_Tools/04_BuiltInTools](../../Notes/03_Tools/05_BuiltInTools.md)
+- `AgentTool` vs `sub_agents=`: [Notes/05_MultiAgent/03_AgentAsTool](../../Notes/05_MultiAgent/04_AgentAsTool.md)
 - `LongRunningFunctionTool` for streaming: [Notes/18_StreamingLive/05_StreamingTools](../../Notes/18_StreamingLive/05_StreamingTools.md)
 - Type hints detour: [Notes/Detours/PY_typing.md](../../Notes/Detours/PY_typing.md)
 - Pydantic for structured args: [Notes/Detours/PY_pydantic.md](../../Notes/Detours/PY_pydantic.md)

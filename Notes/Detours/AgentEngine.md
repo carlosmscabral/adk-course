@@ -251,6 +251,6 @@ Now hit Cloud Trace in the GCP console → you should see one trace per call, wi
 
 ---
 
-[← Back to: 22_DeploymentModels/04_AgentEngineDeploy](../22_DeploymentModels/04_AgentEngineDeploy.md)  [↑ Map](../../MAP.md)
+[← Back to: 22_DeploymentModels/04_AgentEngineDeploy](../22_DeploymentModels/03_AgentEnginePath.md)  [↑ Map](../../MAP.md)
 
 **When you're done:** return to module 22. The `05_ChoosingTarget` page maps real workloads to the right runtime using the trade-off table from section 8 above.

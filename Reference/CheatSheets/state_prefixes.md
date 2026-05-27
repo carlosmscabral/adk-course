@@ -60,10 +60,10 @@ You **do not** mutate `session.state` directly. You either:
 ## Where it's covered in the course
 
 - Engine-first walk: [Notes/04_SessionsState/02_StateScopes](../../Notes/04_SessionsState/02_StateScopes.md)
-- Instruction interpolation: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/04_InstructionTemplating.md)
-- `output_key=`: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/04_InstructionTemplating.md)
-- Event deltas: [Notes/04_SessionsState/03_EventDeltas](../../Notes/04_SessionsState/03_EventDeltas.md)
-- PII redaction (production): [Notes/16_ProductionSecurity/04_GuardrailsCookbook](../../Notes/16_ProductionSecurity/04_GuardrailsCookbook.md)
+- Instruction interpolation: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/03_ReadingStateInPrompts.md)
+- `output_key=`: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/03_ReadingStateInPrompts.md)
+- Event deltas: [Notes/04_SessionsState/03_EventDeltas](../../Notes/04_SessionsState/04_WritingStateFromTools.md)
+- PII redaction (production): [Notes/16_ProductionSecurity/04_GuardrailsCookbook](../../Notes/16_ProductionSecurity/05_GuardrailsCookbook.md)
 
 ---
 

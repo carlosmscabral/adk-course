@@ -10,7 +10,7 @@ in_production: true
 detours_suggested: []
 ---
 
-[← Prev: 16_ProductionSecurity/10_MiniDrill](../16_ProductionSecurity/10_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 17_AdvancedModels/01_LLMRegistry →](01_LLMRegistry.md)
+[← Prev: 16_ProductionSecurity/10_MiniDrill](../16_ProductionSecurity/12_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 17_AdvancedModels/01_LLMRegistry →](01_LLMRegistry.md)
 
 You are here: 🗺 Production Track ▸ 17 Advanced Models ▸ 00 Overview
 
@@ -76,4 +76,4 @@ By the end of this module you will:
 
 ---
 
-[← Prev: 16_ProductionSecurity/10_MiniDrill](../16_ProductionSecurity/10_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 17_AdvancedModels/01_LLMRegistry →](01_LLMRegistry.md)
+[← Prev: 16_ProductionSecurity/10_MiniDrill](../16_ProductionSecurity/12_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 17_AdvancedModels/01_LLMRegistry →](01_LLMRegistry.md)

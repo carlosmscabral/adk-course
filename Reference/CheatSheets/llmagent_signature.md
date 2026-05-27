@@ -89,9 +89,9 @@ agent = LlmAgent(
 
 - Engine-first walk: [Notes/02_FirstAgent/01_LlmAgentByHand](../../Notes/02_FirstAgent/01_LlmAgentByHand.md)
 - `tools=`: [Notes/03_Tools/02_FunctionTool](../../Notes/03_Tools/02_FunctionTool.md)
-- `sub_agents=` + `description`: [Notes/05_MultiAgent/01_SubAgents](../../Notes/05_MultiAgent/01_SubAgents.md)
-- `instruction` templating: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/04_InstructionTemplating.md)
-- `output_key`: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/04_InstructionTemplating.md)
+- `sub_agents=` + `description`: [Notes/05_MultiAgent/01_SubAgents](../../Notes/05_MultiAgent/02_SubAgents.md)
+- `instruction` templating: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/03_ReadingStateInPrompts.md)
+- `output_key`: [Notes/04_SessionsState/04_InstructionTemplating](../../Notes/04_SessionsState/03_ReadingStateInPrompts.md)
 - Callbacks: [Notes/07_Callbacks/](../../Notes/07_Callbacks/) + [Callback signatures cheat sheet](callback_signatures.md)
 - `model=` choices: [Notes/17_AdvancedModels/](../../Notes/17_AdvancedModels/)
 - `code_executor=`: [Notes/12_CodeExecution/](../../Notes/12_CodeExecution/)

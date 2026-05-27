@@ -10,7 +10,7 @@ in_production: false
 detours_suggested: []
 ---
 
-[← Prev: 04A_ArtifactsHeavyData/11_MiniDrill](../04A_ArtifactsHeavyData/11_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyHITL →](01_WhyHITL.md)
+[← Prev: 04A_ArtifactsHeavyData/11_MiniDrill](../04A_ArtifactsHeavyData/13_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyHITL →](01_WhyHITL.md)
 
 You are here: 🗺 Foundation Track ▸ 4B HITL & Resume/Cancel ▸ 00 Overview
 
@@ -67,4 +67,4 @@ After this module: → [23 Frontend Integration](../23_FrontendIntegration/) (UI
 
 ---
 
-[← Prev: 04A_ArtifactsHeavyData/11_MiniDrill](../04A_ArtifactsHeavyData/11_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyHITL →](01_WhyHITL.md)
+[← Prev: 04A_ArtifactsHeavyData/11_MiniDrill](../04A_ArtifactsHeavyData/13_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyHITL →](01_WhyHITL.md)

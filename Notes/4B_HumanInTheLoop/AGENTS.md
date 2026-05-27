@@ -19,7 +19,7 @@
 ## Pacing
 
 - **Easy if**: student is comfortable with `async for` + `runner.run_async`, has finished Module 04 (Sessions/State) and Module 06 (Graph Workflows) at least through page 04. Cruise.
-- **Hard if**: student has never persisted a session beyond `InMemorySessionService`. The Resume/Cancel pages will land on sand because they can't reason about "what survives a process restart". Detour to [04_SessionsState/06_PersistentSessions](../04_SessionsState/06_PersistentSessions.md) first.
+- **Hard if**: student has never persisted a session beyond `InMemorySessionService`. The Resume/Cancel pages will land on sand because they can't reason about "what survives a process restart". Detour to [04_SessionsState/06_PersistentSessions](../04_SessionsState/10_PersistentSessions.md) first.
 - Expected total time for an on-pace student: ~4.5 hours over 2-3 sessions (sum of `estimated_minutes` in the page frontmatter).
 
 ## Watch for these mistakes

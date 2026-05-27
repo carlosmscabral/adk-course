@@ -16,7 +16,7 @@ You are here: 🗺 Integration Track ▸ 23 Frontend Integration ▸ 05 Custom S
 
 # 🛠 The smallest custom client
 
-`adk api_server` (module [21](../21_ApiSurface/)) exposes a JSON HTTP surface: `POST /apps/{app}/users/{user}/sessions`, `POST /run`, `POST /run_sse`, `GET /apps/{app}/users/{user}/sessions`. That's enough to build a chat UI in **one HTML file**.
+`adk api_server` (module [21](../21_AdkApiSurface/)) exposes a JSON HTTP surface: `POST /apps/{app}/users/{user}/sessions`, `POST /run`, `POST /run_sse`, `GET /apps/{app}/users/{user}/sessions`. That's enough to build a chat UI in **one HTML file**.
 
 We'll keep it framework-free — when you wrap it in React/Vue/Svelte the logic is identical, just typed and componentized.
 
@@ -117,7 +117,7 @@ That's the entire client. Two `fetch` calls, a Readable stream reader for SSE, a
 | `POST /apps/{app}/users/{user}/sessions/{sid}/artifacts` | Upload artifact (filename in JSON body via `SaveArtifactRequest.filename`) |
 | `GET /apps/{app}/users/{user}/sessions/{sid}/artifacts/{name}` | Fetch artifact |
 
-Full reference: module [21_ApiSurface](../21_ApiSurface/).
+Full reference: module [21_ApiSurface](../21_AdkApiSurface/).
 
 ## CORS
 

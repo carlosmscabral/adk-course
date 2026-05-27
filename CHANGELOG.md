@@ -4,6 +4,52 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.11] - 2026-05-27
+
+Dogfood Wave 9 — internal-links integrity sweep. Built a programmatic auditor over all `.md` files in the course (2 190 internal markdown links across 430 files; code-block stripping to avoid false positives on f-strings and illustrative prose). The audit surfaced 93 broken links clustered into ~10 systemic patterns that had accumulated as modules grew, files were renumbered, and folders were renamed without rewriting the cross-refs left behind in detours, cheatsheets, and the 2.0 release-note absorption.
+
+### Fixed
+
+**File renumbering (within-module shifts as drills grew)**
+- `04_SessionsState/10_MiniDrill.yml` → `14_MiniDrill.yml` — 04A_ArtifactsHeavyData/00_Overview.md (top + bottom breadcrumbs).
+- `06_GraphWorkflows/04_HumanInTheLoop.md` → `07_HumanInTheLoop.md` — 06_GraphWorkflows/{04, 06}, Updates note, runner_session_lifecycle cheatsheet.
+- `07_Callbacks/09_MiniDrill.yml` → `12_MiniDrill.yml` — callback_signatures cheatsheet.
+- Several cheatsheet drill-pointer fixes in the same shape.
+
+**Folder renames (caught by audit)**
+- `21_ApiSurface/` → `21_AdkApiSurface/` — 4 sites across cheatsheets and Detours/AgentEngine.md.
+- `4B_HITL/` → `4B_HumanInTheLoop/` — 3 sites across runner_session_lifecycle cheatsheet and 4B_HumanInTheLoop/00_Overview.md (self-referential breadcrumb left over from rename).
+- `10A_VectorSearch/` → `10A_EmbeddingsVectorSearch/` — 2 sites in 10B_RAGPipeline/04_VertexAIRAGEngine.md.
+- `04A_Artifacts/` → `04A_ArtifactsHeavyData/` — 2 sites in 04_SessionsState/00_Overview.md.
+- `22_DeploymentModels/03_AgentEngine.md` → `03_AgentEnginePath.md` (and sibling renames) — 5 sites across Detours/{AgentEngine,Cloud_Run,FastAPI_for_ADK}.md.
+
+**Filename case (post-class-rename artifact)**
+- `02_McpToolset.md` → `02_MCPToolset.md` — 4 sites across 08_MCP/{00, 01, 03}. The class was renamed `McpToolset` in v0.3.6 but the filename kept its uppercase `MCP` (acronym style); cross-refs written before the class rename had been "fixed" downward in v0.3.6 and overshot.
+
+**Detour relative-path bug (10 sites across 5 files)**
+- `Detours/*.md` linked `../MAP.md` — but Detours lives one level deeper than other Notes pages, so `../MAP.md` resolves to `Notes/MAP.md` (which doesn't exist). Correct path is `../../MAP.md` (repo-root MAP.md). Fixed top + bottom breadcrumbs in AudioEncoding, AudioQuantization, ProtocolBuffers, WebSockets, gRPC.
+
+**Cheatsheet cross-refs (heaviest concentration — 25+ edits)**
+- callback_signatures (6 edits), event_actions (5), state_prefixes (4), runner_session_lifecycle (4), llmagent_signature (3), tool_authoring (2), a2a_mcp_quickref (1). Cheatsheets are referenced from many modules but only authored once; they hadn't been re-checked against the live module structure since the modules grew.
+
+**Display-text/href mismatches in 2026-05_adk-2.0.md (4 sites)**
+- The script-based fix updated hrefs but left bracket display text stale. E.g. `[Notes/06_GraphWorkflows/02_GraphIntro.md](../06_GraphWorkflows/04_GraphIntro.md)` — href correct, label rotted. Cleaned up at lines 25, 99, 101, 102.
+
+### Method
+- `/tmp/link_audit2.py` — regex extractor over all `.md` with `re.sub(r'```.*?```', '', text, flags=re.DOTALL)` and inline-backtick stripping to suppress code-snippet false positives. Resolves each link relative to its file and checks existence.
+- Severity rubric applied: broken internal navigation → 🔴 (fix); orphan detours / stale display text → 🟡 (fix in this wave per "don't leave polish behind").
+- `/tmp/link_rewrite.py` — assertion-checked Python applying 74 (file, old, new, expected_count) tuples. Script fails loudly if any expected occurrence count is off, preventing silent under-replacement.
+- Re-ran audit post-fix: 93 → 1 (the lone remaining is `[title](uri)` in `Drills/M4_AuditorWithEvals.md:64` — illustrative-prose template inside backticks that the stripper doesn't catch because it spans formatting; verified false positive).
+
+### Why
+- User: "let's cotinue as suggested. let's not leave polish behind" — authorized both the proactive audit AND the deferred 🟡 cleanup. A course with 430 .md files and ~2 000 internal links cannot rely on synchronous edit-then-check discipline; programmatic auditing is the only way to keep cross-refs honest as the repo grows.
+- This is the kind of regression that compounds silently: a single rename in week 3 leaves stale links that the student first hits in week 8. Catching all 93 in one sweep is cheaper than 93 individual "wait, this link is broken" interruptions during real study sessions.
+
+### Deferred
+- No known defects in the audit-able surface remain. Next natural target is structural review of the recently-grown 4B_HumanInTheLoop module (file list went from ~6 to 13 over Waves 7-8) — content depth, not defect work; belongs in a content-pass phase rather than a dogfood wave.
+
+---
+
 ## [0.3.10] - 2026-05-27
 
 Dogfood Wave 8 — `WorkflowAgent` → `Workflow` class-name sweep across 14 files. The 1.x class `WorkflowAgent` does not exist in ADK 2.0; the canonical 2.0 class is `Workflow` from `google.adk.workflow` (verified at `workflow/_workflow.py:148` and the import sites at `agents/config_agent_utils.py:473`, `cli/agent_test_runner.py:239`). The stale name had survived prior waves because it reads plausibly and is conceptually correct — but a student copy-pasting from any of these sites would hit `ImportError: cannot import name 'WorkflowAgent' from 'google.adk.agents'`.

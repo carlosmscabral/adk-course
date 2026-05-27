@@ -101,7 +101,7 @@ You are here: 🗺 Integration Track ▸ 24 Channel Integrations ▸ 11 In Produ
 - [16 Production & Security](../16_ProductionSecurity/) — the cross-cutting security module.
 - [22 Deployment Models](../22_DeploymentModels/) — where channel adapters live (almost always Cloud Run).
 - [13 Plugins](../13_Plugins/) — `ReflectAndRetryToolPlugin` for ambient agents that must be reliable.
-- [4B Human-in-the-Loop](../4B_HITL/) — the HITL pattern the ambient-expense-agent uses.
+- [4B Human-in-the-Loop](../4B_HumanInTheLoop/) — the HITL pattern the ambient-expense-agent uses.
 - [23 Frontend Integration](../23_FrontendIntegration/) — same rules, different doorway (browser).
 
 > 🚀 **In Production** — composite reminder

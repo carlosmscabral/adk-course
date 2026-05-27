@@ -80,7 +80,7 @@ If you genuinely need per-agent caching policy, the escape hatch is to set the c
 
 > **🚀 In Production**
 >
-> Context caching is silently effective when it works and silently expensive when it doesn't (cache write overhead with no reads). Wire observability **before** turning on `context_cache_config` in prod — see [15 Observability § 04 Metrics](../15_Observability/04_MetricsAndDashboards.md) for the cache-hit-rate metric. If hit rate < 30% you are losing money; either widen the cached prefix or turn caching off for that agent.
+> Context caching is silently effective when it works and silently expensive when it doesn't (cache write overhead with no reads). Wire observability **before** turning on `context_cache_config` in prod — see [15 Observability § 04 Metrics](../15_Observability/05_Metrics.md) for the cache-hit-rate metric. If hit rate < 30% you are losing money; either widen the cached prefix or turn caching off for that agent.
 
 > 🛠 **Have the student do:** open [adk.dev/docs/agents/llm-agents#context-caching](https://adk.dev/) (the live docs) and confirm the field names match what you wrote — the schema is the canonical reference and may have evolved past this snapshot.
 

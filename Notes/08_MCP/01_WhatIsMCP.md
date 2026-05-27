@@ -10,7 +10,7 @@ in_production: false
 detours_suggested: []
 ---
 
-[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_McpToolset →](02_McpToolset.md)
+[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_McpToolset →](02_MCPToolset.md)
 
 You are here: 🗺 Integration Track ▸ 08 MCP ▸ 01 What Is MCP
 
@@ -55,4 +55,4 @@ It's not magic. The LLM still needs to be told what tools exist (the toolset ret
 >
 > MCP servers are real network endpoints with real failure modes. Plan for: (1) network timeouts, (2) version skew (the server's tool signatures change), (3) auth token rotation. We cover each in `07_InProduction.md`.
 
-[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_McpToolset →](02_McpToolset.md)
+[← Prev: 08_MCP/00_Overview](00_Overview.md)  [↑ Map](../../MAP.md)  [Next: 08_MCP/02_McpToolset →](02_MCPToolset.md)

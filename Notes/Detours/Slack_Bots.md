@@ -242,6 +242,6 @@ Wire a minimal Slack bot end-to-end:
 
 ---
 
-[← Back to: 24_ChannelIntegrations/02_SlackIntegration](../24_ChannelIntegrations/02_SlackIntegration.md)  [↑ Map](../../MAP.md)
+[← Back to: 24_ChannelIntegrations/02_SlackIntegration](../24_ChannelIntegrations/03_SlackBot.md)  [↑ Map](../../MAP.md)
 
 **When you're done:** return to module 24. The dissecting-sample page walks the same patterns through a production-shape Slack agent.

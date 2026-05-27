@@ -162,7 +162,7 @@ The version is the last segment — every save bumps it. `load_artifact(filename
 
 > **🚀 In Production**
 >
-> A bucket without a lifecycle policy will eat your budget alive — old artifact versions from churn-deleted users accumulate forever. Set a TTL **on day one**, even an optimistically long one like 365 days; tightening later is one command, but reconstructing what should have been deleted is impossible. Forward link: [22 Deployment Models](../22_DeploymentModels/03_AgentEngine.md) for which bucket lives in which deployment shape, and [11 In Production](11_InProduction.md) for the full cost/PII checklist.
+> A bucket without a lifecycle policy will eat your budget alive — old artifact versions from churn-deleted users accumulate forever. Set a TTL **on day one**, even an optimistically long one like 365 days; tightening later is one command, but reconstructing what should have been deleted is impossible. Forward link: [22 Deployment Models](../22_DeploymentModels/03_AgentEnginePath.md) for which bucket lives in which deployment shape, and [11 In Production](11_InProduction.md) for the full cost/PII checklist.
 
 ---
 

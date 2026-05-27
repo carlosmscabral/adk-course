@@ -10,7 +10,7 @@ in_production: false
 detours_suggested: [PY_packaging]
 ---
 
-[← Prev: 03_Tools/11_MiniDrill](../03_Tools/11_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyStructureMatters →](01_WhyStructureMatters.md)
+[← Prev: 03_Tools/11_MiniDrill](../03_Tools/13_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyStructureMatters →](01_WhyStructureMatters.md)
 
 You are here: 🗺 Foundation Track ▸ 3A Project Structure ▸ 00 Overview
 
@@ -94,4 +94,4 @@ The full ASCII version with annotations lives in [`_figures/layout_evolution.txt
 
 ---
 
-[← Prev: 03_Tools/11_MiniDrill](../03_Tools/11_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyStructureMatters →](01_WhyStructureMatters.md)
+[← Prev: 03_Tools/11_MiniDrill](../03_Tools/13_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 01_WhyStructureMatters →](01_WhyStructureMatters.md)

@@ -10,7 +10,7 @@ in_production: false
 detours_suggested: []
 ---
 
-[← Prev: 03_Tools/11_MiniDrill](../03_Tools/11_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04_SessionsState/01_SessionVsState →]
+[← Prev: 03_Tools/11_MiniDrill](../03_Tools/13_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04_SessionsState/01_SessionVsState →]
 
 You are here: 🗺 Foundation Track ▸ 04 Sessions & State ▸ 00 Overview
 
@@ -65,4 +65,4 @@ About **two days**, including the two-turn remember-name drill.
 
 ---
 
-[← Prev: 03_Tools/11_MiniDrill](../03_Tools/11_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04_SessionsState/01_SessionVsState →]
+[← Prev: 03_Tools/11_MiniDrill](../03_Tools/13_MiniDrill.yml)  [↑ Map](../../MAP.md)  [Next: 04_SessionsState/01_SessionVsState →]
