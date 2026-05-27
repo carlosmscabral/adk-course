@@ -4,7 +4,7 @@ page: 06_ContextCompaction
 title: Context compaction — summarize old turns to fit the window
 estimated_minutes: 20
 prereqs: [04_SessionsState/05]
-concepts: [ContextCompactionConfig, LlmEventSummarizer, window-management, summarization]
+concepts: [EventsCompactionConfig, LlmEventSummarizer, window-management, summarization]
 icon: 🚀
 in_production: true
 detours_suggested: []
@@ -16,25 +16,29 @@ You are here: 🗺 Foundation Track ▸ 04 Sessions & State ▸ 06 Context Compa
 
 # 🚀 Context compaction (NEW in 2.0)
 
-Caching saves cost; **compaction saves the window**. A conversation that runs 200 turns will eventually overflow the model's context window. ADK 2.0 added automatic compaction: every N events, summarize the older ones and replace them with the summary.
+Caching saves cost; **compaction saves the window**. A conversation that runs 200 turns will eventually overflow the model's context window. ADK 2.0 added automatic compaction: every N invocations, summarize the older ones and have the LLM read the summary in place of the raw events.
+
+Like caching, compaction config attaches to the **`App`**, not to an individual `LlmAgent`.
 
 ## 🧠 The config
 
 ```python
 # Work/06_compaction.py — run with: uv run python Work/06_compaction.py
 from google.adk.agents import LlmAgent
-from google.adk.agents.context_compaction_config import ContextCompactionConfig
-from google.adk.agents.llm_event_summarizer import LlmEventSummarizer
+from google.adk.apps import App, EventsCompactionConfig
+from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
+from google.adk.models.google_llm import Gemini
 from google.adk.runners import InMemoryRunner
 from google.genai import types
 import asyncio
 
 
 summarizer = LlmEventSummarizer(
-    model="gemini-2.5-flash",
-    instruction=(
+    llm=Gemini(model="gemini-2.5-flash"),
+    prompt_template=(
         "Summarize this slice of conversation into 3 bullet points. "
-        "Preserve any user-stated facts (names, preferences, decisions)."
+        "Preserve any user-stated facts (names, preferences, decisions).\n\n"
+        "{conversation_history}"
     ),
 )
 
@@ -43,20 +47,25 @@ agent = LlmAgent(
     name="long_running",
     model="gemini-2.5-flash",
     instruction="Be helpful.",
-    context_compaction_config=ContextCompactionConfig(
-        compaction_interval=20,    # compact every 20 events
-        keep_recent_events=10,     # always keep last 10 verbatim
+)
+
+app = App(
+    name="compaction_demo",
+    root_agent=agent,
+    events_compaction_config=EventsCompactionConfig(
         summarizer=summarizer,
+        compaction_interval=5,     # every 5 new user invocations, run a compaction
+        overlap_size=1,            # carry 1 invocation of overlap into the next window
     ),
 )
 
 
 async def main():
-    runner = InMemoryRunner(agent=agent, app_name="compaction_demo")
+    runner = InMemoryRunner(app=app)
     sess = await runner.session_service.create_session(
         app_name="compaction_demo", user_id="u1",
     )
-    for i in range(25):
+    for i in range(12):
         async for event in runner.run_async(
             user_id="u1", session_id=sess.id,
             new_message=types.Content(
@@ -67,7 +76,7 @@ async def main():
     refreshed = await runner.session_service.get_session(
         app_name="compaction_demo", user_id="u1", session_id=sess.id,
     )
-    print(f"events on session: {len(refreshed.events)}  (compacted ≈ 20 → 1 summary)")
+    print(f"events on session: {len(refreshed.events)}  (with synthetic summary events)")
 
 
 asyncio.run(main())
@@ -75,26 +84,28 @@ asyncio.run(main())
 
 ```
 $ uv run python Work/06_compaction.py
-events on session: 15  (compacted ≈ 20 → 1 summary)
+events on session: 26  (with synthetic summary events)
 ```
 
-After 25 turns, the session holds the summary event plus the most recent 10 turns plus a few framing events — instead of 50+ raw events.
+The total event count grows — compaction does **not** delete old events; it appends a new `compaction` event that the LLM-rebuild step uses instead of the raw range.
 
 ## 🧠 How compaction is triggered
 
-ADK checks the trigger after each turn:
+The runner checks the trigger **after each invocation** (not after every event). With `EventsCompactionConfig`:
 
-* event count since last compaction ≥ `compaction_interval`, **and**
-* the model is about to receive more than `keep_recent_events` worth of old content.
+* `compaction_interval` — number of *new* user-initiated invocations that, once fully represented in the session's events, trigger a compaction.
+* `overlap_size` — number of preceding invocations to include from the end of the last compacted range, so consecutive summaries overlap and don't lose continuity.
+* `token_threshold` *(optional)* — if the latest observed prompt token count crosses this, run a token-based post-invocation compaction.
+* `event_retention_size` *(required when `token_threshold` is set)* — for token-based compaction, keep the last N raw events un-compacted.
 
-When both hold, the runner:
+When the trigger fires, the runner:
 
-1. Slices `events[: -keep_recent_events]`.
-2. Hands them to the `summarizer.summarize(...)` call.
-3. Emits a synthetic `compaction` event whose `content` is the summary.
-4. Marks the original events as compacted; the LLM rebuild step ignores them and reads only the summary + recent tail.
+1. Selects the sliding window of events to compact.
+2. Calls `summarizer.maybe_summarize_events(events=...)`.
+3. Appends a synthetic event whose `actions.compaction` carries `start_timestamp`, `end_timestamp`, and `compacted_content`.
+4. On the next LLM build, the runner reads the summary in place of the covered range.
 
-The original events stay on disk (rewind in page 07 needs them) — they are just hidden from the next LLM build.
+The original events stay on disk (rewind in page 07 walks `session.events` and needs them) — they are just hidden from the next LLM build.
 
 ## ⚠️ The compaction tradeoff
 
@@ -102,6 +113,18 @@ The original events stay on disk (rewind in page 07 needs them) — they are jus
 * **Loss:** the LLM no longer sees verbatim phrasing of old turns; it sees the summary. **Facts the summarizer drops are gone** from the live context (you can still find them on disk).
 
 Mitigation: write a summarizer prompt that **explicitly preserves** "names, decisions, IDs, file paths, and any value the user emphasized." Treat the summarizer prompt as production-critical text.
+
+## 🧠 Inspecting the summary
+
+After the script above runs, look for the synthetic event:
+
+```python
+for ev in refreshed.events:
+    if ev.actions and ev.actions.compaction:
+        print(ev.actions.compaction.compacted_content.parts[0].text[:200])
+```
+
+That printed text is what the LLM will see in place of the covered invocation range on the next turn.
 
 ## 🧠 Compaction vs. caching
 
@@ -115,14 +138,14 @@ Mitigation: write a summarizer prompt that **explicitly preserves** "names, deci
 
 ## ❓ Quiz
 
-> ❓ **Ask the student:** you compact at every 20 events with a 10-event tail. The user mentioned a deadline in event 3. After turn 25, does the LLM still see "the deadline is March 15"?
-> *(Expected: only if your summarizer prompt preserved it. The raw event was compacted away after turn 20. This is why the summarizer prompt matters — instruct it to keep dates, names, decisions verbatim.)*
+> ❓ **Ask the student:** you set `compaction_interval=5, overlap_size=1`. The user mentioned a deadline on invocation 2. After invocation 12, does the LLM still see "the deadline is March 15"?
+> *(Expected: only if your summarizer prompt preserved it. The raw event sits past the overlap window and is no longer visible to the LLM build. This is why the summarizer prompt matters — instruct it to keep dates, names, decisions verbatim.)*
 
-> 🛠 **Have the student run:** the script above, then print `refreshed.events[0].content.parts[0].text` to see the summary the model now reads in place of the first 20 turns.
+> 🛠 **Have the student run:** the script above, then iterate `refreshed.events` looking for `ev.actions.compaction` to inspect the summary the model now reads in place of the covered invocation range.
 
 > **🚀 In Production**
 >
-> Compaction's summarizer is **another LLM call** — it costs money and latency. For chatty production agents the rule is: `compaction_interval` ≥ 20 AND `keep_recent_events` ≥ 10. Lower numbers mean you summarize constantly. Track summarizer cost as its own line item in [[15_Observability/00_Overview]]; it can rival the agent's own LLM cost on long sessions.
+> Compaction's summarizer is **another LLM call** — it costs money and latency. Push `compaction_interval` higher for chatty agents so you summarize less often, and use `overlap_size` ≥ 1 so consecutive summaries don't lose the connecting thread. If you set `token_threshold`, you must also set `event_retention_size` (the validator rejects setting one without the other). Track summarizer cost as its own line item in [[15_Observability/00_Overview]]; it can rival the agent's own LLM cost on long sessions.
 
 ---
 

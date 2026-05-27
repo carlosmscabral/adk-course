@@ -33,7 +33,7 @@ You are here: 🗺 Deployment & Integration Track ▸ 21 ADK API Surface ▸ 03 
 }
 ```
 
-Four required fields and one optional `streaming`. The `new_message` shape is the same `google.genai.types.Content` you build by hand in module 04. Cross-link: [[GeminiPayload]] for the full Content/Part schema.
+Only **two** fields are strictly required: `user_id` and `session_id`. `app_name` is optional — if you omit it the server falls back to the `ADK_DEFAULT_APP_NAME` env var (set when the process knows it serves a single app). `new_message` is also Optional (you can fire a `/run` purely to resume a long-running tool via `function_call_event_id` + `invocation_id`). `streaming` defaults to `false`. The `new_message` shape is the same `google.genai.types.Content` you build by hand in module 04. Cross-link: [[GeminiPayload]] for the full Content/Part schema.
 
 ## 📡 The response — `List[Event]`
 

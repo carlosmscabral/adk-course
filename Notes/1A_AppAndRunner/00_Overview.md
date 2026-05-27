@@ -21,7 +21,7 @@ In Module 02 you built `Runner(app_name=..., agent=..., session_service=...)` by
 This module is the contract that lets later modules be taught coherently:
 
 - **Module 04 (Sessions & State)** can talk about `app:`-state lifetime because the App is what owns it.
-- **Module 04 (caching & compaction sub-pages)** can talk about `context_cache_config` and `context_compaction_config` because they are App-level fields.
+- **Module 04 (caching & compaction sub-pages)** can talk about `context_cache_config` and `events_compaction_config` because they are App-level fields.
 - **Module 4B (Human-in-the-Loop & Resume/Cancel)** can talk about `resumability_config` because it is set on the App.
 - **Module 11 (Memory)** can talk about cross-session memory because the App is the unit of "same app".
 
@@ -60,7 +60,7 @@ This module dissects **`memory-bank`** at `/home/carloscabral/study/adk-samples/
 3. **03 The `app:` state boundary** — lifetime semantics, contrasted with `user:`, no-prefix, `temp:`
 4. **04 Wiring resumability** — `resumability_config` (forward link to Module 4B)
 5. **05 Wiring context cache** — `context_cache_config` (forward link to Module 04 caching page)
-6. **06 Wiring context compaction** — `context_compaction_config`
+6. **06 Wiring context compaction** — `events_compaction_config`
 7. **07 Runner inside the App** — Runner is now constructed *from* the App, not in parallel
 8. **08 Dissecting Sample — `memory-bank`** — a real sample that uses `App(...)`
 9. **09 In Production** — App startup costs, cold-start tradeoffs, when NOT to use lifecycle hooks

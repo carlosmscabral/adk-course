@@ -22,7 +22,7 @@ You are here: 🗺 Foundation Track ▸ 03 Tools ▸ 06 Computer Use (preview)
 
 Three pieces:
 
-1. **`BaseComputer`** — an abstract base class with ~14 async methods: `open_web_browser`, `click_at(x,y)`, `type_text_at(x,y,text)`, `scroll_document(direction)`, `navigate(url)`, `key_combination(keys)`, `drag_and_drop`, `wait`, `go_back`, `go_forward`, `search`, `current_state`, plus `screen_size` and `environment`. You implement these against whatever automation backend you like.
+1. **`BaseComputer`** — an abstract base class with 16 async abstract methods: `screen_size`, `open_web_browser`, `click_at(x,y)`, `hover_at(x,y)`, `type_text_at(x,y,text)`, `scroll_document(direction)`, `scroll_at(x,y,direction,magnitude)`, `wait(seconds)`, `go_back`, `go_forward`, `search`, `navigate(url)`, `key_combination(keys)`, `drag_and_drop`, `current_state`, and `environment`. (`prepare`, `initialize`, `close` are concrete hooks you can override.) You implement these against whatever automation backend you like.
 2. **`ComputerUseToolset`** — wraps a `BaseComputer` instance and turns each method into a tool the LLM can call.
 3. **The model loop** — Gemini 2.x emits `click_at(...)`, your `BaseComputer` executes it, returns a `ComputerState` (screenshot bytes + URL), Gemini sees the new screenshot, decides what to click next. The screenshot *is* the agent's vision.
 
@@ -35,12 +35,13 @@ import asyncio
 from typing import Literal
 from google.adk.agents import LlmAgent
 from google.adk.runners import InMemoryRunner
-from google.adk.tools.computer_use import (
+from google.adk.tools.computer_use.base_computer import (
     BaseComputer,
     ComputerEnvironment,
     ComputerState,
-    ComputerUseToolset,
 )
+from google.adk.tools.computer_use.computer_use_toolset import ComputerUseToolset
+# NOTE: tools/computer_use/__init__.py is empty — import from the submodules.
 from google.genai import types
 
 

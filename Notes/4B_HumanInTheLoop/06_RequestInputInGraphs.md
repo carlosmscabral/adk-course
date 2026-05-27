@@ -121,7 +121,7 @@ Two `RequestInput` pauses in one workflow. The agent can loop back to itself bas
 
 > **🚀 In Production**
 >
-> `rerun_on_resume=True` is **per-workflow** (a single boolean) and instructs the runtime to re-execute the node that issued the `RequestInput`. Mark upstream **expensive** LLM nodes with `rerun_on_resume=False` at the node level — or pay for those LLM calls twice on every resume. The 06 module's dissection sample has the explicit pattern.
+> `rerun_on_resume` exists at **two scopes** — verify in `src/google/adk/workflow/_workflow.py:157` (workflow, default `True`) and `_base_node.py:56` (node, default `False`). The workflow-level default says "rerun every node when resuming", which is the safe-by-default behaviour for graph correctness but is exactly what burns money on resume. Mark each expensive LLM node explicitly with `rerun_on_resume=False` at the node level — that opt-out wins over the workflow default, and the node completes immediately using the resume input as its output (per the node-level docstring). The 06 module's dissection sample has the explicit pattern.
 
 ---
 

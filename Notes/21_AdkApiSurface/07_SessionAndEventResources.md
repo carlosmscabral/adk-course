@@ -31,8 +31,9 @@ The full CRUD:
 | POST   | `/apps/{a}/users/{u}/sessions/{s}`                      | `{"state": {...}}`| Created session (with `id=s`).     |
 | POST   | `/apps/{a}/users/{u}/sessions`                          | `{"state": {...}}`| Created session (auto-assigned id).|
 | GET    | `/apps/{a}/users/{u}/sessions/{s}`                      | —                 | Full session + event list.         |
-| GET    | `/apps/{a}/users/{u}/sessions`                          | —                 | `{"sessions": [...]}` for that user.|
-| DELETE | `/apps/{a}/users/{u}/sessions/{s}`                      | —                 | `{"deleted": true}`.               |
+| GET    | `/apps/{a}/users/{u}/sessions`                          | —                 | `list[Session]` (a JSON array) for that user. |
+| DELETE | `/apps/{a}/users/{u}/sessions/{s}`                      | —                 | `null` body — HTTP 200 with no payload (treat any 2xx as success). |
+| PATCH  | `/apps/{a}/users/{u}/sessions/{s}`                      | `{"state_delta": {...}}` | Updated `Session` after applying state changes (no agent run). |
 
 The backend is whatever `--session_service_uri` resolved to. Same URL, different storage.
 
@@ -83,12 +84,13 @@ Prefixes (`user:`, `app:`, `temp:`, no-prefix) follow the rules from **04 Sessio
 ## 📡 Listing a user's sessions
 
 ```python
-# Work/21_AdkApiSurface/07_list_sessions.py
+# Work/21_AdkApiSurface/07_list_sessions.py — run with: uv run python Work/21_AdkApiSurface/07_list_sessions.py
 import httpx
 sessions = httpx.get(
     "http://localhost:8000/apps/research_assistant/users/alice/sessions"
 ).json()
-for s in sessions["sessions"]:
+# Response is a JSON array of Session objects — iterate it directly.
+for s in sessions:
     print(s["id"], s.get("last_update_time"))
 ```
 
@@ -107,13 +109,17 @@ DELETE is **terminal** for most backends. `DatabaseSessionService` may soft-dele
 If your agent attaches artifacts (files, images, BigQuery URIs), they get their own routes under the session:
 
 ```
-GET    /apps/{a}/users/{u}/sessions/{s}/artifacts
-GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}
-GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}/versions/metadata
-GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}/versions/{version_id}
-POST   /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}     ← upload
-DELETE /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}
+GET    /apps/{a}/users/{u}/sessions/{s}/artifacts                                           ← list artifact names
+GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}                           ← latest payload (Part)
+GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}/versions                  ← list version ids (list[int])
+GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}/versions/metadata         ← list ArtifactVersion metadata
+GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}/versions/{version_id}     ← payload for one version (Part)
+GET    /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}/versions/{version_id}/metadata  ← metadata for one version
+POST   /apps/{a}/users/{u}/sessions/{s}/artifacts                                           ← save (body: {filename, artifact, custom_metadata})
+DELETE /apps/{a}/users/{u}/sessions/{s}/artifacts/{artifact_name}                           ← delete all versions
 ```
+
+Note the asymmetry: **save is POSTed to the collection** (`/artifacts`) with `filename` in the body, not to the singular path. The full list lives in `src/google/adk/cli/api_server.py` (lines ~1187–1358).
 
 Full coverage in **04A Artifacts & Heavy Data**. The HTTP surface mirrors the in-process `ArtifactService` API one-to-one.
 

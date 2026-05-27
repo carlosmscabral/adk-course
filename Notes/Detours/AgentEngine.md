@@ -96,10 +96,12 @@ Three commands cover 95% of usage:
 
 ```bash
 # 1. Deploy (or update — same command, new revision under the hood)
+#    NOTE: `--staging_bucket` is deprecated in ADK 2.0 (see cli_tools_click.py:2256-2261,
+#    callback _deprecate_staging_bucket at 1559-1568). Just leave it out — Agent Engine
+#    provisions and manages its own staging now.
 adk deploy agent_engine \
   --project=$GOOGLE_CLOUD_PROJECT \
   --region=us-central1 \
-  --staging_bucket=gs://$GOOGLE_CLOUD_PROJECT-adk-staging \
   ./my_agent_package
 
 # 2. List
@@ -114,13 +116,17 @@ The resource name (e.g., `projects/123/locations/us-central1/reasoningEngines/87
 Programmatic equivalent:
 
 ```python
+# Programmatic equivalent — exact shape moves with the vertexai SDK.
+# Newer adk-python (see cli_deploy.py:1169) drives the deploy via:
+#     client.agent_engines.create(config=agent_config)
+# where agent_config has entrypoint_module / entrypoint_object / source_packages.
+# Older snippets used `agent_engines.create(agent_engine=app, requirements=[...])`.
+# Verify against the installed `vertexai` SDK before pinning. The high-level
+# concept is the same: hand Vertex a packaged ADK app + its requirements.
 from vertexai import agent_engines
 import vertexai
 
-vertexai.init(
-    project="my-proj", location="us-central1",
-    staging_bucket="gs://my-proj-adk-staging",
-)
+vertexai.init(project="my-proj", location="us-central1")
 
 remote = agent_engines.create(
     agent_engine=app,
@@ -190,7 +196,7 @@ Rule of thumb: **prototype on Agent Engine** to get the agent + sessions + traci
 
 > **🚀 In Production**
 >
-> Agent Engine handles session and memory persistence, but you still pay the egress / token cost on every redeploy if you don't checkpoint. Use `VertexAiSessionService.rewind()` (NEW 2.0) to pin a known-good session state before risky deploys; if the new revision misbehaves, rewind keeps users moving while you debug.
+> Agent Engine handles session and memory persistence, but you still pay the egress / token cost on every redeploy if you don't checkpoint. To roll back a session that hit a bad invocation, use `runner.rewind_async(session=..., rewind_before_invocation_id=...)` (`runners.py:1114`) — it appends a rewind Event with the inverse state-delta, so the session reads as if the bad invocation never happened. Keeps users moving while you debug the new revision.
 
 ---
 
@@ -213,10 +219,10 @@ app = agent_engines.AdkApp(agent=root_agent)
 ```
 
 ```bash
+# `--staging_bucket` is deprecated — leave it out.
 adk deploy agent_engine \
   --project=$GOOGLE_CLOUD_PROJECT \
   --region=us-central1 \
-  --staging_bucket=gs://$GOOGLE_CLOUD_PROJECT-adk-staging \
   .
 ```
 

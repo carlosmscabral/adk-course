@@ -4,6 +4,41 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.1] - 2026-05-27
+
+Dogfood-and-fix cycle. Four parallel verification agents read the new 2.0-surface modules against `/home/carloscabral/study/adk-python/src/` (the real framework source) instead of against the brief. Five parallel fix agents then corrected ~25 surgically. The pattern that the verification surfaced: pages authored from the brief were confidently wrong on real API shapes; pages anchored to source were correct. This entry is the corrections, not new scope.
+
+### Fixed
+- **App container, not LlmAgent** — `ContextCacheConfig`, `EventsCompactionConfig` (not `ContextCompactionConfig`), and `ResumabilityConfig` attach to `App`, not `LlmAgent`. Imports from `google.adk.apps`. Affected `Notes/04_SessionsState/05_ContextCaching.md`, `06_ContextCompaction.md`, `Notes/1A_AppAndRunner/00_Overview.md`.
+- **`LlmEventSummarizer` signature** — takes `llm=` and `prompt_template=`, not `model=`/`instruction=`. Affected `Notes/04_SessionsState/06_ContextCompaction.md`.
+- **`Runner.rewind_async` real shape** — takes `rewind_before_invocation_id=`, no `to_event_id=` or `state_overrides=` (auto-computed from session events, skipping `app:`/`user:` prefixes). Affected `Notes/04_SessionsState/07_SessionRewind.md`.
+- **Session migrate is a schema upgrade tool, not a cross-backend mover** — `migration_runner.upgrade(source_db_url, dest_db_url)` (pickle→JSON). Added "What this does NOT do." Affected `Notes/04_SessionsState/08_SessionMigrate.md`.
+- **`Runner.cancel` does not exist** — replaced with the real abandon pattern (timeout / don't resume / append terminal `Event` via `session_service.append_event(...)`). Affected `Notes/4B_HumanInTheLoop/04_RunnerResumeAndCancel.md`, retitled to "Resume and abandon", and `12_InProduction.md`.
+- **Ambient trigger endpoints — partial reversal** — `POST /apps/{app_name}/trigger/pubsub` and `/trigger/eventarc` DO exist in 2.0 (opt-in via `--with-triggers pubsub,eventarc`; source: `trigger_routes.py:391-467`, `cli_tools_click.py:1687`). GCS routes through Eventarc. Only `/triggers/gcs` and `/triggers/scheduler` were fabricated. Affected `Notes/4B_HumanInTheLoop/07_AmbientAgents.md`.
+- **`rerun_on_resume` has two scopes** — workflow-level (default `True`, `_workflow.py:157`) AND node-level (default `False`, `_base_node.py:56`); node-level opt-out wins. Affected `Notes/4B_HumanInTheLoop/06_RequestInputInGraphs.md`.
+- **`adk` CLI flag names** — real flags are `--session_service_uri` and `--artifact_service_uri` (not `--session_db_url`/`--artifact_storage_uri`). `--credential_service_uri` does not exist. Affected `Notes/21_AdkApiSurface/01_AdkRunCli.md`, `01A_AdkRunUnderTheHood.md`, `01B_AdkWebUnderTheHood.md`, `01C_FullCliFamily.md`.
+- **`adk web` defaults** — default port is `8000` (not `8501`); dev UI is Angular (not Vite/React). Affected `Notes/21_AdkApiSurface/01B_AdkWebUnderTheHood.md`, `Notes/23_FrontendIntegration/06_A2UIClient.md`.
+- **`/run_live` wire protocol** — real `LiveRequest` Pydantic model in (`content`/`blob`/`activityStart`/`activityEnd`/`close`); ADK Event JSON out (camelCase, `partial`/`turnComplete`/`interrupted`). Not Gemini Live native protocol. Documented query-string params and 1002 close-code gotcha. Affected `Notes/21_AdkApiSurface/05_WebSocketsForLive.md` (full rewrite).
+- **REST shapes** — only `user_id` and `session_id` required; `app_name` falls back to `ADK_DEFAULT_APP_NAME`; `new_message` is `Optional`. Affected `Notes/21_AdkApiSurface/03_RestShapes.md`.
+- **Session/event/artifact endpoints** — `list-sessions` returns `list[Session]` directly; DELETE takes no body; `PATCH /sessions/{s}` exists. Affected `Notes/21_AdkApiSurface/07_SessionAndEventResources.md`.
+- **No `/debug/*` routes** — replaced with the real route list (`/health`, `/version`, `/list-apps`, `/apps/{app}/app-info`, session/event/artifact/memory CRUD, `/run`, `/run_sse`, `/run_live`, `/dev-ui`). Affected `Notes/Detours/FastAPI_for_ADK.md`.
+- **`ComputerUseToolset` is an empty `__init__.py`** — must import from `base_computer` and `computer_use_toolset` submodules; 16 abstract methods (added missing `hover_at`, `scroll_at`). Affected `Notes/03_Tools/06_ComputerUse.md`.
+- **`VertexAiRagRetrieval`** — requires `description=` kwarg; single-tool is a recommended pattern, not runtime-enforced. Affected `Notes/03_Tools/07_ToolLimitations.md`.
+- **`SqliteSessionService` is fictional** — real class is `DatabaseSessionService(db_url="sqlite:///...")`. Affected `Notes/01_Foundations/07_KnowledgeCheck.yml`.
+- **Agent Engine deploy** — `--staging_bucket` deprecated with active warning; newer SDK shape is `client.agent_engines.create(config=...)` (`cli_deploy.py:1169`); `VertexAiSessionService.rewind()` is fabricated — use `runner.rewind_async()`. Affected `Notes/Detours/AgentEngine.md`.
+- **`Runner.resume` shape** — `runner.run_async(invocation_id=paused_invocation_id, new_message=function_response)` with `adk_request_confirmation` function-response part. Affected `Notes/1A_AppAndRunner/04_WiringResumability.md`.
+- **PROGRESS.md reconciled** — Module 00 and 01 page lists corrected against actual files on disk.
+
+### Method
+- **Dogfood**: 4 read-only verification agents with non-overlapping scopes (tutor contract on 00+01 / Foundation core 02-04 / 2.0-surface 1A+4B+04 expansions / deployment 21-24), each grounded against `/home/carloscabral/study/adk-python/src/` and ADK docs at <https://adk.dev/>. Reports written to a 🔴/🟡/🟢 severity rubric.
+- **Fix wave**: 5 parallel agents with non-overlapping file scopes to enable parallelism without git conflicts. Each fix verified against framework source with file:line citations.
+- **Lesson**: agents working from a brief produce confident hallucinations correlated with how thin the brief is. Agents grounded against source produce correct content. The 0.3.0 modules were authored from brief — most of the fixes here are that bill coming due. Subsequent authoring should ground against source by default.
+
+### Why
+- User asked: "let's dogfood using sub-agents and find/review our learnings." The verification pass found ~15 🔴 (wrong API shape, will not run) and ~10 🟡 (correct intent, drifting names) defects across the 2.0-surface modules. Shipping a course where the 2.0 examples don't import is worse than shipping nothing 2.0-shaped, so the fix pass took precedence over new scope.
+
+---
+
 ## [0.3.0] - 2026-05-27
 
 Completeness pass after a docs-and-samples audit. Three new modules, four module expansions, one new detour, and a sample-citation rewiring across the existing modules.

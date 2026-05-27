@@ -18,7 +18,7 @@ You are here: 🗺 Foundation Track ▸ 1A App & Runner ▸ 04 Wiring Resumabili
 
 Resumability is the 2.0 feature that lets an agent **pause** mid-invocation (typically on a long-running tool waiting for human approval) and **resume** later — possibly in a different process. It is opt-in, and it is opted in at the `App` level.
 
-> 🤖 **Tutor:** this page only covers *wiring* — flipping the bit on the App. The full mechanism (`Runner.resume()`, `LongRunningFunctionTool` semantics, the at-least-once contract, the failure modes) is taught in [Module 4B Human-in-the-Loop & Resume/Cancel](../4B_HumanInTheLoop/). This page is the contract that lets 4B exist.
+> 🤖 **Tutor:** this page only covers *wiring* — flipping the bit on the App. The full mechanism (resuming via `runner.run_async(invocation_id=..., new_message=function_response)`, `LongRunningFunctionTool` semantics, the at-least-once contract, the failure modes) is taught in [Module 4B Human-in-the-Loop & Resume/Cancel](../4B_HumanInTheLoop/). This page is the contract that lets 4B exist.
 
 ## 🛠 The one-liner
 
@@ -43,7 +43,7 @@ That is the whole API today. `ResumabilityConfig` has a single field: `is_resuma
 
 Three things flip on:
 
-1. **`LongRunningFunctionTool` calls are checkpointable.** When the LLM emits a tool call to a long-running function, the Runner persists the pending tool-call event to the Session service and *yields control* back to the caller. The caller can shut the process down. Later, calling `runner.resume(...)` with the function response continues from that point.
+1. **`LongRunningFunctionTool` calls are checkpointable.** When the LLM emits a tool call to a long-running function, the Runner persists the pending tool-call event to the Session service and *yields control* back to the caller. The caller can shut the process down. Later, calling `runner.run_async(invocation_id=paused_invocation_id, new_message=function_response)` continues from that point.
 2. **The session service holds the pause state.** Resumability requires a *persistent* session service (`DatabaseSessionService`, `VertexAiSessionService`, `SqliteSessionService`). `InMemorySessionService` works for testing but loses state on process restart — defeating the point.
 3. **At-least-once semantics.** When you `resume()`, ADK guarantees the resumed step runs *at least* once. It may run more than once on retries. Your long-running tool **must be idempotent** — e.g., write the result keyed by a stable ID so a re-run is a no-op.
 
@@ -88,7 +88,9 @@ runner = Runner(
     session_service=DatabaseSessionService(db_url="sqlite:///sessions.db"),
 )
 
-# Module 4B shows the actual `await runner.resume(...)` continuation.
+# Module 4B shows the actual continuation: `runner.run_async(invocation_id=paused_id, new_message=function_response)`
+# where `function_response` is a types.Content wrapping a function_response part
+# with name="adk_request_confirmation".
 ```
 
 The pieces you can see today: `ResumabilityConfig(is_resumable=True)` on the App, a `LongRunningFunctionTool` on the agent, a persistent session service. The Runner picks up `resumability_config` from the App automatically (see [01_AppVsRunnerVsAgent](01_AppVsRunnerVsAgent.md) — `Runner.__init__` reads `self.resumability_config = app.resumability_config`).

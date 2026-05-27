@@ -27,7 +27,15 @@ adk
 ├── api_server     ← page 02
 ├── eval           ← module 14 Evaluation
 ├── create         ← scaffolds a new agent package
+├── test           ← pytest runner for agent test JSON files
+├── optimize       ← GEPA prompt optimizer (module 14)
 ├── conformance    ← record + test, less common; cross-link 14
+├── eval_set
+│   ├── create               ← creates an empty EvalSet
+│   ├── add_eval_case        ← appends cases from a scenarios file
+│   └── generate_eval_cases  ← synthesises cases automatically
+├── migrate
+│   └── session    ← upgrades a session DB schema (sqlite/postgres URLs)
 └── deploy
     ├── cloud_run        ← module 22 page 02
     ├── agent_engine     ← module 22 page 03
@@ -58,7 +66,7 @@ After this you can immediately `adk run my_agent`.
 
 ## 🛠 `adk eval <agents_dir> <eval_set.json>`
 
-Replays an `EvalSet` against the agent and prints pass/fail. Full coverage in **14 Evaluation** — here we just note that the eval CLI shares the same `AgentLoader` + `_setup_runner_context` as `adk run`. That is why the same `--session_db_url` flags apply.
+Replays an `EvalSet` against the agent and prints pass/fail. Full coverage in **14 Evaluation** — here we just note that the eval CLI shares the same `AgentLoader` + `_setup_runner_context` as `adk run`. That is why the same `--session_service_uri` flags apply.
 
 ```bash
 adk eval my_agent eval/regression.evalset.json
@@ -67,6 +75,36 @@ adk eval my_agent eval/regression.evalset.json
 ## 🛠 `adk conformance record` / `adk conformance test`
 
 A specialised eval flavour: **record** captures real LLM + tool I/O into a fixture file, **test** replays the fixture without re-calling the LLM. Use for: deterministic CI, regression tests, contract tests against MCP servers. Not the same as the trajectory evaluator in 14 — this records the *raw* interaction.
+
+## 🛠 `adk test <folder>`
+
+Runs pytest under the hood on agent test JSON files in the folder (default `.`). Pass `--rebuild` to regenerate the test fixtures by running the live agent against the seed user messages. Anything after `--` is forwarded to pytest verbatim:
+
+```bash
+adk test Work/21_AdkApiSurface -- -k research_assistant
+```
+
+## 🛠 `adk optimize <agent_path> --sampler_config_file_path ...`
+
+Runs the **GEPA** root-agent prompt optimizer. Reads a `LocalEvalSamplerConfig` JSON (eval set + metrics), iterates on the agent's `instruction`, and prints the best-scoring version. `--optimizer_config_file_path` is optional. Full coverage in module 14.
+
+## 🛠 `adk eval_set` (subgroup)
+
+Curate evaluation sets without writing JSON by hand:
+
+```bash
+adk eval_set create ./research_assistant my_regression
+adk eval_set add_eval_case ./research_assistant my_regression \
+    --scenarios_file scenarios.json --session_input_file session.json
+adk eval_set generate_eval_cases ./research_assistant my_regression \
+    --num_cases 20
+```
+
+`create` makes an empty set; `add_eval_case` hashes each scenario into a stable `eval_id`; `generate_eval_cases` uses an LLM to synthesise cases for you.
+
+## 🛠 `adk migrate session --source_db_url ... --dest_db_url ...`
+
+Upgrades a `DatabaseSessionService` schema from an older ADK version to the current one. Both flags are required SQLAlchemy URLs (e.g. `sqlite:///old.db` → `sqlite:///new.db`). Use during ADK upgrades that change the session table layout. Cross-link: **04 SessionsState** for what's in those tables.
 
 ## 🛠 `adk deploy cloud_run`
 
@@ -117,7 +155,7 @@ Builds the same Docker image as `cloud_run` then renders Kubernetes manifests (D
 
 ## 🛠 The shared flags
 
-Every command that touches a runner accepts `--session_db_url`, `--artifact_storage_uri`, `--memory_service_uri`, and `--credential_service_uri`. They flow into `_setup_runner_context` (page 01A). This consistency is the entire reason the CLI feels coherent — there is *one* runner config code path.
+Every command that touches a runner accepts `--session_service_uri`, `--artifact_service_uri`, and `--memory_service_uri` (plus `--use_local_storage / --no_use_local_storage` to gate the `.adk` fallback). They flow into `_setup_runner_context` (page 01A). This consistency is the entire reason the CLI feels coherent — there is *one* runner config code path.
 
 ## 🚀 In Production
 

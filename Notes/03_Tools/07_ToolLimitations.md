@@ -44,9 +44,9 @@ On Gemini 2.x it composes fine. On Gemini 1.x — sole tool only. Same for `Vert
 
 Plan accordingly: if you want enterprise search + your own tools, split into sub-agents and use `transfer_to_agent` / `AgentTool` (Module 05).
 
-### 3. Vertex AI RAG retrieval — single-tool agent
+### 3. Vertex AI RAG retrieval — recommended single-tool pattern
 
-`VertexAiRagRetrieval` (the Vertex AI RAG **Engine** managed-retrieval tool) is a model-side grounding tool — it must be the **only** tool on the agent it lives on. The pattern is the same as built-in search: wrap it in a dedicated sub-agent, then expose that sub-agent to your coordinator via `AgentTool`.
+`VertexAiRagRetrieval` (the Vertex AI RAG **Engine** managed-retrieval tool) is a model-side grounding tool. Unlike `google_search` / `EnterpriseWebSearchTool` / `VertexAiSearchTool`, **ADK 2.0 ships no runtime guard** for it — `vertex_ai_rag_retrieval.py` has no `raise ValueError(...)` on tool composition. But on Gemini 2.x the tool injects a `types.Retrieval(vertex_rag_store=...)` config into `llm_request.config.tools`, which can collide with other model-side grounding tools and confuse the planner. **Treat "RAG-as-sole-tool on its agent" as the recommended pattern**, not a hard constraint: wrap it in a dedicated sub-agent, then expose that sub-agent to your coordinator via `AgentTool`.
 
 ```python
 from google.adk.agents import LlmAgent
@@ -60,6 +60,7 @@ rag_agent = LlmAgent(
     instruction="Answer using the retrieved passages.",
     tools=[VertexAiRagRetrieval(
         name="corpus_retrieval",
+        description="Searches the configured Vertex AI RAG corpora for relevant passages.",
         rag_corpora=["projects/.../ragCorpora/123"],
     )],
 )
@@ -106,8 +107,8 @@ You'll meet new ones as ADK ships new built-ins. Three places to look:
 >
 > When you stack a forbidden tool combo, the failure mode is **whichever request hits production first**. Catch it in CI: write a startup smoke test that instantiates the agent and runs a no-op turn (e.g., `"hello"`). If the configuration is illegal, the `ValueError` fires immediately — long before your first real user.
 
-> ❓ **Ask the student:** you want an agent that does both BigQuery analytics AND Vertex AI RAG over the same docs corpus. Can you put both tools on one agent?
-> *(Expected: no — `VertexAiRagRetrieval` requires being sole tool on its agent. Split: RAG sub-agent and BigQuery sub-agent, wire both into a coordinator via `AgentTool`, route in the coordinator's instruction.)*
+> ❓ **Ask the student:** you want an agent that does both BigQuery analytics AND Vertex AI RAG over the same docs corpus. Should you put both tools on one agent?
+> *(Expected: not recommended — `VertexAiRagRetrieval` injects a model-side grounding config that collides poorly with other model-side tools, so the safe pattern is: RAG sub-agent and BigQuery sub-agent, wired into a coordinator via `AgentTool`, route in the coordinator's instruction. ADK 2.0 won't raise — but the planner will misbehave under load.)*
 
 > 🛠 **Have the student do this:** run `grep -rn "cannot be used with\|sole tool\|bypass_multi_tools_limit" /home/carloscabral/study/adk-python/src/google/adk/tools/` and read every match. Three to five hits is the current list of "one-tool" constraints. This grep is your living source of truth.
 

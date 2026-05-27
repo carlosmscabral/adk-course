@@ -17,20 +17,20 @@ The tutor will update `cursor:` (frontmatter), the timestamp, the per-page check
 
 ### 00 Setup
 - [ ] 00_Overview
-- [ ] 01_InstallAndKey
-- [ ] 02_RepoTour
-- [ ] 03_FirstAdkRun
-- [ ] 05_DissectingSample
-- [ ] 06_InProduction
-- [ ] 07_KnowledgeCheck
-- [ ] 08_MiniDrill
+- [ ] 01_InstallingADK
+- [ ] 02_HelloFunFacts
+- [ ] 03_RepoTour
+- [ ] 04_DissectingSample
+- [ ] 05_InProduction
+- [ ] 06_KnowledgeCheck
+- [ ] 07_MiniDrill
 
 ### 01 Foundations
 - [ ] 00_Overview
-- [ ] 01_MentalModel
-- [ ] 02_AgentLoop
-- [ ] 03_SessionAndEvents
-- [ ] 04_ToolsInTheLoop
+- [ ] 01_WhatIsAnAgent
+- [ ] 02_RunnerSessionEvent
+- [ ] 03_ToolsArePythonFunctions
+- [ ] 04_StateLivesOnSession
 - [ ] 05_DissectingSample
 - [ ] 06_InProduction
 - [ ] 07_KnowledgeCheck

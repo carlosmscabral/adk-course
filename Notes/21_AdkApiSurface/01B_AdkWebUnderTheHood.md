@@ -24,7 +24,7 @@ You are here: 🗺 Deployment & Integration Track ▸ 21 ADK API Surface ▸ 01B
 src/google/adk/cli/cli_tools_click.py
   @main.command("web")  def cli_web(...)
         │ resolves AGENTS_DIR (positional, default ".")
-        │ resolves --port (default 8501), --host (default 127.0.0.1)
+        │ resolves --port (default 8000), --host (default 127.0.0.1)
         │
         ▼
 src/google/adk/cli/api_server.py
@@ -71,7 +71,7 @@ This trips everyone. Two pieces of state, two reload behaviors:
 | The Angular **bundle**        | Cached by the browser. Hard-refresh to update.                            |
 | The **list of apps**          | Re-read on every `/list-apps` call — drop in a new dir, refresh, it's there. |
 | The **agent code itself**     | **Loaded once per process.** Edit `agent.py` → restart `adk web`.        |
-| The **session state**         | In-memory by default — wiped on restart. Pass `--session_db_url sqlite:///x.db` to persist across restarts. |
+| The **session state**         | In-memory by default — wiped on restart. Pass `--session_service_uri sqlite:///x.db` to persist across restarts. |
 
 So the dev loop is: edit code → Ctrl+C → `adk web` again. There is no `--reload` flag wired to uvicorn (the framework intentionally avoids it because agent boot can have heavy side effects).
 
@@ -81,7 +81,7 @@ So the dev loop is: edit code → Ctrl+C → `adk web` again. There is no `--rel
 
 `adk web` defaults are aggressively local:
 
-- **Port**: `8501`.
+- **Port**: `8000`.
 - **Host**: `127.0.0.1` (not `0.0.0.0`).
 - **Auth**: none. The dev UI assumes the only user is you.
 - **CORS**: configurable via `--allow_origins`, default empty.

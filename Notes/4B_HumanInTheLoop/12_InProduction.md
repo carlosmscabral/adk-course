@@ -59,8 +59,8 @@ The course teaches production-readiness inline (brief rule #14); this is the con
 ### 6. TTL on pending approvals + sweeper
 
 - **Risk**: approvals queued and never decided clog the session store, hold open background context, can be approved by stale approvers (someone left the company).
-- **Mitigation**: pending-approvals table has `expires_at`. A scheduled job (Cloud Scheduler → Cloud Run job) sweeps expired rows, calls `runner.cancel(invocation_id)`, marks `decision="timeout"`. Standard TTLs: 24h for routine, 7 days for legal review.
-- **Inline source**: [04_RunnerResumeAndCancel § 🚀 In Production](04_RunnerResumeAndCancel.md#-in-production), [05_LongRunningFunctionTool § 🚀 In Production](05_LongRunningFunctionTool.md#-in-production).
+- **Mitigation**: pending-approvals table has `expires_at`. A scheduled job (Cloud Scheduler → Cloud Run job) sweeps expired rows, marks `decision="timeout"`, appends a terminal event to the session so the audit trail is closed, and never resumes the invocation. There is no `runner.cancel()` — page 04 walks the abandon pattern. Standard TTLs: 24h for routine, 7 days for legal review.
+- **Inline source**: [04_RunnerResumeAndCancel § Abandoning a pending invocation](04_RunnerResumeAndCancel.md#abandoning-a-pending-invocation), [05_LongRunningFunctionTool § 🚀 In Production](05_LongRunningFunctionTool.md#-in-production).
 
 ### 7. Audit log of every decision
 

@@ -143,7 +143,7 @@ Two pauses, two different surfaces — both are HITL.
 
 > **🚀 In Production**
 >
-> Long-pauses run into **state-store TTLs**: if your session backend (Firestore, Postgres) prunes rows after N days, your pending invocation silently vanishes. Two mitigations: (1) raise the TTL on the table where ADK persists sessions; (2) implement an idle-job sweeper that reads pending invocations older than N hours and either re-notifies or calls `runner.cancel()`. See also [10_DurableExecutionIntegrations](10_DurableExecutionIntegrations.md) — for pauses measured in days, Temporal/Dapr usually win.
+> Long-pauses run into **state-store TTLs**: if your session backend (Firestore, Postgres) prunes rows after N days, your pending invocation silently vanishes. Two mitigations: (1) raise the TTL on the table where ADK persists sessions; (2) implement an idle-job sweeper that reads pending invocations older than N hours and either re-notifies or abandons them (don't resume, append a terminal event — page 04 covers the pattern, since there is no `runner.cancel()`). See also [10_DurableExecutionIntegrations](10_DurableExecutionIntegrations.md) — for pauses measured in days, Temporal/Dapr usually win.
 
 ---
 

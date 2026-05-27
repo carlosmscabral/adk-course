@@ -66,7 +66,7 @@ Pass through user identity via query params. The dev UI honors them.
 
 ### 3. Fork and modify
 
-`adk web` is a Vite/React build that ships with ADK. You can clone it and modify. **This is rarely the right call** — you're forking a dev tool to use in prod. Build fresh against the API instead.
+`adk web` is an **Angular** SPA (the bundled `cli/browser/` chunks use RxJS; the warning emitted by `cli_tools_click.py` calls it the "Angular dev UI"; the dissection in [[21_AdkApiSurface/01B_AdkWebUnderTheHood]] confirms the same). You can clone it and modify. **This is rarely the right call** — you're forking a dev tool to use in prod, and you'll inherit Angular's build chain whether your prod app uses Angular or not. Build fresh against the API instead.
 
 ### 4. Build your own (the production path)
 

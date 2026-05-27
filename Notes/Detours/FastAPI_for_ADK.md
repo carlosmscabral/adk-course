@@ -23,11 +23,16 @@ You are here: 🗺 Detours ▸ FastAPI for ADK
   ├── /healthz       (yours)             │
   ├── /admin/reload  (yours)             │
   ├── /upload        (yours)             │
-  └── /adk           ──► adk.get_fast_api_app()  ◄── owns:
-                                          /run, /run_sse,
-                                          /apps/{app}/users/{u}/sessions
-                                          /apps/{app}/users/{u}/sessions/{s}/events
-                                          /list-apps, /debug/*
+  └── /adk           ──► adk.get_fast_api_app()  ◄── owns (from api_server.py):
+                                          /health, /version, /list-apps
+                                          /apps/{app}/app-info
+                                          /apps/{app}/users/{u}/sessions (GET/POST/PATCH)
+                                          /apps/{app}/users/{u}/sessions/{s} (GET/DELETE/PATCH)
+                                          /apps/{app}/users/{u}/sessions/{s}/events/{e} (GET)
+                                          /apps/{app}/users/{u}/sessions/{s}/artifacts/... (GET/DELETE)
+                                          /apps/{app}/users/{u}/memory (GET/PATCH)
+                                          /run, /run_sse (POST), /run_live (WebSocket)
+                                          /dev-ui, /dev-ui/config (when web=True)
 ```
 
 `adk api_server` is just `uvicorn main:app` where `app` was built by `google.adk.cli.fast_api.get_fast_api_app(...)`. That function returns a regular FastAPI instance. You can:

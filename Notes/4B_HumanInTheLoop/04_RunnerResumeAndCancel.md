@@ -1,10 +1,10 @@
 ---
 module: 4B_HumanInTheLoop
 page: 04_RunnerResumeAndCancel
-title: Resume and cancel — runner.run_async(invocation_id=...) and the dual
+title: Resume and abandon — runner.run_async(invocation_id=...) and how to drop a paused invocation
 estimated_minutes: 30
 prereqs: [4B_HumanInTheLoop/03, 1A_AppAndRunner/02]
-concepts: [resume, invocation_id, ResumabilityConfig, function_response, cancel, at-least-once]
+concepts: [resume, invocation_id, ResumabilityConfig, function_response, abandon, at-least-once]
 icon: 🛠
 in_production: true
 detours_suggested: []
@@ -115,18 +115,40 @@ App(name="...", root_agent=..., resumability_config=ResumabilityConfig(is_resuma
 
 Without `is_resumable=True`, the runtime won't store the checkpoint and `invocation_id=` on resume raises. This is wired in the **App container** ([1A_AppAndRunner/04_ResumabilityConfig](../1A_AppAndRunner/04_ResumabilityConfig.md)) — we re-state it here so the surface is in one place.
 
-## Cancel
+## Abandoning a pending invocation
 
-`runner.cancel(invocation_id)` is the dual: it tears down a paused invocation without resuming it. Use it for:
-- **Timeout**: an approval queued 7 days ago that no one acted on.
-- **User abandon**: chat session closed, no approver still online.
-- **Admin override**: ops needs to drain the queue before a deploy.
+ADK 2.0 GA does **not** ship a `runner.cancel(...)` method — verify with `grep "def cancel" src/google/adk/runners.py` against the framework. The internal `task.cancel()` calls you'll find in `runners.py` are asyncio plumbing, not a public surface for tearing down a checkpoint.
 
-```python
-await runner.cancel(invocation_id=pending_invocation_id)
-```
+You still need a story for "this approval was queued 7 days ago and no one acted on it." Three patterns, in order of how often you actually need them:
 
-A cancelled invocation cannot be resumed — the checkpoint is removed. The session itself survives.
+1. **Let a timeout expire.** The host that's holding the runner (Cloud Run request, a Pub/Sub push, your own background worker) has its own deadline. When it expires, the in-flight `async for` loop ends and the invocation is simply abandoned — the checkpoint stays on disk but nothing resumes it.
+
+2. **Skip the resume.** A pending invocation costs nothing until something calls `runner.run_async(invocation_id=...)` against it. If your TTL sweeper sees an expired pending row, the simplest "cancel" is: don't resume, mark the row `decision="timeout"` in your own pending-approvals table, log it, move on. The checkpoint becomes garbage that the session-store TTL eventually reaps.
+
+3. **Append a terminal event.** When you need the session itself to show "this invocation ended", write an event directly:
+
+   ```python
+   from google.adk.events import Event
+   from google.genai import types
+
+   session = await runner.session_service.get_session(
+       app_name="janitor", user_id="u1", session_id=sess.id)
+   await runner.session_service.append_event(
+       session=session,
+       event=Event(
+           invocation_id=pending_invocation_id,
+           author="system",
+           content=types.Content(role="model",
+               parts=[types.Part(text="(cancelled by sweeper)")]),
+       ),
+   )
+   ```
+
+   The next read of the session shows the invocation as concluded. Downstream consumers (audit log, UI) see the cancel record.
+
+For **workflow-driven** HITL (page 06), the same logic applies: there is no public `Workflow.cancel()`. The runtime cancels in-flight asyncio tasks when its own scope ends; you cancel a *paused* workflow the same way you cancel a paused tool — don't resume it, optionally write a terminal event.
+
+> 🤖 **Tutor:** if a student tries to call `runner.cancel(...)` based on outdated examples, point them at the source. The dual to "resume" is "don't resume" plus bookkeeping, not a framework call.
 
 ## ⚠️ Semantics — at-least-once on resume
 
@@ -144,7 +166,7 @@ Translation: a tool can resume twice if the first resume crashes after the side 
 
 > **🚀 In Production**
 >
-> Three guardrails: **(1)** `App.resumability_config.is_resumable = True` *and* a durable `SessionService` (Database / Sqlite / VertexAi — not `InMemorySessionService`). **(2)** Every side-effecting tool that can be resumed must be idempotent — assume it can run twice. **(3)** Wire a TTL on the pending-confirmation queue and a scheduled `runner.cancel()` job to clean up abandoned approvals. Page 12 has the consolidated checklist.
+> Three guardrails: **(1)** `App.resumability_config.is_resumable = True` *and* a durable `SessionService` (Database / Sqlite / VertexAi — not `InMemorySessionService`). **(2)** Every side-effecting tool that can be resumed must be idempotent — assume it can run twice. **(3)** Wire a TTL on the pending-confirmation queue and a scheduled sweeper that abandons expired entries (don't resume, write a terminal event, mark `decision="timeout"`) — there is no `runner.cancel()` to call. Page 12 has the consolidated checklist.
 
 ---
 

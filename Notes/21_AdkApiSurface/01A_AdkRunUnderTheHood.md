@@ -24,7 +24,7 @@ You are here: 🗺 Deployment & Integration Track ▸ 21 ADK API Surface ▸ 01A
 src/google/adk/cli/cli_tools_click.py
   @main.command("run")  def cli_run(...)
         │ resolves AGENT_PARENT_DIR + AGENT_NAME from argv
-        │ resolves --session_db_url / --artifact_storage_uri into svc factories
+        │ resolves --session_service_uri / --artifact_service_uri into svc factories
         │
         ▼
 src/google/adk/cli/cli.py
@@ -74,8 +74,8 @@ The whole point: downstream code (the runner, the plugin manager) only knows abo
 
 This is the most flag-sensitive function in the CLI. It builds:
 
-- **SessionService**: from `--session_db_url`. No URI → `InMemorySessionService`. `sqlite:///x.db` → `DatabaseSessionService` (SQLAlchemy). `agentengine://...` → `VertexAiSessionService`.
-- **ArtifactService**: from `--artifact_storage_uri`. No URI → `InMemoryArtifactService`. `gs://bucket` → `GcsArtifactService`.
+- **SessionService**: from `--session_service_uri`. No URI → `InMemorySessionService`. `sqlite:///x.db` → `DatabaseSessionService` (SQLAlchemy). `agentengine://...` → `VertexAiSessionService`. `memory://` is also accepted to force the in-memory service.
+- **ArtifactService**: from `--artifact_service_uri`. No URI → `InMemoryArtifactService`. `gs://bucket` → `GcsArtifactService`. `file://<path>` writes to a local directory; `memory://` forces in-memory.
 - **MemoryService**: `InMemoryMemoryService` unless an Agent-Engine URI was provided (then `VertexAiMemoryBankService`).
 - **CredentialService**: in-memory by default.
 

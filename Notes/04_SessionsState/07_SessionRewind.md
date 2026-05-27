@@ -1,10 +1,10 @@
 ---
 module: 04_SessionsState
 page: 07_SessionRewind
-title: Session rewind — replay from a prior event with modified state
+title: Session rewind — reverse to before a prior invocation
 estimated_minutes: 20
 prereqs: [04_SessionsState/06]
-concepts: [Runner.rewind, branching, debugging, eval-replay]
+concepts: [Runner.rewind_async, branching, debugging, eval-replay]
 icon: 🛠
 in_production: true
 detours_suggested: []
@@ -16,7 +16,7 @@ You are here: 🗺 Foundation Track ▸ 04 Sessions & State ▸ 07 Session Rewin
 
 # 🛠 Session rewind (NEW in 2.0)
 
-A 50-turn conversation went sideways at turn 32. Pre-2.0 your options were: start fresh, or accept the bad state. ADK 2.0 added `Runner.rewind(...)`: snip the event log at event N, optionally patch state, then continue from there. The earlier events stay on disk; what you get back is a session whose "live" view ends at event N.
+A 50-turn conversation went sideways at turn 32. Pre-2.0 your options were: start fresh, or accept the bad state. ADK 2.0 added `Runner.rewind_async(...)`: name an invocation to rewind to, the runner appends a special rewind event that reverses the state and artifact deltas, and the next turn behaves as if the bad branch never happened. The earlier events stay on `session.events`; the rewind event signals the boundary.
 
 ## 🧠 The shape
 
@@ -53,21 +53,23 @@ async def main():
     await turn("hi")
     print("turn 2:")
     await turn("again?")
-    checkpoint = (await runner.session_service.get_session(
-        app_name="rewind_demo", user_id="u1", session_id=sess.id,
-    )).events[-1].id
 
     print("turn 3 (will be rewound):")
     await turn("badly worded prompt that derails things")
+    # Grab the invocation_id of that last (bad) turn — rewind targets an
+    # invocation, not a single event.
+    bad_invocation_id = (await runner.session_service.get_session(
+        app_name="rewind_demo", user_id="u1", session_id=sess.id,
+    )).events[-1].invocation_id
 
-    print(f"rewinding to event {checkpoint!r}, patching counter=999…")
-    await runner.rewind(
-        session_id=sess.id, user_id="u1",
-        to_event_id=checkpoint,
-        state_overrides={"counter": 999},
+    print(f"rewinding to before invocation {bad_invocation_id!r}…")
+    await runner.rewind_async(
+        user_id="u1",
+        session_id=sess.id,
+        rewind_before_invocation_id=bad_invocation_id,
     )
 
-    print("turn 3' (replayed from checkpoint):")
+    print("turn 3' (replayed from the rewind boundary):")
     await turn("now ask cleanly please")
 
 
@@ -82,27 +84,31 @@ turn 2:
   reply: Counter is still 0.
 turn 3 (will be rewound):
   reply: I'm not sure what you'd like me to do.
-rewinding to event 'evt_…', patching counter=999…
-turn 3' (replayed from checkpoint):
-  reply: The counter is currently 999.
+rewinding to before invocation 'inv_…'…
+turn 3' (replayed from the rewind boundary):
+  reply: The counter is currently 0.
 ```
 
-The bad turn 3 is gone from the live view; counter is now 999; the agent's next turn behaves as if the bad branch never happened.
+The bad turn 3's state and artifact effects are reversed by the appended rewind event; the agent's next turn behaves as if the bad branch never happened.
 
 ## 🧠 What rewind actually does
 
-1. Marks events after `to_event_id` as **inactive** (still on disk, queryable for audit).
-2. Recomputes state by replaying the active prefix.
-3. Applies `state_overrides` on top of the replayed state.
-4. Subsequent `run_async` builds the LLM context only from the active events.
+Reading `runners.py` (`rewind_async`):
 
-The original events are NOT deleted — you can `session_service.list_events(include_inactive=True)` to inspect what was branched away. This makes rewind safe for production: it is non-destructive.
+1. Walks `session.events` to find the first event whose `invocation_id == rewind_before_invocation_id`.
+2. **Computes a state delta** that reverses every session-scoped state mutation made by events at or after that index. (Keys prefixed `app:` or `user:` are deliberately left alone — those are not session-scoped.)
+3. Computes an **artifact delta** that restores each artifact to the version it had at the rewind point (or marks it inaccessible if it didn't exist yet).
+4. Appends a single synthetic `rewind_event` whose `actions.rewind_before_invocation_id` carries the boundary, plus the computed `state_delta` and `artifact_delta`. Subsequent `run_async` builds context against the resulting state.
+
+The original events are NOT deleted — they remain in `session.events`. You can scan them yourself and look for any event whose `actions.rewind_before_invocation_id` is set to find boundaries. This makes rewind safe for production: it is non-destructive and the audit trail is intact.
+
+Note: `rewind_async` itself does not accept `state_overrides`. If you want to patch state in addition to the reversal, append a second event with your own `actions.state_delta` after the rewind call.
 
 ## 🧠 Three canonical use cases
 
 * **Eval replay.** Re-run a known-good conversation up to event N, then test how a new agent version handles the next turn. Module 14 (`AgentEvaluator`) hooks into this.
 * **Hot-fix a bad action.** Customer-facing agent emitted something offensive. Rewind to before the bad event, patch state to suppress that branch, resume.
-* **A/B branching.** Fork a conversation at turn N, run path A on session A, path B on session B (`migrate` then `rewind`; see page 08).
+* **A/B branching.** Fork a conversation by creating a new session, replaying events from the original up to invocation N via the public session API, then rewinding the original to that same boundary. Run path A on session A, path B on session B.
 
 ## ⚠️ Gotchas
 
@@ -111,14 +117,17 @@ The original events are NOT deleted — you can `session_service.list_events(inc
 
 ## ❓ Quiz
 
-> ❓ **Ask the student:** you rewind a session and patch `state["user:auth_token"] = "expired"`. The user's next turn invokes a tool that needs auth. What should happen?
-> *(Expected: the tool should observe the expired token and either refuse or refresh. Rewind only controls what state the next LLM build sees — it does not invalidate live external resources. The tool's job is to validate auth every time.)*
+> ❓ **Ask the student:** you rewind a session over an invocation whose tool sent an email. Will the recipient un-receive it?
+> *(Expected: no. Rewind only reverses session state and artifact deltas inside ADK; it cannot undo real-world side effects. Pair side-effecting tools with idempotency keys, and design the rewind UX assuming the side effect already happened.)*
 
-> 🛠 **Have the student run:** the script above, then call `runner.session_service.list_events(session_id=sess.id, include_inactive=True)` to confirm the rewound event is still on disk, just not in the live view.
+> ❓ **Ask the student bonus:** the bad invocation wrote `state["user:flag"] = True`. After rewind, what is the value of `state["user:flag"]`?
+> *(Expected: still `True`. The rewind state delta deliberately skips keys prefixed `app:` or `user:` — those scopes outlive the session. Only session-scoped keys are reversed.)*
+
+> 🛠 **Have the student run:** the script above, then reload the session and walk `session.events` printing `(ev.invocation_id, ev.actions.rewind_before_invocation_id, bool(ev.actions.state_delta))`. Confirm the bad invocation's events are still present, and that a synthetic rewind event with `rewind_before_invocation_id` set sits at the tail.
 
 > **🚀 In Production**
 >
-> Rewind is a privileged operation — it changes what the agent appears to "remember." Gate it behind admin auth and always log the `(actor, to_event_id, reason)` triple. Treat rewind in production like `DROP DATABASE`: useful, dangerous, audit-required.
+> Rewind is a privileged operation — it changes what the agent appears to "remember." Gate it behind admin auth and always log the `(actor, rewind_before_invocation_id, reason)` triple. Treat rewind in production like `DROP DATABASE`: useful, dangerous, audit-required.
 
 ---
 

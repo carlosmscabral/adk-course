@@ -18,12 +18,15 @@ You are here: 🗺 Foundation Track ▸ 04 Sessions & State ▸ 05 Context Cachi
 
 A long-running agent re-sends the same system instruction, tool schemas, and conversation prefix **on every turn**. That prefix can be 5,000+ tokens — paid for, every turn. ADK 2.0 added first-class prompt caching: tell the runtime "this prefix is stable, cache it" and Gemini will charge the cache rate (typically ~10% of input cost) for repeat hits.
 
+The config attaches to the **`App`**, not to an individual `LlmAgent`. One cache policy applies to every LLM agent under the app.
+
 ## 🧠 The shape of the config
 
 ```python
 # Work/05_caching.py — run with: uv run python Work/05_caching.py
 from google.adk.agents import LlmAgent
 from google.adk.agents.context_cache_config import ContextCacheConfig
+from google.adk.apps import App
 from google.adk.runners import InMemoryRunner
 from google.genai import types
 import asyncio
@@ -33,16 +36,21 @@ agent = LlmAgent(
     name="cached_helper",
     model="gemini-2.5-flash",
     instruction="You are a careful customer-support assistant. <…long policy…>",
+)
+
+app = App(
+    name="cache_demo",
+    root_agent=agent,
     context_cache_config=ContextCacheConfig(
-        min_tokens=2048,        # cache only if prefix exceeds this
+        min_tokens=2048,        # cache only if estimated request exceeds this
         ttl_seconds=300,        # how long the cache lives server-side
-        cache_intervals=10,     # re-cache every N turns to absorb history
+        cache_intervals=10,     # re-cache every N invocations to absorb history
     ),
 )
 
 
 async def main():
-    runner = InMemoryRunner(agent=agent, app_name="cache_demo")
+    runner = InMemoryRunner(app=app)
     session = await runner.session_service.create_session(
         app_name="cache_demo", user_id="u1",
     )
@@ -74,7 +82,7 @@ The behavior is identical to the no-cache version. The savings show up on your i
 
 1. **System instruction** (verbatim).
 2. **Tool schemas** (`tools=[…]` declarations).
-3. **The growing conversation prefix** — the first `cache_intervals` turns; later turns re-cache.
+3. **The growing conversation prefix** — reused across `cache_intervals` invocations before the cache is refreshed.
 
 What is **not** cached: the latest user message and anything after the cache boundary.
 

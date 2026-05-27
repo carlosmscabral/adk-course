@@ -4,7 +4,7 @@ page: 07_AmbientAgents
 title: Ambient Agents — event-triggered runs that occasionally pause for a human
 estimated_minutes: 25
 prereqs: [4B_HumanInTheLoop/06]
-concepts: [ambient-agents, Pub/Sub-trigger, GCS-trigger, Scheduler-trigger, 10-minute-cap]
+concepts: [ambient-agents, Pub/Sub-push, Eventarc, 10-minute-cap]
 icon: ☁️
 in_production: true
 detours_suggested: []
@@ -45,15 +45,16 @@ In a chat agent, the human is *implicit* — there is always a user on the other
 
 ## Triggers ADK supports
 
-ADK 2.0 ships with built-in trigger endpoints for three sources:
+What the framework actually ships (verify in `src/google/adk/cli/trigger_routes.py:391` and `cli/cli_tools_click.py`):
 
-| Trigger | Where the event comes from | Typical pattern |
+| Trigger | Endpoint | Where it routes from |
 |---|---|---|
-| **Pub/Sub** | Cloud Pub/Sub topic push subscription | Expense submission, order placed, alert from monitoring |
-| **GCS** | Object created/deleted notification | New file uploaded, document to process |
-| **Scheduler** | Cloud Scheduler cron job | Nightly summary, daily cleanup |
+| **Pub/Sub push** | `POST /apps/{app_name}/trigger/pubsub` | Cloud Pub/Sub push subscription |
+| **Eventarc** | `POST /apps/{app_name}/trigger/eventarc` | Eventarc (covers GCS object events, Cloud Audit Logs, etc. via CloudEvents) |
 
-These are exposed by ADK's FastAPI app (the same surface that exposes `/run`) at endpoints like `/triggers/pubsub`, `/triggers/gcs`, `/triggers/scheduler`. Your deploy wires them to the relevant GCP source.
+These are **opt-in** — you have to pass `--with-triggers pubsub,eventarc` (or equivalent) to `adk api_server` / `adk web` for them to register on the FastAPI app. Cloud Scheduler is not a separate trigger flavour; point it at one of the above (typically Pub/Sub) or at your own `/run` endpoint.
+
+The built-in handlers do real work for you: per-message session creation, semaphore-bounded concurrency (`ADK_TRIGGER_MAX_CONCURRENT`), retry-with-backoff on 429s, and they return HTTP 500 on transient failures so Pub/Sub / Eventarc will redeliver. If you don't want that opinion, write your own endpoint and call `runner.run_async(...)` yourself — both shapes are valid.
 
 ## The 10-minute cap
 

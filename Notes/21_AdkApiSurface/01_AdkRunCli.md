@@ -19,7 +19,7 @@ You are here: 🗺 Deployment & Integration Track ▸ 21 ADK API Surface ▸ 01 
 ## 🛠 The shape
 
 ```
-adk run <AGENT_NAME> [--session_db_url ...] [--artifact_storage_uri ...] [--replay JSON] [--resume JSON]
+adk run <AGENT_NAME> [--session_service_uri ...] [--artifact_service_uri ...] [--replay JSON] [--resume JSON]
 ```
 
 You point `adk` at a folder that contains an agent package, and it gives you a REPL.
@@ -64,8 +64,8 @@ If any of those is wrong, the CLI errors before the model is ever called. That i
 
 | Flag                       | Default       | What it does                                                              |
 |----------------------------|---------------|---------------------------------------------------------------------------|
-| `--session_db_url`         | (in-memory)   | URI for `DatabaseSessionService` (`sqlite:///`, `postgresql://`, `agentengine://...`). |
-| `--artifact_storage_uri`   | (in-memory)   | `gs://bucket` for `GcsArtifactService`.                                   |
+| `--session_service_uri`    | (in-memory)   | URI for `DatabaseSessionService` (`sqlite:///`, `postgresql://`, `agentengine://...`). Also accepts `memory://`. |
+| `--artifact_service_uri`   | (in-memory)   | `gs://bucket` for `GcsArtifactService`. Also accepts `memory://` or `file://<path>`. |
 | `--replay <path>`          | —             | Run a JSON file of turns non-interactively (regression testing).          |
 | `--resume <path>`          | —             | Boot from a saved session JSON. Cross-link to **04B Resume/Cancel**.      |
 | `--save_session`           | False         | On exit, dump the full session to JSON.                                   |

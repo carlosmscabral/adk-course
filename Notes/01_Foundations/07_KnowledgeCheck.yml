@@ -22,7 +22,7 @@ questions:
     difficulty: medium
   - id: q5
     prompt: "Which session backend should you default to even in dev, and why?"
-    expected_keywords: [Sqlite, SqliteSessionService, persistence, migration]
+    expected_keywords: [Sqlite, DatabaseSessionService, persistence, db_url]
     accept_paraphrase: true
     difficulty: medium
   - id: q6
