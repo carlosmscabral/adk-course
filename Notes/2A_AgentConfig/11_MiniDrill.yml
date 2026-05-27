@@ -53,6 +53,8 @@ exercise:
       - "Output mentions Tokyo (proving the tool was called)"
       - "Bonus: instruction explicitly tells the LLM when to use `get_weather`"
 
+  solution_pointer: null  # intentional — this drill is not a gate-keeper
+
   tutor_notes: |
     Most common mistakes:
     1. **Tool reference dotted path off by one** — student writes `tools.get_weather`

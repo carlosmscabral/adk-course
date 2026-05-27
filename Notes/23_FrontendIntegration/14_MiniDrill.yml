@@ -49,6 +49,8 @@ exercise:
       - "Input is disabled until `turn_complete` arrives."
       - "Tool call chips render distinctly from text (bonus)."
 
+  solution_pointer: null  # intentional — this drill is not a gate-keeper
+
   tutor_notes: |
     Common mistakes:
     - Hard-coding `user_id` is fine for the drill, but flag that in real apps

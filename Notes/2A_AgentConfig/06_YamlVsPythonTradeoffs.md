@@ -32,6 +32,10 @@ You have seen both forms now. This page is the decision matrix. Pin it.
 
 The honest takeaway: **YAML wins on review/iteration ergonomics; Python wins on expressive power.** Most production agents need both — which is why pattern 2 from page 01 (YAML root + Python escape hatches) dominates.
 
+For a visual cross-reference — same agent in both forms, with an explicit list of what YAML can vs cannot express today:
+
+[See `_figures/yaml_vs_python.txt`](_figures/yaml_vs_python.txt) — side-by-side YAML/Python equivalence, plus the `✓ / ✗` matrix of what YAML can declare. Useful as a "do I need to drop into Python here?" decision aid when authoring a new agent.
+
 ## 🛠 A worked example — the same agent, three ways
 
 Take a tutor agent that needs: a name, instruction, model, two tools, and one `after_model_callback` to log latency.

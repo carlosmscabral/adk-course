@@ -59,8 +59,7 @@ exercise:
       - "The agent answers `7 * 5` correctly after the refactor (regression-free)."
       - "Bonus: `pyproject.toml` exists with `[tool.hatch.build.targets.wheel] packages = [\"calc_agent\"]`."
 
-  # No solution pointer — the refactor is mechanical and the student should not peek.
-  # The pressure-to-refactor is genuine and the steps are spelled out on page 03.
+  solution_pointer: null  # intentional — refactor is mechanical and student should not peek; steps are spelled out on page 03.
 
   tutor_notes: |
     Common mistakes (in order of frequency):

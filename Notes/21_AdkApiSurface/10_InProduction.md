@@ -24,43 +24,43 @@ Consolidates the `🚀 In Production` callouts from this module's concept pages,
 
 - **Risk**: REPL has no auth, no multi-user, no quotas. Web has the Builder routes (unprotected CSRF surface) and a dev UI that exposes full event history.
 - **Mitigation**: ship `adk api_server` (or `get_fast_api_app`) behind an ingress with auth.
-- **Inline source**: [00_Overview § In Production](00_Overview.md#-in-production) and [01B_AdkWebUnderTheHood § In Production](01B_AdkWebUnderTheHood.md#-in-production).
+- **Inline source**: [00_Overview](00_Overview.md) and [01B_AdkWebUnderTheHood § In Production](01B_AdkWebUnderTheHood.md#in-production).
 
 ### 2. Pin one uvicorn worker per pod, scale by pod count
 
 - **Risk**: uvicorn `--workers > 1` breaks ADK's in-process session caches; you get stale state and lost events.
 - **Mitigation**: 1 worker per pod; horizontal scale by replicas; if you cannot do sticky-by-session-id routing, push session state to `DatabaseSessionService` (Postgres) or `VertexAiSessionService` so any pod can serve any request.
-- **Inline source**: [02_AdkApiServer § In Production](02_AdkApiServer.md#-in-production).
+- **Inline source**: [02_AdkApiServer § In Production](02_AdkApiServer.md#in-production).
 
 ### 3. Redact event payloads before sending to clients
 
 - **Risk**: `/run` returns full `Event` objects with `actions.state_delta`, tool args, tool responses. Some of that is internal — pricing tiers, prompt scaffolding, raw search results.
 - **Mitigation**: response transformer middleware that strips `actions` and `functionCall`/`functionResponse` parts unless the UI explicitly needs them.
-- **Inline source**: [03_RestShapes § In Production](03_RestShapes.md#-in-production); cross-link [16_ProductionSecurity/05_GuardrailsCookbook](../16_ProductionSecurity/05_GuardrailsCookbook.md).
+- **Inline source**: [03_RestShapes § In Production](03_RestShapes.md#in-production); cross-link [16_ProductionSecurity/05_GuardrailsCookbook](../16_ProductionSecurity/05_GuardrailsCookbook.md).
 
 ### 4. Keep SSE streams alive with periodic comments
 
 - **Risk**: load balancers / browsers close idle SSE connections at 30-120s. Long tool calls die.
 - **Mitigation**: emit `: keepalive\n\n` every 15s during model thinking. Clients ignore comment lines.
-- **Inline source**: [04_SseEndpoints § In Production](04_SseEndpoints.md#-in-production).
+- **Inline source**: [04_SseEndpoints § In Production](04_SseEndpoints.md#in-production).
 
 ### 5. Reconnect protocol for `/run_live` WebSockets
 
 - **Risk**: Cloud Run caps WS at ~15min. Pod restarts kill open sessions. Voice users get cut off.
 - **Mitigation**: client-side reconnect that resumes from saved session state. Or deploy on Agent Engine / GKE for longer connection budgets.
-- **Inline source**: [05_WebSocketsForLive § In Production](05_WebSocketsForLive.md#-in-production); cross-link [22_DeploymentModels/05_ScalingAndColdStart](../22_DeploymentModels/05_ScalingAndColdStart.md).
+- **Inline source**: [05_WebSocketsForLive § In Production](05_WebSocketsForLive.md#in-production); cross-link [22_DeploymentModels/05_ScalingAndColdStart](../22_DeploymentModels/05_ScalingAndColdStart.md).
 
 ### 6. Own the deployment when you wrap with `get_fast_api_app`
 
 - **Risk**: `adk deploy cloud_run` only builds what the loader sees — it can't include your custom `/feedback` route or middleware.
 - **Mitigation**: when you wrap, write your own Dockerfile (Module 22 page 02) and your own CI. Don't try to extend `adk deploy`.
-- **Inline source**: [06_WrappingInFastAPI § In Production](06_WrappingInFastAPI.md#-in-production).
+- **Inline source**: [06_WrappingInFastAPI § In Production](06_WrappingInFastAPI.md#in-production).
 
 ### 7. Authorize `user_id` against the URL
 
 - **Risk**: ADK does **not** check that the URL's `user_id` matches the authenticated user. Anyone with a token can read anyone else's session by guessing `user_id`s.
 - **Mitigation**: middleware that derives `user_id` from the verified token and rejects requests where the URL `user_id` doesn't match. Page 08 has the snippet.
-- **Inline source**: [08_AuthenticatingTheApi § In Production](08_AuthenticatingTheApi.md#-in-production).
+- **Inline source**: [08_AuthenticatingTheApi § In Production](08_AuthenticatingTheApi.md#in-production).
 
 ### 8. CORS once, with a real allow-list
 
@@ -72,7 +72,7 @@ Consolidates the `🚀 In Production` callouts from this module's concept pages,
 
 - **Risk**: k8s readiness probes hit `/health` without tokens. If your auth middleware 401s the probe, the pod is marked unhealthy and gets killed.
 - **Mitigation**: middleware skips auth iff path matches a small allow-list (`/health`, `/version`, `/livez`). Everything else requires auth.
-- **Inline source**: [08_AuthenticatingTheApi § In Production](08_AuthenticatingTheApi.md#-in-production).
+- **Inline source**: [08_AuthenticatingTheApi § In Production](08_AuthenticatingTheApi.md#in-production).
 
 ### 10. Rate-limit per `user_id`, not per IP
 

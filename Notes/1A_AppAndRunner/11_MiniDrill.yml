@@ -52,6 +52,8 @@ exercise:
       - "load_dotenv() is called so GOOGLE_API_KEY is found"
       - "Final reply text is printed (in addition to the state dict)"
 
+  solution_pointer: null  # intentional — this drill is not a gate-keeper
+
   tutor_notes: |
     Common mistakes:
 

@@ -38,6 +38,10 @@ Two halves of the same function:
 - **First call**: `ctx.tool_confirmation is None`. The tool calls `ctx.request_confirmation(...)` and the runtime pauses.
 - **Resumed call**: `ctx.tool_confirmation` is a `ToolConfirmation(confirmed=True, payload=...)` populated from the client's response. The side-effect runs.
 
+The full lifecycle across processes — client, Runner, tool fn, user — with the session store as the only thing that survives the pause:
+
+[See `_figures/hitl_lifecycle.txt`](_figures/hitl_lifecycle.txt) — annotated timeline of one full pause/resume cycle, plus the three invariants you must keep in mind (tool is called **twice**; pause survives a restart **only** with a durable session backend; resume identity = `invocation_id + function_call_id`, which means anyone holding those IDs can fake-approve unless you bind them to the authenticated user).
+
 ## A first, full, runnable example
 
 ```python

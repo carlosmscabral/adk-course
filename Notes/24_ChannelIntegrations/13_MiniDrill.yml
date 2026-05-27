@@ -54,6 +54,8 @@ exercise:
       - "Placeholder message posts immediately; final reply edits in place (page 02 UX A)."
       - "Bonus: rate-limit chat.update / interaction follow-up edits to platform limits."
 
+  solution_pointer: null  # intentional — this drill is not a gate-keeper
+
   tutor_notes: |
     Common mistakes:
     - Verifying after `await request.json()` consumed the body. The signature

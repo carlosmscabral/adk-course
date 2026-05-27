@@ -28,6 +28,10 @@ user ──► LLM (generate SQL) ──► you (execute SQL) ──► LLM (for
 
 The LLM is doing **translation** at step 1 and **summarization** at step 3. Execution is *not* delegated to the LLM — code runs it. This separation is why NL2SQL works in practice.
 
+The full pattern *with cost-guard wiring* (the next page's topic, but worth seeing the whole pipeline early):
+
+[See `_figures/nl2sql_flow.txt`](_figures/nl2sql_flow.txt) — annotated end-to-end flow from user prompt through `bigquery_nl2sql` → `before_tool_callback` cost-guard → `bq.Client.query(maximum_bytes_billed=...)` → result formatting. **The cost_guard is the difference between a fun demo and a $5K invoice.**
+
 ## ⚠️ The schema-grounding problem
 
 The LLM doesn't know your tables. It will hallucinate column names. It will guess "users.email" when you have `member_email`. It will invent join keys.

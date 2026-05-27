@@ -71,8 +71,7 @@ exercise:
       - "Final printed reply contains a coherent one-sentence summary of the input"
       - "Bonus (if attempted): second turn produces NO new artifact_delta"
 
-  # No solution pointer — this drill is NOT a gate-keeper. Students have
-  # Work/09_handoff.py to crib from; the drill is to internalise the pattern.
+  solution_pointer: null  # intentional — this drill is not a gate-keeper. Students have Work/09_handoff.py to crib from; the drill is to internalise the pattern.
 
   tutor_notes: |
     The most common failure modes (in order of frequency):

@@ -30,31 +30,31 @@ The course teaches production-readiness inline (rule #14 in the [authoring brief
 
 - **Risk**: Building a fresh `App(...)` per request defeats every cross-cutting feature it owns (plugins, cache, compaction, resumability). Plugin instances would be rebuilt, MCP subprocesses re-spawned, cache state lost.
 - **Mitigation**: Module-scope construction, or `functools.lru_cache` factory. One App per process.
-- **Inline source**: [01 App vs Runner vs Agent § 🚀 In Production](01_AppVsRunnerVsAgent.md#-in-production)
+- **Inline source**: [01 App vs Runner vs Agent § 🚀 In Production](01_AppVsRunnerVsAgent.md#in-production)
 
 ### 2. Lifecycle hooks always include shutdown
 
 - **Risk**: Forgetting `await runner.close()` on SIGTERM leaks toolset subprocesses (MCP), plugin handles, file descriptors, and gRPC channels, and skips the `session_service.flush()` step — across redeploys. (`runner.close()` at `runners.py:2135-2150` is the public hook; `runner.plugin_manager.close()` is the plugin-only subset.)
 - **Mitigation**: Use FastAPI `lifespan` (or `adk api_server`'s built-in) so the framework guarantees shutdown runs. Treat shutdown as load-bearing even with an empty plugin list — future-you will add plugins.
-- **Inline source**: [02 On Startup / Shutdown § 🚀 In Production](02_OnStartupShutdown.md#-in-production)
+- **Inline source**: [02 On Startup / Shutdown § 🚀 In Production](02_OnStartupShutdown.md#in-production)
 
 ### 3. State prefix chosen at design time, not after launch
 
 - **Risk**: Renaming `theme` → `user:theme` after launch is a migration: existing sessions still have `state["theme"]`, new code reads `state["user:theme"]`, two sources of truth drift forever.
 - **Mitigation**: For every state key, write a one-line ADR naming the prefix and *why*. For `app:` keys especially — they are cross-user feature flags, never default to `app:`.
-- **Inline source**: [03 App State Boundary § 🚀 In Production](03_AppStateBoundary.md#-in-production)
+- **Inline source**: [03 App State Boundary § 🚀 In Production](03_AppStateBoundary.md#in-production)
 
 ### 4. Resumability requires persistent session service AND idempotent tools
 
 - **Risk**: `ResumabilityConfig(is_resumable=True)` with `InMemorySessionService` looks like it works in tests, then loses every paused state on process restart in prod.
 - **Mitigation**: Switch to `DatabaseSessionService` or `VertexAiSessionService` *before* turning on resumability. Audit every `LongRunningFunctionTool` for idempotency — at-least-once means a retry will re-run. Consider Temporal/Dapr if you need stronger guarantees.
-- **Inline source**: [04 Wiring Resumability § 🚀 In Production](04_WiringResumability.md#-in-production)
+- **Inline source**: [04 Wiring Resumability § 🚀 In Production](04_WiringResumability.md#in-production)
 
 ### 5. Context cache hit rate is observed before celebrated
 
 - **Risk**: Caching has per-cache overhead. Low hit rate (< 30%) means you are paying for writes with no read benefit. Caching is silently expensive when it does not work.
 - **Mitigation**: Wire the cache-hit-rate metric ([Module 15 § Metrics](../15_Observability/05_Metrics.md)) before flipping on `context_cache_config` in prod. Tune `min_tokens` and `ttl_seconds` based on real hit data, not guesses.
-- **Inline source**: [05 Wiring Context Cache § 🚀 In Production](05_WiringContextCache.md#-in-production)
+- **Inline source**: [05 Wiring Context Cache § 🚀 In Production](05_WiringContextCache.md#in-production)
 
 ### 6. Compaction uses a cheap summarizer model
 
@@ -66,13 +66,13 @@ The course teaches production-readiness inline (rule #14 in the [authoring brief
   summarizer = LlmEventSummarizer(llm=Gemini(model="gemini-2.5-flash-lite"))
   ```
   even if the main agent uses `gemini-2.5-pro`. Tune `compaction_interval` upward for low-stakes chat; downward only when you see context-window hits.
-- **Inline source**: [06 Wiring Context Compaction § 🚀 In Production](06_WiringContextCompaction.md#-in-production)
+- **Inline source**: [06 Wiring Context Compaction § 🚀 In Production](06_WiringContextCompaction.md#in-production)
 
 ### 7. Modern Runner form over legacy
 
 - **Risk**: New code written in the `Runner(app_name=..., agent=..., plugins=...)` form is acquiring debt — every 2.0+ feature lands on `App`, not on Runner kwargs. The legacy form will keep working but stop gaining capabilities.
 - **Mitigation**: One-line migration: replace `Runner(app_name="x", agent=a, plugins=p)` with `Runner(app=App(name="x", root_agent=a, plugins=p))`. Do it before adding any new feature.
-- **Inline source**: [07 Runner Inside the App § 🚀 In Production](07_RunnerInsideTheApp.md#-in-production)
+- **Inline source**: [07 Runner Inside the App § 🚀 In Production](07_RunnerInsideTheApp.md#in-production)
 
 ### 8. Lifecycle hooks are NOT for everything
 

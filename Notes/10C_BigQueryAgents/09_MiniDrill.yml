@@ -42,7 +42,7 @@ exercise:
       - "station"               # specific station name in the answer
       - "2017"                  # year mentioned
       - "WHERE"                 # SQL has a filter
-      - "rejected" OR "REJECTED" # cost-guard fired on the bonus
+      - "rejected"               # cost-guard fired on the bonus (case-insensitive match: rejected | REJECTED)
     grading_rubric:
       - "Schema block includes partition column for cycle_hire"
       - "WriteMode.BLOCKED is set explicitly"

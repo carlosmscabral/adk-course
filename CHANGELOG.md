@@ -4,6 +4,56 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.13] - 2026-05-27
+
+Dogfood Wave 10 — three independent defect classes the v0.3.12 closure missed, all surfaced by widening the auditor toolkit beyond links. Built three new programmatic audits (anchor-resolution, YAML-schema, orphan-figure) and ran them against the whole course. 56 fixes across 14 files; 0 schema issues remaining; 47/47 anchors resolve; 0 orphan figures on real content. Wave 10 closes the dogfood backlog completely — every audit class the toolkit can express is now green.
+
+### Fixed
+
+**YAML parse failures (2 files)**
+- `Notes/10C_BigQueryAgents/09_MiniDrill.yml:45` — `"rejected" OR "REJECTED"` parsed as invalid YAML (quoted scalar followed by bare text). Collapsed to single value `"rejected"` with a comment noting the agent is expected to canonicalise.
+- `Notes/23_FrontendIntegration/13_KnowledgeCheck.yml:41` — bare `>10MB` in a flow-sequence context triggered the folded-scalar parser. Quoted as `">10MB"`.
+
+**Broken anchor links (46 fixes across 8 files)**
+- 37 via `/tmp/fix_anchors.py` — regex `r'(\]\([^)]*?#)-(?=[a-z])'` catching the `#-letter` artifact pattern. Earlier waves had stripped emoji prefixes from headings (`### 🚀 In Production` → slug `in-production`) but left cross-refs pointing at `#-in-production` with a leading hyphen the slug algorithm doesn't produce.
+- 4 real anchor mismatches discovered during script verification:
+  - `21_AdkApiSurface/10_InProduction.md:27` — dropped non-existent `#in-production` from `00_Overview.md` link.
+  - `3A_ProjectStructure/10_InProduction.md:33` — dropped non-existent `#in-production` from `02_MinimalLayout.md` link.
+  - `3A_ProjectStructure/10_InProduction.md:95` — repointed to `#the-shape-that-works-for-both` (the actual heading slug).
+  - `22_DeploymentModels/11_InProduction.md:26` — repointed `#the-decision-tree` → `#a-decision-flowchart` (the actual heading text).
+- 5 double-hyphen anchors driven by GitHub's slug algorithm: em-dash (`—`) is punctuation, stripped; surrounding spaces collapse to ONE space → ONE hyphen. So `## Identity binding — the only critical security note` slugs to `identity-binding-the-only-critical-security-note`, NOT `identity-binding--the-only-...`. Fixed at `3A_ProjectStructure/10_InProduction.md:{45,64,88}`, `22_DeploymentModels/11_InProduction.md:32`, `4B_HumanInTheLoop/12_InProduction.md:57`.
+
+**Orphan figures wired into prose (3 files)**
+- `Notes/10C_BigQueryAgents/02_NL2SQLPattern.md` — linked `_figures/nl2sql_flow.txt` (NL2SQL agent flow with cost-guard `before_tool_callback`).
+- `Notes/4B_HumanInTheLoop/02_RequestConfirmation.md` — linked `_figures/hitl_lifecycle.txt` (pause→approval→resume lifecycle timeline).
+- `Notes/2A_AgentConfig/06_YamlVsPythonTradeoffs.md` — linked `_figures/yaml_vs_python.txt` (side-by-side YAML/Python equivalence + capability matrix). Used as a "do I need to drop into Python here?" decision aid.
+
+**MiniDrill schema completion — `solution_pointer` field (7 files)**
+The YAML schema audit required every `exercise:` block to declare a `solution_pointer` (even when null) so the AI tutor can disambiguate "this drill is intentionally peek-proof" from "this drill is missing a pointer by accident." Added the field — set to `null` with an inline comment — to:
+- `04A_ArtifactsHeavyData/13_MiniDrill.yml` (folded existing free-text comment into the canonical field)
+- `3A_ProjectStructure/12_MiniDrill.yml` (folded existing free-text comment into the canonical field)
+- `21_AdkApiSurface/12_MiniDrill.yml` (uncommented the placeholder line; promoted to real field)
+- `1A_AppAndRunner/11_MiniDrill.yml`, `2A_AgentConfig/11_MiniDrill.yml`, `23_FrontendIntegration/14_MiniDrill.yml`, `24_ChannelIntegrations/13_MiniDrill.yml` (new stub)
+
+### Method
+- `/tmp/audit_yaml.py` — `pyyaml`-based schema validator over all `*KnowledgeCheck.yml` and `*MiniDrill.yml` files. Verifies required fields (`id`, `prompt`, `verification`, `solution_pointer`, `grading_rubric`, etc.); reports parse errors with line numbers. Bonus stale-pattern scan for known pre-2.0 idioms.
+- `/tmp/audit_anchors.py` — link-audit's anchor variant: for every `[text](page.md#anchor)` reference, walk `page.md`'s headings, slugify each per GitHub's algorithm (lowercase → strip punctuation → whitespace-collapse → space-to-hyphen), check the anchor resolves.
+- `/tmp/audit_figures.py` — bidirectional: for every `_figures/*.txt` on disk, find at least one referencing page in the same module; for every figure reference, confirm the file exists.
+- `/tmp/fix_anchors.py` — assertion-checked applier; regex tightened to `(\]\([^)]*?#)-(?=[a-z])` to avoid matching legitimate hyphens inside slugs.
+- Anchor algorithm gotcha caught mid-wave: I initially treated double-hyphen anchors (`#foo--bar`) as correct and the audit as buggy. Re-checked GitHub's slugifier: whitespace-runs collapse to ONE space *before* the space-to-hyphen pass, so even an em-dash surrounded by spaces (` — `) produces only ONE hyphen in the slug. Updated the 5 sources rather than the audit.
+- Re-ran each audit post-fix: schema 0 issues, anchors 47/47 resolve, figures 0 dangling on real content (1 expected hit on `_AUTHORING.md` referencing `_figures/.gitkeep` — template placeholder, not a real bug).
+
+### Why
+- User: "let's cotinue refiniing, if applicalbe" — second instance of the same standing authorization, with the "if applicable" clause demanding an honest call on whether more refinement is warranted. The answer was yes for three more defect classes that the link-only auditor of v0.3.11/12 couldn't see.
+- The pattern across Waves 9, 9b, and 10 is the same: every dogfood pass adds an auditor for one defect class, then closes that class against the whole repo. Three classes added this wave: schema (catches structural drift in machine-parseable lesson files), anchors (catches the renumbering/rename fallout that link-only audits miss because the URL is right but the fragment is wrong), figures (catches authored-but-unwired ASCII art that the tutor would never surface).
+
+### Deferred
+- The dogfood backlog as expressible by current audit classes is now **empty**. Audits green across: links (v0.3.11), display labels (v0.3.12), YAML schema (this wave), anchors (this wave), figures (this wave), class-name parity (verified vs 2.0 source in v0.3.6), module structural completeness (verified in v0.3.12).
+- One accepted false-positive remains: stale-pattern scan matches `06_GraphWorkflows/10_KnowledgeCheck.yml:4` on `adk 1.` — the substring is the literal subject of the question (asking the student to name the legacy ADK 1.x workflow templates), not stale content. Documented here in lieu of a per-script allowlist.
+- Next natural work is content depth (e.g., the 4B_HumanInTheLoop expansion noted in v0.3.11), NOT another defect-class fix. Belongs in a content-pass phase, not a Wave 11.
+
+---
+
 ## [0.3.12] - 2026-05-27
 
 Dogfood Wave 9b — cheatsheet display-label cleanup (15 fixes across 7 files). Wave 9 fixed all the broken URLs in the cheatsheets' "Where it's covered in the course" sections, but a verification pass revealed the *display labels* (the bracket text humans read) were still showing the OLD page numbers/filenames. The links would land you on the right page, but with a confusing "huh, the label said `01_SessionLifecycle` but I'm on `01_SessionVsState`" experience. Pure 🟡 polish — the kind of debt that erodes trust in the cheatsheets even though navigation works.

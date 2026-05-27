@@ -30,7 +30,7 @@ This page is the **checklist** you walk before shipping anything built on this m
 
 - **Risk**: over-structured early; every change touches 4 files; new contributors lost in the tree.
 - **Mitigation**: name a concrete pressure ([01](01_WhyStructureMatters.md)) for each directory in your project. If you can't, that directory is premature.
-- **Inline source**: [01_WhyStructureMatters § Three pressures](01_WhyStructureMatters.md#the-three-pressures), [02_MinimalLayout § In Production](02_MinimalLayout.md#-in-production).
+- **Inline source**: [01_WhyStructureMatters § Three pressures](01_WhyStructureMatters.md#the-three-pressures), [02_MinimalLayout](02_MinimalLayout.md).
 
 ### 2. `root_agent` (or `app`) is at module top, named exactly
 
@@ -42,7 +42,7 @@ This page is the **checklist** you walk before shipping anything built on this m
 
 - **Risk**: agent appears in `adk web`'s dropdown but loading errors silently or `root_agent` is `None`.
 - **Mitigation**: `from . import agent` (or `from .agent import app`) in every agent package's `__init__.py`. Never empty.
-- **Inline source**: [02_MinimalLayout § the import line](02_MinimalLayout.md#my_agent__init__py--the-import-line-that-matters), [05_AdkCliExpectations § Rule 2](05_AdkCliExpectations.md).
+- **Inline source**: [02_MinimalLayout § the import line](02_MinimalLayout.md#my_agent__init__py-the-import-line-that-matters), [05_AdkCliExpectations § Rule 2](05_AdkCliExpectations.md).
 
 ### 4. Use `App` (not bare `root_agent`) once you're past prototype
 
@@ -61,7 +61,7 @@ This page is the **checklist** you walk before shipping anything built on this m
 - **Risk** (lower-pin): you accidentally run on a version that doesn't support the feature you're using.
 - **Risk** (upper-pin): you miss security fixes; you have to ship a release every time ADK ships a minor.
 - **Mitigation**: `"google-adk>=1.31.0"` — no upper bound unless you have a specific incompatibility. Pin Python (`requires-python = ">=3.11"`) for reproducibility instead.
-- **Inline source**: [06_DeploymentExpectations § pyproject](06_DeploymentExpectations.md#pyprojecttoml--at-the-project-root-one-level-above-the-agent-package).
+- **Inline source**: [06_DeploymentExpectations § pyproject](06_DeploymentExpectations.md#pyprojecttoml-at-the-project-root-one-level-above-the-agent-package).
 
 ### 7. `extra_packages=["./my_agent"]` for Agent Engine
 
@@ -85,14 +85,14 @@ This page is the **checklist** you walk before shipping anything built on this m
 
 - **Risk**: monorepo overhead — shared CI, version locking, cross-deps — before the cross-deps even exist.
 - **Mitigation**: every agent is its own repo with its own `pyproject.toml` until you have at least three deployed and at least one piece of code two of them share. Then promote `shared/` to its own installable package.
-- **Inline source**: [07_SharedUtilities § monorepo of agents](07_SharedUtilities.md#across-agents--the-monorepo-of-agents).
+- **Inline source**: [07_SharedUtilities § monorepo of agents](07_SharedUtilities.md#across-agents-the-monorepo-of-agents).
 
 ### 11. Don't commit `.env`; do commit `uv.lock`
 
 - **Risk** (.env): credentials in git history.
 - **Risk** (no lockfile): "works on my laptop" in container.
 - **Mitigation**: `.gitignore` includes `.env`; `uv.lock` is checked in; the Dockerfile uses `uv sync --frozen`.
-- **Inline source**: [06_DeploymentExpectations § In Production](06_DeploymentExpectations.md#-in-production).
+- **Inline source**: [06_DeploymentExpectations § The shape that works for both](06_DeploymentExpectations.md#the-shape-that-works-for-both).
 
 ### 12. Diff hygiene: prompts in their own file, wiring in another
 

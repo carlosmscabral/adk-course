@@ -30,19 +30,19 @@ The course teaches production-readiness inline (rule #14 in the brief), not in a
 
 - **Risk**: (one-sentence description)
 - **Mitigation**: (one-sentence fix)
-- **Inline source**: [01_FirstConcept § 🚀 In Production](01_FirstConcept.md#-in-production)
+- **Inline source**: [01_FirstConcept § 🚀 In Production](01_FirstConcept.md#in-production)
 
 ### 2. <Gotcha 2 name>
 
 - **Risk**:
 - **Mitigation**:
-- **Inline source**: [02_NextConcept § 🚀 In Production](02_NextConcept.md#-in-production)
+- **Inline source**: [02_NextConcept § 🚀 In Production](02_NextConcept.md#in-production)
 
 ### 3. <Gotcha 3 name>
 
 - **Risk**:
 - **Mitigation**:
-- **Inline source**: [03_ThirdConcept § 🚀 In Production](03_ThirdConcept.md#-in-production)
+- **Inline source**: [03_ThirdConcept § 🚀 In Production](03_ThirdConcept.md#in-production)
 
 ### 4. (… more as needed, ≤8 items)
 

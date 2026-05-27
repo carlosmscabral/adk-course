@@ -38,7 +38,7 @@ questions:
 
   - id: q6
     prompt: "When would you upload files via signed URL straight to GCS instead of through your FastAPI backend?"
-    expected_keywords: [large, OOM, body limit, backend memory, direct upload, >10MB]
+    expected_keywords: [large, OOM, body limit, backend memory, direct upload, ">10MB"]
     accept_paraphrase: true
     difficulty: medium
 

@@ -47,9 +47,7 @@ exercise:
       - "The hardening middleware is functional — either emits keepalive comments OR rejects a mismatched user_id with 403."
       - "Bonus: student adds a `/healthz` that ADK does not already define, on the same FastAPI app."
 
-  # Not a gate-keeper drill — the student will fumble SSE buffering and that's
-  # the lesson. No Solutions/ entry.
-  # solution_pointer:
+  solution_pointer: null  # intentional — student will fumble SSE buffering and that's the lesson; no Solutions/ entry.
 
   tutor_notes: |
     Common mistakes:

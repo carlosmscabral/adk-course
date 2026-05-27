@@ -187,4 +187,4 @@
 
 ## Where to start
 
-If this is your first session, your cursor is at `00_Setup/00_Overview`. Open Claude Code, point it at this repo, and say: *"Read AGENTS.md and pick up where I left off."* See [README.md](README.md#-how-to-use-this-course-the-ai-tutor-model) for the runtime contract.
+If this is your first session, your cursor is at `00_Setup/00_Overview`. Open Claude Code, point it at this repo, and say: *"Read AGENTS.md and pick up where I left off."* See [README.md](README.md#how-to-use-this-course-the-ai-tutor-model) for the runtime contract.

@@ -23,14 +23,14 @@ Consolidates the `🚀 In Production` callouts from this module's concept pages,
 ### 1. Pick the deployment model on **operational maturity**, not feature lists
 
 - **Risk**: teams default to "GKE because we're using K8s elsewhere" or "Agent Engine because it's the newest." Both are wrong defaults for many cases.
-- **Mitigation**: use the flowchart on [01 Landscape](01_DeploymentLandscape.md#-the-decision-tree). Cloud Run is the right answer ~70% of the time. Agent Engine when sessions/long-running/Gemini-Enterprise are dealbreakers. GKE only if a cluster already exists with on-call.
+- **Mitigation**: use the flowchart on [01 Landscape](01_DeploymentLandscape.md#a-decision-flowchart). Cloud Run is the right answer ~70% of the time. Agent Engine when sessions/long-running/Gemini-Enterprise are dealbreakers. GKE only if a cluster already exists with on-call.
 - **Inline source**: [01_DeploymentLandscape § In Production](01_DeploymentLandscape.md).
 
 ### 2. Never deploy with the default compute service account
 
 - **Risk**: Cloud Run's default SA is `PROJECT-compute@developer.gserviceaccount.com` and has `roles/editor` project-wide. A compromised agent has near-owner powers.
-- **Mitigation**: `--service-account=` with a custom SA that holds **only** the roles from [06 Auth & IAM § least-privilege list](06_AuthAndIAM.md#-principle-of-least-privilege--the-actual-roles).
-- **Inline source**: [06_AuthAndIAM § In Production](06_AuthAndIAM.md#-in-production).
+- **Mitigation**: `--service-account=` with a custom SA that holds **only** the roles from [06 Auth & IAM § least-privilege list](06_AuthAndIAM.md#principle-of-least-privilege-the-actual-roles).
+- **Inline source**: [06_AuthAndIAM § In Production](06_AuthAndIAM.md#in-production).
 
 ### 3. Move session state off the pod before launch
 
@@ -42,7 +42,7 @@ Consolidates the `🚀 In Production` callouts from this module's concept pages,
 
 - **Risk**: a loop bug burns through tokens at $1.20/sec. By the time the monthly bill alert fires, you're at $4000.
 - **Mitigation**: GCP Billing budget alerts at 50/80/100% **plus** a token-rate metric alerting at 2x baseline. Both. Catches slow leaks AND fast incidents.
-- **Inline source**: [09_CostModelComparison § In Production](09_CostModelComparison.md#-in-production).
+- **Inline source**: [09_CostModelComparison § In Production](09_CostModelComparison.md#in-production).
 
 ### 5. Cold start needs an answer, even if the answer is "we accept it"
 
@@ -54,7 +54,7 @@ Consolidates the `🚀 In Production` callouts from this module's concept pages,
 
 - **Risk**: Cloud Run's `--concurrency=80` default is for fast HTTP responses. Agent turns are 3-8s. 80 concurrent turns on one CPU = thrashing, 30s p99.
 - **Mitigation**: start at `--concurrency=10`, load-test, raise until p95 starts to climb, use half of that.
-- **Inline source**: [05_ScalingAndColdStart § concurrency tuning](05_ScalingAndColdStart.md#-concurrency-tuning).
+- **Inline source**: [05_ScalingAndColdStart § concurrency tuning](05_ScalingAndColdStart.md#concurrency-tuning).
 
 ### 7. Secrets via Secret Manager, never via `--set-env-vars` or git
 
