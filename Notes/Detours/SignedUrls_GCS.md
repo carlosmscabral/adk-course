@@ -86,7 +86,7 @@ Defaults to aim for:
 - **Resumable upload (multi-hour)** → use a resumable session URL (next section), not a long-lived signed URL.
 - **Download links shared in chat / email** → 1 hour, regenerate on click if needed.
 
-The signature carries the expiration; you cannot revoke a signed URL early. (Workaround: rotate the signer's key, which invalidates all outstanding URLs — nuclear option.)
+The signature carries the expiration; you cannot revoke a signed URL early. The traditional workaround is rotating the signer's key (which invalidates all outstanding URLs — nuclear option). For the `signBlob` path (no key file), the equivalent is removing the `roles/iam.serviceAccountTokenCreator` self-binding from the SA, which invalidates all *future* signing requests but leaves already-issued URLs valid until their TTL expires.
 
 ---
 
@@ -128,27 +128,57 @@ client = storage.Client.from_service_account_json("sa-key.json")
 ```
 
 **B. ADC + `signBlob` API** (modern; what Cloud Run / Agent Engine use):
+
+The robust idiom is to build an `IAMSigner` and pass it explicitly to `generate_signed_url(...)` — that way the same code works regardless of where the credentials came from (user ADC on a laptop, an SA key file, or GCE/Cloud Run metadata). The fragile shortcut you often see — reading `credentials.service_account_email` and `credentials.token` straight off `google.auth.default()` — only works on `compute_engine.Credentials` (i.e., when running on GCE/Cloud Run); on a developer laptop with user ADC it raises `AttributeError` because user creds have no SA email attached.
+
 ```python
-# No key file on disk. The runtime SA gets short-lived signatures via IAM signBlob.
+# Robust pattern — works on Cloud Run AND on a dev laptop with user ADC.
 import google.auth
-from google.auth import compute_engine
+from google.auth import iam
 from google.auth.transport import requests as g_requests
 from google.cloud import storage
 
-credentials, project = google.auth.default()
-credentials.refresh(g_requests.Request())
+# 1) Get whatever credentials ADC found (user creds locally, SA on Cloud Run).
+#    We need the IAM scope to call signBlob.
+source_credentials, project = google.auth.default(
+    scopes=["https://www.googleapis.com/auth/iam"],
+)
+source_credentials.refresh(g_requests.Request())
 
-# Use signer info from the runtime SA
+# 2) Name the service account that will *actually* sign the URL.
+#    On Cloud Run / GCE this is usually the runtime SA itself.
+#    Locally, it's the SA you've granted yourself permission to impersonate.
+signer_email = "my-agent-sa@my-proj.iam.gserviceaccount.com"
+
+# 3) Build an IAM-backed Signer. It calls iamcredentials.signBlob under the hood
+#    — no private key material on disk, no AttributeError on user creds.
+signer = iam.Signer(
+    request=g_requests.Request(),
+    credentials=source_credentials,
+    service_account_email=signer_email,
+)
+
+# 4) Pass `credentials=` explicitly so generate_signed_url uses our signer.
+class _SignerCredentials:
+    """Thin shim: storage client only needs .signer + .signer_email."""
+    def __init__(self, signer, email):
+        self.signer = signer
+        self.signer_email = email
+
 url = blob.generate_signed_url(
     version="v4",
     expiration=timedelta(minutes=10),
     method="PUT",
-    service_account_email=credentials.service_account_email,
-    access_token=credentials.token,
+    credentials=_SignerCredentials(signer, signer_email),
 )
 ```
 
-The runtime SA needs **`roles/iam.serviceAccountTokenCreator` on itself** (yes, on itself) to call `signBlob`. This is the canonical "no key files" pattern and what every Cloud Run / Agent Engine deploy should use.
+When to use which pattern:
+
+- **`google.auth.compute_engine.Credentials`** (the SA-email-and-access-token shortcut) — *runtime only*: Cloud Run, GCE, GKE, anywhere the metadata server is reachable and the SA email is auto-discovered. Concise but breaks locally.
+- **`google.auth.iam.Signer`** (or `iam_credentials_v1.IAMCredentialsClient.sign_blob` directly) — *works everywhere*. On a dev laptop where ADC is your user creds, you must name the SA to impersonate explicitly. This is the recommended portable pattern.
+
+Whichever SA is named as the signer needs **`roles/iam.serviceAccountTokenCreator` on itself** (yes, on itself) to call `signBlob`. This is the canonical "no key files" pattern and what every Cloud Run / Agent Engine deploy should use.
 
 > **🚀 In Production**
 >

@@ -102,7 +102,7 @@ Don't ask for `channels:history` "just in case" — workspace admins notice and 
 | **Slash Commands**   | user typed `/agent ...`                | ack within 3 s       | `response_url` OR `chat.postMessage` |
 | **Interactivity**    | user clicked a button / submitted modal| ack within 3 s       | `response_url` OR `chat.postMessage` |
 
-Slash Commands and Interactivity each give you a per-invocation **`response_url`** in the payload — a one-time URL good for 30 minutes that lets you respond to the same message context multiple times (initial loading state, then final answer). Events API doesn't have this; you post a fresh message instead.
+Slash Commands and Interactivity each give you a per-invocation **`response_url`** in the payload — a URL good for **up to 5 responses within 30 minutes** that lets you reply asynchronously to the same message context (e.g., initial loading state, then final answer). Per [Slack's docs](https://docs.slack.dev/interactivity/handling-user-interaction/). Events API doesn't have this; you post a fresh message instead.
 
 ---
 
@@ -112,21 +112,36 @@ The canonical handler shape:
 
 ```python
 # Work/slack_handler.py — run with: uv run uvicorn Work.slack_handler:app --port 8000
-import os, asyncio, httpx
-from fastapi import FastAPI, Request, BackgroundTasks
+import os, hmac, hashlib, time, asyncio, httpx
+from urllib.parse import parse_qs
+from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from google.adk.runners import InMemoryRunner
 from google.adk.agents import Agent
 from google.genai import types as gtypes
 
 app = FastAPI()
+SIGNING_SECRET = os.environ["SLACK_SIGNING_SECRET"]
 
 agent = Agent(model="gemini-2.5-flash", name="slackbot",
                instruction="Answer concisely in <=200 words.")
 runner = InMemoryRunner(agent=agent, app_name="slackbot")
 
+def verify_slack_signature(headers, body: bytes, signing_secret: str) -> bool:
+    """HMAC-SHA256 verification per Slack v0 signing spec. Must run on RAW bytes
+    BEFORE any parser (req.form() / req.json()) consumes the body."""
+    ts = headers.get("x-slack-request-timestamp", "0")
+    if abs(time.time() - int(ts)) > 60 * 5:
+        return False  # replay protection: reject anything older than 5 min
+    sig_basestring = f"v0:{ts}:{body.decode('utf-8')}".encode()
+    expected = "v0=" + hmac.new(
+        signing_secret.encode(), sig_basestring, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, headers.get("x-slack-signature", ""))
+
 async def _do_work(response_url: str, user_id: str, text: str):
+    session_id = f"slack:{user_id}"  # see section 6 for thread-aware variant
     session = await runner.session_service.create_session(
-        app_name="slackbot", user_id=user_id)
+        app_name="slackbot", user_id=user_id, session_id=session_id)
     final = ""
     async for ev in runner.run_async(
         user_id=user_id, session_id=session.id,
@@ -141,16 +156,24 @@ async def _do_work(response_url: str, user_id: str, text: str):
 
 @app.post("/slack/commands")
 async def slash(req: Request, bg: BackgroundTasks):
-    form = await req.form()
+    # 1) Read RAW body first — HMAC must be computed over the exact bytes
+    #    Slack sent. Calling req.form() before this would consume the stream.
+    raw = await req.body()
+    if not verify_slack_signature(req.headers, raw, SIGNING_SECRET):
+        raise HTTPException(status_code=401, detail="invalid signature")
+    # 2) Parse the form payload from the raw bytes.
+    form = {k: v[0] for k, v in parse_qs(raw.decode()).items()}
     text = form.get("text", "")
     user = form.get("user_id", "")
     response_url = form.get("response_url")
     bg.add_task(_do_work, response_url, user, text)
-    # Ack immediately — Slack shows this ephemeral "thinking" message
+    # 3) Ack immediately — Slack shows this ephemeral "thinking" message
     return {"response_type": "ephemeral", "text": "thinking..."}
 ```
 
 Two phases: **ack fast**, then **deliver on `response_url`** when ready. Slack will swap the "thinking" message for your final answer.
+
+> **Recommended modern alternative.** In production, prefer [`slack-bolt`](https://slack.dev/bolt-python/)'s `SlackRequestHandler` — it validates the signing secret automatically and handles the raw-body-vs-parsed-body footgun for you. The hand-rolled HMAC above is shown so you can see what `slack-bolt` is doing under the hood.
 
 For Events API (no `response_url`), use `chat.postMessage` from the same background task, targeting the event's `channel` and the original message's `thread_ts`.
 
@@ -175,6 +198,8 @@ await client.chat_postMessage(
 Rule: pass the *outer* thread's `ts` as `thread_ts`. If the user posted top-level, use `event["ts"]`; if they posted inside a thread, use `event["thread_ts"]`. Mixing this up scatters replies across the channel.
 
 Map Slack threads to ADK session IDs: `session_id = f"{channel}:{thread_ts}"`. Now a thread is a session — context persists, users can "continue the conversation" naturally.
+
+> The `_do_work` example in section 5 used `session_id = f"slack:{user_id}"` — that's the **minimum-viable** flavor: one rolling session per user, no thread awareness. For production, swap in `session_id = f"{channel}:{thread_ts}"` and pass `channel` / `thread_ts` from the inbound payload into the background task so each Slack thread maps to its own ADK session.
 
 ---
 

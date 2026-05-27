@@ -26,11 +26,10 @@ You are here: 🗺 Detours ▸ FastAPI for ADK
   └── /adk           ──► adk.get_fast_api_app()  ◄── owns (from api_server.py):
                                           /health, /version, /list-apps
                                           /apps/{app}/app-info
-                                          /apps/{app}/users/{u}/sessions (GET/POST/PATCH)
-                                          /apps/{app}/users/{u}/sessions/{s} (GET/DELETE/PATCH)
-                                          /apps/{app}/users/{u}/sessions/{s}/events/{e} (GET)
+                                          /apps/{app}/users/{u}/sessions (GET/POST)
+                                          /apps/{app}/users/{u}/sessions/{s} (GET/POST/DELETE/PATCH)
                                           /apps/{app}/users/{u}/sessions/{s}/artifacts/... (GET/DELETE)
-                                          /apps/{app}/users/{u}/memory (GET/PATCH)
+                                          /apps/{app}/users/{u}/memory (PATCH)
                                           /run, /run_sse (POST), /run_live (WebSocket)
                                           /dev-ui, /dev-ui/config (when web=True)
 ```
@@ -55,7 +54,7 @@ from google.adk.cli.fast_api import get_fast_api_app
 # ADK's FastAPI app — knows your agents in ./agents/
 adk_app = get_fast_api_app(
     agents_dir="./agents",
-    session_service_uri="sqlite:///./sessions.db",  # or "agentengine://...", "postgres://..."
+    session_service_uri="sqlite:///./sessions.db",  # or "agentengine://...", "postgresql://..."
     web=False,                                       # set True to expose adk web UI
 )
 
@@ -196,25 +195,29 @@ Now your OpenAPI schema is clean (auto-generated `/docs`), clients aren't couple
 
 ## 🌐 6. Dependency injection for session services
 
-ADK exposes the session service it built internally, but if you also use it in your own handlers, DI gives you one source of truth:
+`get_fast_api_app()`'s public surface only takes `session_service_uri: str | None` — there is **no** `session_service=` kwarg for handing it a pre-built instance (verify in `google/adk/cli/fast_api.py:377-404`). So "share the same instance between ADK and my handlers" isn't achievable via the public API; what you can do is **share the same URI** so both sides talk to the same store:
 
 ```python
 # deps.py
 from functools import lru_cache
 from google.adk.sessions import DatabaseSessionService
 
+SESSION_URI = "sqlite:///./sessions.db"
+
 @lru_cache(maxsize=1)
 def get_session_service() -> DatabaseSessionService:
-    return DatabaseSessionService(db_url="sqlite:///./sessions.db")
+    return DatabaseSessionService(db_url=SESSION_URI)
 
 # main.py
 from fastapi import Depends
-from deps import get_session_service
+from deps import SESSION_URI, get_session_service
 
-# Pass the SAME instance into the ADK app
+# ADK builds its own service from the URI; your handlers build another with the
+# same URI. Two instances, same backing DB — consistent reads/writes.
 adk_app = get_fast_api_app(
     agents_dir="./agents",
-    session_service=get_session_service(),  # not the URI form — the instance
+    session_service_uri=SESSION_URI,
+    web=False,
 )
 
 # And use it in your own routes
@@ -223,7 +226,9 @@ async def my_list(user_id: str, svc = Depends(get_session_service)):
     return await svc.list_sessions(app_name="hello_agent", user_id=user_id)
 ```
 
-One process, one connection pool, one session store. The alternative — letting ADK and your handlers each construct their own — leads to schema mismatches and double-locked SQLite files.
+One DB, two clients, one source of truth. (If you really need a *single shared instance* — e.g., to share an in-memory cache between the two — you'd have to go under the public surface, e.g., via a custom `BaseAgentLoader` / service registry. That's out of scope for this detour.)
+
+The pattern to avoid is letting ADK and your handlers each point at *different* URIs — that produces schema mismatches and, with SQLite, double-locked DB files.
 
 ---
 

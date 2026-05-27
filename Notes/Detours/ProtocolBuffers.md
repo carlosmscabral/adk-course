@@ -68,13 +68,15 @@ b'\x08\x01\x12\x07laundry"\x04home"\x05chore'
 
 ## The wire format (just enough to read it)
 
-Each field is **tag, wire-type, value**. Tag and wire-type are packed into a single varint. Wire-types:
+Each field is **tag, wire-type, value**. Tag and wire-type are packed into a single varint. The 6 wire types (3 and 4 are proto2-only legacy):
 
 | Wire type | What |
 |-----------|------|
 | 0 | varint (int32, bool, enum) |
 | 1 | 64-bit (double, fixed64) |
 | 2 | length-delimited (string, bytes, embedded message, repeated) |
+| 3 | start-group (proto2 legacy — never emitted by proto3) |
+| 4 | end-group (proto2 legacy — never emitted by proto3) |
 | 5 | 32-bit (float, fixed32) |
 
 Look at the bytes above:
@@ -95,7 +97,7 @@ A **varint** encodes an integer using as few bytes as needed. Each byte has 7 bi
 300 = 1010 1100 0000 0010            (2 bytes; little-endian groups of 7)
 ```
 
-Field tags are also varints. Tags 1-15 fit in a single byte (you get 4 bits of tag + 3 bits of wire-type + 1 continuation bit). Tags 16+ take 2 bytes. **So put hot fields in tags 1-15.** This is a Google internal style rule.
+Field tags are also varints. A single-byte varint has 7 value bits + 1 continuation bit; of the 7 value bits, the low 3 are the wire type, leaving 4 bits for the field number — so tags 1–15 fit in one byte (`15<<3 = 0x78`); tag 16 needs two (`16<<3 = 0x80 0x01`). **So put hot fields in tags 1-15.** This is a Google internal style rule.
 
 ## Schema evolution — the two iron rules
 
@@ -162,6 +164,6 @@ Now try printing the raw bytes and pick out the tags/lengths by hand. The exerci
 
 - The events streaming out of `runner.run_live(...)` are deserialized protobuf messages from the Live API. The Python `Event` you handle is the typed shape of that wire data.
 - `event.content.parts[0].inline_data.data` for audio is a `bytes` field that came over as a length-delimited protobuf field — same wire shape as the `"laundry"` example above, just bigger.
-- When you see `event.model_dump_json(...)` in `bidi-demo`, that's the Python SDK converting the protobuf object to JSON for the WebSocket — leaving the protobuf-on-gRPC world for the JSON-on-WebSocket world at the boundary.
+- When you see `event.model_dump_json(...)` in `bidi-demo`, that call re-serializes the SDK's typed event (whose shape comes from the protobuf service definition) to JSON for the browser WebSocket — same wire format the SDK already uses to talk to Vertex Live (see `google/genai/live.py:997` for the SDK side and the bidi-demo source for the browser side).
 
 [← Back: 18_StreamingLive](../18_StreamingLive/00_Overview.md) · [Back: [[gRPC]]]  [↑ Map](../MAP.md)

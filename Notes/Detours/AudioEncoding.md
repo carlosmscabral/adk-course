@@ -69,7 +69,7 @@ Live doesn't take μ-law. If your input is from a phone gateway (Twilio etc.), y
 ## Opus / MP3 (lossy, for storage and broadcast)
 
 - **Opus**: state of the art for voice and music; ~16-32 kbps for voice. Used by Discord, WebRTC, every modern voice app.
-- **MP3**: ancient, lossy, music-oriented. ~64-128 kbps. Pre-roll silence on every frame boundary (Achilles heel for low-latency).
+- **MP3**: ancient, lossy, music-oriented. ~64-128 kbps. Encoder priming silence at the start of the stream (~1152 samples) plus a bit-reservoir scheme that makes byte-aligned chunking lossy — both bad for low-latency streaming.
 
 Both involve encode/decode steps. **Live wants raw PCM specifically because the server doesn't have to decode** — every millisecond of decode is a millisecond of latency in a voice-driven UX.
 

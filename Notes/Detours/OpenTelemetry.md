@@ -127,12 +127,15 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 provider = TracerProvider()
 provider.add_span_processor(
-    BatchSpanProcessor(OTLPSpanExporter(endpoint="localhost:4317"))
+    BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:4317"))
+    # or: OTLPSpanExporter(endpoint="localhost:4317", insecure=True)
 )
 trace.set_tracer_provider(provider)
 ```
 
 Run an agent → spans flow to your Collector (port 4317 is OTLP/gRPC's default). On GCP, the `CloudTraceSpanExporter` skips the Collector and posts directly to Cloud Trace. Module `15_Observability` walks the full setup including metrics.
+
+> ⚠️ **Gotcha.** Without the `http://` scheme (or `insecure=True`), the exporter assumes TLS and your local collector connection will fail with an SSL handshake error — a common first-run trap.
 
 > 📦 **Install note.** `opentelemetry-sdk` ships only the SDK plus the console exporter. The OTLP exporter (`opentelemetry.exporter.otlp.proto.grpc.trace_exporter` above) lives in a **separate** package: `pip install opentelemetry-exporter-otlp` (which pulls in both the gRPC and HTTP variants), or `opentelemetry-exporter-otlp-proto-grpc` / `opentelemetry-exporter-otlp-proto-http` for just one transport. Cloud Trace, Jaeger, Zipkin exporters are all separate packages too. Stack-trace `ModuleNotFoundError: No module named 'opentelemetry.exporter.otlp'` always means "you didn't install the exporter package."
 
@@ -186,7 +189,7 @@ Run it, look at the JSON. Verify:
 2. `parent`'s `parent_id` is `null`; the children's points at `parent`'s span_id.
 3. `child-b` has an `events` array with one `midway` entry.
 
-Now swap `ConsoleSpanExporter` for `OTLPSpanExporter(endpoint="localhost:4317")`, run `docker run -p 4317:4317 -p 16686:16686 jaegertracing/all-in-one`, open `http://localhost:16686`, and find your trace.
+Now swap `ConsoleSpanExporter` for `OTLPSpanExporter(endpoint="http://localhost:4317")` (or `OTLPSpanExporter(endpoint="localhost:4317", insecure=True)`), run `docker run -p 4317:4317 -p 16686:16686 jaegertracing/all-in-one`, open `http://localhost:16686`, and find your trace.
 
 ---
 

@@ -66,7 +66,7 @@ Gemini Live Search rephrases the user's question, runs it on Google, ingests top
 
 **Strengths:** zero infra, current to today, broad. **Weaknesses:** can't restrict to trusted sources, results vary by region, no offline/airgap, no ACL — anything indexed by Google is in scope. **Cost model:** per-grounded-call surcharge on top of model tokens.
 
-**Constraint:** on **Gemini 1.x** models, `google_search` cannot be combined with other tools on the same agent — the tool raises `ValueError('Google search tool cannot be used with other tools in Gemini 1.x.')`. On **Gemini 2.x** the restriction is lifted; `google_search` composes freely with other tools. If you need to bypass the historical check (e.g. on a custom model id that's misclassified), pass `GoogleSearchTool(bypass_multi_tools_limit=True)` instead of the module-level `google_search` singleton. Source: `adk-python/src/google/adk/tools/google_search_tool.py:74-78` (the 1.x raise) and `:42` (the `bypass_multi_tools_limit` flag). Workaround on 1.x: route via a parent agent that delegates to a "search" sub-agent vs a "tool-using" sub-agent.
+**Constraint:** on **Gemini 1.x** models, `google_search` cannot be combined with other tools on the same agent — the tool raises `ValueError('Google search tool cannot be used with other tools in Gemini 1.x.')`. On **Gemini 2.x**, ADK no longer raises the in-process error, but the Gemini API itself still rejects mixing built-in search with function-calling tools in a single call — set `bypass_multi_tools_limit=True` so ADK wraps the search in a sub-agent under the hood. `bypass_multi_tools_limit=True` doesn't lift the in-tool `ValueError` on Gemini 1.x — that check is unconditional. Instead, ADK's agent layer detects the flag (`llm_agent.py:149-155`) and wraps the search tool in a dedicated search sub-agent (`GoogleSearchAgentTool`) via `create_google_search_agent(model)` so it can coexist with function-calling tools. Works on both 1.x and 2.x — the Gemini API still won't accept built-in search alongside function-calling tools in a single call, so ADK delegates the search to a child agent. Source: `adk-python/src/google/adk/tools/google_search_tool.py:74-78` (the 1.x raise) and `:42` (the `bypass_multi_tools_limit` flag).
 
 ---
 
@@ -171,7 +171,7 @@ For high-stakes use cases (legal, medical), Enterprise Search wins on auditabili
 
 ```
   Q: Is the source the public web?
-     yes ──► google_search        (on Gemini 1.x: cannot combine with other tools; on 2.x: composes freely)
+     yes ──► google_search        (on Gemini 1.x: cannot combine with other tools; on 2.x: ADK no longer raises, but the Gemini API still rejects mixing built-in search with function-calling tools in a single call — set `bypass_multi_tools_limit=True` so ADK wraps the search in a sub-agent under the hood)
      no  ──► continue
 
   Q: Are docs in GCS / BigQuery / Drive / SharePoint, with standard ACLs?

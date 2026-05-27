@@ -114,10 +114,12 @@ That's the whole protocol from your code's POV: send and receive.
 
 Modify the echo server above to:
 1. Send a ping every 5 s and log when it gets the pong.
-2. On a `WebSocketDisconnect` with code 1006, log a warning (the others log info).
+2. On a `websockets.ConnectionClosedError` with code 1006, log a warning (the others log info).
 3. Run the client in another terminal, then kill it with Ctrl-C and watch the server output.
 
 Bonus: have the client send a 100 KB binary payload (`b'\x00' * 100000`) and confirm the server receives it intact.
+
+> 📌 **Namespace note.** If you're inside FastAPI/Starlette routes (e.g., `bidi-demo`), the equivalent is `starlette.websockets.WebSocketDisconnect` — they wrap the same protocol close but live in different namespaces.
 
 ## Back to module 18
 

@@ -53,7 +53,7 @@ Google Chat Apps are **GCP-project-scoped**, configured at https://console.cloud
     ( ) Apps Script
     ( ) Cloud Functions
     (x) HTTP endpoint URL:  https://my-agent.example.com/chat
-        Authentication audience: PROJECT_ID  (or "HTTPS endpoint URL")
+        Authentication audience: Project **Number** (or your HTTPS endpoint URL — JWT mode vs OIDC mode)
 
   Slash commands:
     /research       command_id: 1   description: Research a topic
@@ -65,7 +65,7 @@ Google Chat Apps are **GCP-project-scoped**, configured at https://console.cloud
     ( ) Everyone   <-- only for marketplace apps
 ```
 
-The key field is **Authentication audience**: when set, Google signs the inbound request with an ID token whose `aud` claim is your project ID. Your endpoint should verify this token — proves the request really came from Google Chat. (Slack's HMAC analogue.)
+The key field is **Authentication audience**: when set, Google signs the inbound request with a bearer token whose `aud` claim is either your **project number** (JWT mode) or your HTTPS endpoint URL (OIDC mode). Your endpoint should verify this token — proves the request really came from Google Chat. (Slack's HMAC analogue.) Using the wrong value (e.g., project ID instead of project number) silently fails verification.
 
 ---
 
@@ -176,23 +176,39 @@ Three layers gate access:
 2. **Workspace admin policy**: admins can block third-party apps wholesale, regardless of your visibility setting.
 3. **Inbound auth**: the audience JWT proves the request is from Google Chat — verify it before acting. Endpoint impersonation is the standard attack vector.
 
+Two verification paths depending on the audience mode you picked in app settings:
+
 ```python
-# Inbound JWT verification (snippet)
+# JWT mode — audience = your project NUMBER (e.g., "1234567890")
+# Token is a self-signed JWT from chat@system.gserviceaccount.com.
+from google.auth import jwt
 from google.auth.transport import requests as g_requests
 from google.oauth2 import id_token
 
-def verify_chat_request(authz_header: str, expected_audience: str):
+def verify_chat_request_jwt(authz_header: str, project_number: str):
     token = authz_header.removeprefix("Bearer ").strip()
     claims = id_token.verify_token(
         token, g_requests.Request(),
-        audience=expected_audience,
+        audience=project_number,  # NOT project ID — the numeric project number
         certs_url="https://www.googleapis.com/service_accounts/v1/metadata/x509/chat@system.gserviceaccount.com",
     )
     assert claims["iss"] == "chat@system.gserviceaccount.com"
     return claims
+
+# OIDC mode — audience = your HTTPS endpoint URL
+# Token is a Google-signed OIDC ID token; verify against Google's standard certs.
+def verify_chat_request_oidc(authz_header: str, endpoint_url: str):
+    token = authz_header.removeprefix("Bearer ").strip()
+    claims = id_token.verify_oauth2_token(
+        token, g_requests.Request(), audience=endpoint_url,
+    )
+    # In OIDC mode the issuer is Google; identity comes from the email claim.
+    assert claims["iss"] in ("https://accounts.google.com", "accounts.google.com")
+    assert claims["email"] == "chat@system.gserviceaccount.com"
+    return claims
 ```
 
-`expected_audience` matches the value you configured in the app settings (your project ID or your endpoint URL).
+`expected_audience` matches the value you configured in the app settings — your project **number** (JWT mode) or your endpoint URL (OIDC mode). See [Verify requests from Chat](https://developers.google.com/workspace/chat/verify-requests-from-chat) for the full spec.
 
 > **🪧 Official issuer for service-account-authenticated Chat events**
 >
@@ -250,7 +266,7 @@ chat_svc.spaces().messages().create(
 ).execute()
 ```
 
-Your service account needs the **`chat.bot`** scope (set automatically when the app is configured with HTTP endpoint connection). The `messageReplyOption` flag controls behavior when the thread no longer exists.
+Your service account needs the **`chat.bot`** scope. The Chat app's runtime identity gets the role implicitly when configured with HTTP-endpoint connection, but when you construct credentials in your own code (ADC + an SA), you must request the `https://www.googleapis.com/auth/chat.bot` scope **explicitly** — e.g., `google.auth.default(scopes=["https://www.googleapis.com/auth/chat.bot"])`. The `messageReplyOption` flag controls behavior when the thread no longer exists.
 
 ---
 

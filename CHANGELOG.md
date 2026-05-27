@@ -4,6 +4,63 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.8] - 2026-05-27
+
+Dogfood Wave 6 — the deferred `Notes/Detours/` surface: 27 detours (~5K lines) across Python, ADK-deep, ADK-adjacent, cloud-platform, and protocol/transport sidebars. Five parallel read-only verification agents surfaced 16 🔴 + 25 🟡 against `adk-python`, `google/genai`, `fastmcp`, `gcloud`, and the official Slack/Google Chat docs. 12 of 27 detours verified entirely clean (notably all 9 Python detours, GeminiPayload, AudioQuantization, PromptInjection). Five parallel fix agents then corrected 15 files.
+
+### Fixed
+
+**Transport reframing — `gRPC.md` + `ProtocolBuffers.md` (Fix-F, 2 files / 7 fixes)**
+- Vertex Live is **gRPC-DEFINED but WebSocket-TRANSPORTED**. Both detours framed Live as raw gRPC; verified against `google/genai/live.py:48` (`from websockets.asyncio.client import connect`), `:997` (`json.dumps(request_dict)`), `:1002,1038` (URI = `/ws/google.cloud.aiplatform.{ver}.LlmBidiService/BidiGenerateContent`). Added new "What Vertex actually uses on the wire" section to `gRPC.md` clarifying the service is defined in protobuf/gRPC-style but the SDK speaks WebSocket+JSON to it.
+- `gRPC.md` ASCII diagram: `:path = .../BidiGenerate` → `BidiGenerateContent`; added annotation that the path describes the gRPC service shape, wire is WebSocket at `/ws/<that-path>`.
+- `runner.run_live(...)` framing: was "gRPC stream", now "WebSocket stream (gRPC-defined service, WebSocket transport)".
+- Resumption note: TCP/HTTP-2 → TCP/WebSocket; "the whole RPC" → "the whole session".
+- `ProtocolBuffers.md`: wire-type table was incomplete (claimed 4, listed only 4) — protobuf has **6** wire types (0 VARINT, 1 FIXED64, 2 LENGTH_DELIMITED, 3 START_GROUP proto2-only, 4 END_GROUP proto2-only, 5 FIXED32). Added rows for 3+4 with proto2-only annotation; verified against `google.protobuf.internal.wire_format` constants.
+- Varint tag explainer sharpened: was "4 bits of tag + 3 bits of wire-type + 1 continuation bit" (wrong shape — varints don't pack like that); now "7 value bits + 1 continuation bit per byte; low 3 bits of the value are wire type, leaving 4 bits for field number in the first byte" with worked examples (`15<<3 = 0x78`, `16<<3 = 0x80 0x01`).
+- `ProtocolBuffers.md` bidi-demo bullet: reframed away from "leaving the protobuf-on-gRPC world for JSON-on-WebSocket" — the browser WebSocket uses the same JSON wire format the SDK itself uses to talk to Vertex Live.
+
+**VisualBuilder.md — substantive rewrite (Fix-G, 1 file / full rewrite)**
+- Page conflated two unrelated ADK 2.0 features. Builder produces **YAML AgentConfig** files (`root_agent.yaml`, `sub_agent_*.yaml`) per `fast_api.py:109` (`_ALLOWED_EXTENSIONS = frozenset({".yaml", ".yml"})`), `:352` (default save path `root_agent.yaml`), and `api_server.py:658-661` ("All YAML agents are treated as visual builder agents"). It is NOT a visual frontend over `google.adk.workflow.Workflow` Python.
+- Rewrote sections 1, 4, 5 around the YAML/AgentConfig truth; replaced the bogus `Workflow(...)` Python round-trip example with a real AgentConfig YAML matching `contributing/samples/multi_agent/sub_agents_config/root_agent.yaml`; cross-linked to `[[2A_AgentConfig]]`.
+- Section 2 table: rewrote rows around agent hierarchies / orchestrator agents; `Workflow` explicitly called out as no-UI (the graph-workflow engine has no visual equivalent).
+- Section 3: trigger is now "click the **+** icon in the top-left" (not a phantom Builder tab/route); `agents_dir` shown as positional argument; added `⚠️` about silent `python-multipart` soft-fail (`fast_api.py:78-85`).
+- Surfaced `_BLOCKED_YAML_KEYS = frozenset({"args"})` at `fast_api.py:111` as a code-execution guard worth knowing when hand-editing YAML round-trip.
+- Section 5 "Have the student try": replaced `Workflow` + conditional-edge exercise with 3-agent root/researcher/summarizer YAML authoring.
+
+**ADK-deep detours (Fix-H, 4 files / 11 fixes)**
+- `FastMCP.md`: `Context` has no `request_headers` attribute — replaced with `get_http_headers()` from `fastmcp.server.dependencies`. `mount("/weather", weather)` is wrong — real signature is `mount(weather, namespace="weather")` and namespaces tool NAMES, not URL paths. Switched `transport="streamable-http"` → `"http"` (current FastMCP 2.x alias; old name still works). Stripped parens from `@mcp.tool()` / `@mcp.prompt()` across all sites (no-parens is the modern form). `datetime.utcnow()` → `datetime.now(timezone.utc)` (utcnow deprecated in 3.12).
+- `FastAPI_for_ADK.md`: removed bogus `session_service=` kwarg from `get_fast_api_app()` (real signature only takes `session_service_uri: str | None` per `fast_api.py:377-404`); rewrote section 6 around URI-sharing pattern. Route table: dropped dev-only `/events/{e}` row (it's in `dev_server.py:1145-1149`, not `api_server.py`); memory PATCH-only; PATCH on per-session path (`api_server.py:1137`), not on collection. `postgres://` → `postgresql://` (SQLAlchemy strict).
+- `AgentEngine.md`: `rewind_async()` signature was wrong — real is `(*, user_id: str, session_id: str, rewind_before_invocation_id: str, run_config: Optional[RunConfig] = None)` per `runners.py:1114-1121`. Added 3-paths callout for `AdkApp` import location.
+- `a2UI.md`: agent-discovery sentence tightened — `agents_dir` is positional (`cli_tools_click.py:1745-1751`), discovery requires a valid agent package shape.
+
+**Cloud-platform detours (Fix-I, 4 files / 15 fixes)**
+- `Cloud_Run.md`: **`--cpu-always-allocated` does not exist** as a `gcloud run deploy` flag — real flag is `--no-cpu-throttling`. Fixed 3 sites; clarified `--cpu-boost` is cold-start-only. Removed bogus `--agent_engine_app=agent_engine_app.py` flag from `adk deploy cloud_run` example (no such flag per `cli_tools_click.py:2082-2147`); replaced with the `--` separator pattern for forwarding gcloud args. Softened 15-min idle-shutdown to "rough rule of thumb; not a published SLO"; added cost-hedge clause; flagged post-2024 default-SA restriction; paired `--ingress=internal-and-cloud-load-balancing` with `--no-allow-unauthenticated`.
+- `GoogleChat_Apps.md` (security-critical): audience claim was wrong — JWT mode uses project **NUMBER** (not project ID); OIDC mode uses endpoint URL. Fixed in config block, section 6 prose, and verification snippet. Split verification into two distinct code paths: `verify_chat_request_jwt` (`id_token.verify_token`, `iss == chat@system.gserviceaccount.com`, audience = project number) vs `verify_chat_request_oidc` (`verify_oauth2_token`, `email == chat@...`, `iss == accounts.google.com`, audience = endpoint URL). Clarified `chat.bot` scope must be requested explicitly via `google.auth.default(scopes=[...])`.
+- `Slack_Bots.md` (security-critical): `response_url` was framed as "one-time URL that lets you respond multiple times" — reality per Slack docs is "up to 5 responses within 30 minutes". Added `verify_slack_signature` HMAC-SHA256 helper with 5-min replay protection; refactored handler to read `await req.body()` raw bytes BEFORE `parse_qs` (avoids the `req.form()` body-consumption footgun that prevents post-hoc signature verification). Added `slack-bolt` `SlackRequestHandler` as production-cleaner alternative. Session-id consistency: `session_id = f"slack:{user_id}"` (min-viable) with thread-aware production pattern `f"{channel}:{thread_ts}"` cross-linked.
+- `SignedUrls_GCS.md`: section 5(B) was broken — used `credentials.service_account_email` (only exists on `compute_engine.Credentials`, raises `AttributeError` on user ADC) and never passed `credentials=` into `generate_signed_url`. Rewrote around `google.auth.iam.Signer` with explicit signer email + `IAMCredentialsClient.sign_blob` comparison table. Revocation note expanded: removing `roles/iam.serviceAccountTokenCreator` self-binding invalidates future `signBlob` requests (already-issued URLs still honor TTL).
+
+**Misc small detour fixes (Fix-J, 4 files / 5 fixes)**
+- `Grounding.md`: `bypass_multi_tools_limit=True` does NOT lift the 1.x ValueError (that's unconditional in `google_search_tool.py:74-78`); the flag is consumed at `llm_agent.py:149-155` and triggers `GoogleSearchAgentTool` wrapping (the search runs in a sub-agent). Reframed the bullet; softened the 2.x flowchart's "composes freely" overstatement (Gemini API still rejects mixing without the wrap).
+- `OpenTelemetry.md`: `OTLPSpanExporter(endpoint="localhost:4317")` silently fails — `insecure = parsed_url.scheme == "http"` per `exporter.py:317`, so without `http://` scheme it defaults to TLS against a plain-text collector. Fixed both occurrences with `endpoint="http://localhost:4317"` (or `insecure=True`); added gotcha callout.
+- `WebSockets.md`: `WebSocketDisconnect` is Starlette/FastAPI; pure `websockets` library raises `websockets.ConnectionClosedError`. Replaced with the correct exception + a namespace callout noting Starlette's equivalent.
+- `AudioEncoding.md`: MP3 priming framing was wrong — claimed pre-roll silence at every frame boundary. Reality is encoder priming happens at the **start of the stream** (~1152 samples) plus the bit-reservoir scheme contributes to seek latency, not per-frame artifacts.
+
+### Method
+- Five parallel read-only verification agents (Wave 6 dogfood, ~5K detour lines) → five parallel fix agents (Wave 6 fix), all with non-overlapping scopes.
+- Source-of-truth verification spanned `adk-python` source, `google/genai/live.py`, `gcloud run deploy --help`, `google.protobuf.internal.wire_format`, the official Slack `response_url` docs, the official Google Chat `verify-requests` docs, and FastMCP 2.x public docs.
+- One brief premise (transport in gRPC.md/ProtocolBuffers.md framed Vertex Live as raw gRPC) was caught as wrong during verification; reframing bundled into Fix-F.
+
+### Why
+- User: "let's continue our strategy!" Wave 6 closed the deferred Detours surface — the last large unreviewed area after Wave 5 covered the main-module pages. Errors found were severe enough — silently-failing OTLP TLS, security-critical Google Chat audience inversion, Slack `response_url` semantics, broken `signBlob` ADC path, `--cpu-always-allocated` flag that doesn't exist — that landing this before any new authoring is necessary.
+- 12 of 27 detours verified entirely clean is a strong signal that prior waves of careful authoring held up; the failures clustered in the cloud-platform area where docs evolve fastest.
+
+### Deferred
+- Module-1A `04_WiringResumability.md` + 2 `AGENTS.md` references still use the `_configs` import path for `ResumabilityConfig` (carried over from v0.3.7 deferred); bundle into next wave.
+- Wave 4 🟡 polish items still open.
+- `Reference/CheatSheets/` and the four milestone drills (M1-M4) have not been dogfood-verified at all yet — natural next target.
+
+---
+
 ## [0.3.7] - 2026-05-27
 
 Dogfood Wave 5 — the largest uncovered surface yet: 145 pages across 11 modules (11 Memory, 12 CodeExec, 13 Plugins, 14 Eval, 16 ProdSec, 17 AdvModels, 18 Live, 23 Frontend, side modules 1A/2A/3A/4B/04A). Six parallel read-only verification agents surfaced 13 🔴 + ~32 🟡 against ground-truth `adk-python` source. Five parallel fix agents then corrected 48 files across all 11 modules.

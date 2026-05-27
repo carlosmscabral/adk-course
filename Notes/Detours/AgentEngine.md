@@ -81,6 +81,8 @@ app = agent_engines.AdkApp(agent=root_agent)
 
 `AdkApp` is the Vertex adapter — it knows how to translate Agent Engine's HTTP surface into ADK `Runner` calls. Most teams keep `agent_engine_app.py` thin and put real agent definition in `agent.py`, importing it here.
 
+> Three import paths float around: `from vertexai.agent_engines.templates.adk import AdkApp` (e.g., RAG sample), `from vertexai.preview.reasoning_engines import AdkApp` (llm-auditor, customer-service, academic-research), and `vertexai.agent_engines.AdkApp` (used here). All resolve to the same class.
+
 For collaborative or sub-agent setups, you still only register the **root**; sub-agents come along for the ride.
 
 ---
@@ -196,7 +198,17 @@ Rule of thumb: **prototype on Agent Engine** to get the agent + sessions + traci
 
 > **🚀 In Production**
 >
-> Agent Engine handles session and memory persistence, but you still pay the egress / token cost on every redeploy if you don't checkpoint. To roll back a session that hit a bad invocation, use `runner.rewind_async(session=..., rewind_before_invocation_id=...)` (`runners.py:1114`) — it appends a rewind Event with the inverse state-delta, so the session reads as if the bad invocation never happened. Keeps users moving while you debug the new revision.
+> Agent Engine handles session and memory persistence, but you still pay the egress / token cost on every redeploy if you don't checkpoint. To roll back a session that hit a bad invocation, use `runner.rewind_async` (`runners.py:1114-1121`) — it appends a rewind Event with the inverse state-delta, so the session reads as if the bad invocation never happened. The real signature takes `user_id` + `session_id`, not a session object:
+>
+> ```python
+> await runner.rewind_async(
+>     user_id=...,
+>     session_id=...,
+>     rewind_before_invocation_id=...,
+> )
+> ```
+>
+> Keeps users moving while you debug the new revision.
 
 ---
 

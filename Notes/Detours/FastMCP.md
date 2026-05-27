@@ -34,17 +34,17 @@ The raw `mcp` Python SDK gives you handler classes, manual schema dicts, and exp
 
 ```python
 # weather_server.py
-from datetime import datetime
+from datetime import datetime, timezone
 from fastmcp import FastMCP
 
 mcp = FastMCP("weather-server")
 
-@mcp.tool()
+@mcp.tool
 def now() -> str:
     """Return the current UTC time in ISO format."""
-    return datetime.utcnow().isoformat()
+    return datetime.now(timezone.utc).isoformat()
 
-@mcp.tool()
+@mcp.tool
 def get_weather(city: str) -> dict:
     """Look up the current weather for a city."""
     return {"city": city, "temp_c": 22, "condition": "sunny"}
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     mcp.run()    # stdio by default
 ```
 
-`@mcp.tool()` introspects the function — type hints become the JSON schema, the docstring becomes the description. Same contract as ADK's `FunctionTool`, which is not a coincidence (both target LLM consumers).
+`@mcp.tool` introspects the function — type hints become the JSON schema, the docstring becomes the description. Same contract as ADK's `FunctionTool`, which is not a coincidence (both target LLM consumers).
 
 ---
 
@@ -63,9 +63,9 @@ MCP isn't just tools. The protocol defines three resource types and FastMCP expo
 
 | primitive   | decorator          | what it is                                  | LLM sees it as       |
 |-------------|--------------------|---------------------------------------------|----------------------|
-| **Tool**    | `@mcp.tool()`      | callable side-effecting function            | a tool to invoke     |
-| **Resource**| `@mcp.resource()`  | addressable read-only data (by URI)         | context to fetch     |
-| **Prompt**  | `@mcp.prompt()`    | parameterized prompt template               | a starter message    |
+| **Tool**    | `@mcp.tool`        | callable side-effecting function            | a tool to invoke     |
+| **Resource**| `@mcp.resource`    | addressable read-only data (by URI)         | context to fetch     |
+| **Prompt**  | `@mcp.prompt`      | parameterized prompt template               | a starter message    |
 
 ```python
 @mcp.resource("config://app")
@@ -73,7 +73,7 @@ def app_config() -> str:
     """Static config the client can read on connect."""
     return open("config.yaml").read()
 
-@mcp.prompt()
+@mcp.prompt
 def code_review(language: str, code: str) -> str:
     """Ask the model to review code in `language`."""
     return f"Review this {language} code:\n\n{code}"
@@ -88,13 +88,15 @@ Most ADK use cases want tools. Resources are useful when the client wants to *pr
 ```python
 mcp.run()                                  # stdio (default; subprocess piping)
 mcp.run(transport="sse", port=8000)        # legacy HTTP server-sent events
-mcp.run(transport="streamable-http", port=8000)   # newer HTTP streaming
+mcp.run(transport="http", port=8000)       # Streamable HTTP — newer HTTP streaming
 ```
+
+(FastMCP 2.x renamed this to `transport="http"`; the old alias `"streamable-http"` is still accepted.)
 
 Rule of thumb:
 
 - **stdio** → local servers spawned per-process. Lowest overhead, no auth needed (the parent owns the subprocess).
-- **streamable-http** → remote servers, multiple clients, behind a load balancer. The 2026 recommended HTTP transport.
+- **http** → remote servers, multiple clients, behind a load balancer. The 2026 recommended HTTP transport (this is Streamable HTTP).
 - **sse** → older HTTP option; only use if you must interop with pre-2025 clients.
 
 ADK points at each one differently — `McpToolset` accepts a stdio command list or a URL.
@@ -103,28 +105,29 @@ ADK points at each one differently — `McpToolset` accepts a stdio command list
 
 ## 📡 5. Auth and composition
 
-**Per-request auth via headers** — read them off the request context:
+**Per-request auth via headers** — pull them from the active HTTP request via the dependency helper:
 
 ```python
-from fastmcp import FastMCP, Context
+from fastmcp import FastMCP
+from fastmcp.server.dependencies import get_http_headers
 
 mcp = FastMCP("secure-server")
 
-@mcp.tool()
-def whoami(ctx: Context) -> str:
-    token = ctx.request_headers.get("authorization", "")
+@mcp.tool
+def whoami() -> str:
+    token = get_http_headers().get("authorization", "")
     return f"hello, holder of {token[:8]}..."
 ```
 
-For HTTP transports, slot in any ASGI middleware (e.g., OAuth introspection, rate limiting).
+`get_http_headers()` (documented at gofastmcp.com/servers/context) reads from the current request and returns `{}` under stdio, so the same tool function is transport-agnostic. For HTTP transports, slot in any ASGI middleware (e.g., OAuth introspection, rate limiting) for boundary checks.
 
-**Mounting** — one FastMCP can be hosted under another, so a single endpoint serves multiple logical servers:
+**Mounting** — one FastMCP can be hosted under another, so a single endpoint serves multiple logical servers. The signature is `root.mount(child, namespace=...)` — FastMCP composition namespaces **tool names**, not URL paths:
 
 ```python
 root = FastMCP("root")
 weather = FastMCP("weather")
-root.mount("/weather", weather)
-root.run(transport="streamable-http", port=8000)
+root.mount(weather, namespace="weather")
+root.run(transport="http", port=8000)
 # Tools register under namespaced names: weather_get_weather, weather_now, ...
 ```
 
@@ -183,7 +186,7 @@ root_agent = Agent(
 
 Then ask the agent "what time is it?" and "what's the weather in NYC?" — you should see two distinct MCP tool invocations in the event stream. Confirm by adding a `print` inside `now()` / `get_weather()`.
 
-Bonus: switch the server to `mcp.run(transport="streamable-http", port=8000)` and update the ADK side to point at `http://localhost:8000`. Notice the agent code didn't change.
+Bonus: switch the server to `mcp.run(transport="http", port=8000)` and update the ADK side to point at `http://localhost:8000`. Notice the agent code didn't change.
 
 ---
 

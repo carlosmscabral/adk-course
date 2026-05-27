@@ -46,13 +46,15 @@ HTTP/2 multiplexes **streams** on **one** TCP connection. Each stream has an ID;
 ```
   TCP connection ────────────────────────────────────────────────────────
    stream 1  (one bidi RPC, frames flow both directions on the same stream id)
-   ├─ HEADERS  client → server   (:path = /google.ai.generativelanguage.../BidiGenerate, ...)
+   ├─ HEADERS  client → server   (:path = /google.ai.generativelanguage.../BidiGenerateContent, ...)
    ├─ DATA     client → server   [audio chunk][audio chunk]...
    ├─ DATA     server → client   [audio chunk][transcript chunk]...
    ├─ DATA     client → server   [audio chunk]...
    ├─ DATA     server → client   [audio chunk][transcript chunk]...
    └─ HEADERS  server → client   (trailers: grpc-status = 0 on clean close)
 ```
+
+(That `:path` is the **gRPC service definition's** path shape; on the wire the Live SDK actually opens a WebSocket at `/ws/<that-path>` — see the "what Vertex uses" section below.)
 
 (All under one logical RPC = **one** HTTP/2 stream with one stream id. Frames on that stream flow in both directions; application-level "messages" — audio chunks, transcript chunks, control envelopes — are multiplexed inside the DATA frames by gRPC's length-prefix framing. For multiple concurrent RPCs you'd open multiple HTTP/2 streams with different ids on the same TCP connection.)
 
@@ -91,7 +93,13 @@ This is one of the most common gRPC perf bugs in the wild.
 **Pick REST** for: public APIs, browser frontends, simple CRUD.
 **Pick gRPC** for: service-to-service, streaming, perf-critical, strong typing.
 
-Live API is the canonical gRPC use case: bidi streaming + strict latency + binary audio data.
+Live API looks like a canonical gRPC use case (bidi streaming + strict latency + binary audio), and that's how the service is **defined** — but read on for what the SDK actually puts on the wire.
+
+## What Vertex actually uses on the wire
+
+The Vertex AI Live service is **defined** as a gRPC service (`LlmBidiService.BidiGenerateContent`), but the public SDK transport is a **WebSocket** session (`/ws/google.cloud.aiplatform.{ver}.LlmBidiService/BidiGenerateContent`) carrying JSON envelopes whose shape mirrors the proto messages. The Gemini Developer API exposes the same shape at `/ws/google.ai.generativelanguage.{ver}.GenerativeService.BidiGenerateContent`. See `google/genai/live.py:48` (`from websockets.asyncio.client import connect as ws_connect`), `:997` (`request = json.dumps(request_dict)`), and `:1002` (the Vertex `/ws/...` URI).
+
+So the diagram above shows the conceptual gRPC framing on HTTP/2 — useful intuition for why one bidi stream is the right shape — but the bytes the SDK actually sends are WebSocket frames carrying JSON.
 
 ## Minimal Python client-streaming example
 
@@ -150,7 +158,7 @@ Each `DATA` frame is an audio chunk in flight. The stream ID stays the same beca
 
 ## Back to module 18
 
-- The `runner.run_live(...)` async iterator is **a bidirectional gRPC stream wrapped in Python's async syntax.** The `LiveRequestQueue.send_*` calls put frames onto the upload side of that stream; the `async for event` reads frames from the download side.
-- This is also why `session_resumption` matters — a TCP/HTTP-2 connection that drops takes the whole RPC with it. Resumption lets you start a fresh RPC at the same logical position.
+- The `runner.run_live(...)` async iterator is **a bidirectional WebSocket stream wrapped in Python's async syntax** (the underlying Live service is gRPC-defined; the SDK transport is WebSocket — see `google/genai/live.py:48`). The `LiveRequestQueue.send_*` calls put frames onto the upload side of that stream; the `async for event` reads frames from the download side.
+- This is also why `session_resumption` matters — a TCP/WebSocket connection that drops takes the whole session with it. Resumption lets you start a fresh session at the same logical position.
 
 [← Back: 18_StreamingLive/06_VideoInput](../18_StreamingLive/06_VideoInput.md) · [Forward: [[ProtocolBuffers]]]  [↑ Map](../MAP.md)

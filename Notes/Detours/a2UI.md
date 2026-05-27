@@ -41,7 +41,7 @@ Three things you couldn't get from `print(event)` in a script:
 
 ## 🗺 2. The 30-second quick-start
 
-`adk web` discovers agents by walking the current directory for files that define `root_agent`:
+`adk web [agents_dir]` (agents_dir is positional, defaults to cwd — see `cli_tools_click.py:1745-1751`) walks subdirectories of `agents_dir`, looking for ones that are valid agent packages — i.e., contain `agent.py` (which exports `root_agent`) OR `root_agent.yaml`. Each such subdirectory becomes a selectable agent in the UI.
 
 ```bash
 $ cd ~/study/adk-samples/python/agents/fun-facts

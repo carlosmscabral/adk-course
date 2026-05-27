@@ -23,7 +23,7 @@ You are here: 🗺 Detours ▸ Cloud Run
                                    │
                                    ├── ~0 instances when idle (scale-to-zero)
                                    ├── N parallel requests per instance (concurrency)
-                                   └── instance dies when no traffic for ~15 min
+                                   └── instance dies when idle (rough rule of thumb; not a published SLO)
 ```
 
 Cloud Run runs **one container image**, started on demand, killed when idle. You hand it an image, it gives you an HTTPS URL. No nodes, no pods, no YAML — just `gcloud run deploy`.
@@ -45,15 +45,15 @@ The contract: your container must listen on `$PORT` (default 8080) and respond t
 Mitigations:
 
 - **Stay in-request** — finish the work before responding (acceptable for short tasks).
-- **Always-allocated CPU** — `--cpu-boost` and `--cpu-always-allocated` flags keep CPU on. Costs more; needed for streaming/Live workloads.
+- **Always-allocated CPU** — `--no-cpu-throttling` keeps CPU on between requests (instance-based billing, ~2× cost). `--cpu-boost` is unrelated: it briefly doubles CPU during cold start only.
 - **Cloud Tasks / Pub/Sub** — push background work to a queue, a separate worker service picks it up.
 - **Cloud Run Jobs** — sibling product for batch/cron, not request-driven.
 
-For ADK: long-running tools, `LongRunningFunctionTool`, and Live sessions all need `--cpu-always-allocated` or they degrade weirdly.
+For ADK: long-running tools, `LongRunningFunctionTool`, and Live sessions all need `--no-cpu-throttling` or they degrade weirdly.
 
 > **🚀 In Production**
 >
-> If your agent has tools that take >30 s, set `--timeout=3600` (max 60 min) AND `--cpu-always-allocated`. Default timeout is 300 s; default CPU allocation throttles between requests. Most "my agent works locally but hangs in Cloud Run" bug reports are one of these two.
+> If your agent has tools that take >30 s, set `--timeout=3600` (max 60 min) AND `--no-cpu-throttling`. Default timeout is 300 s; default CPU allocation throttles between requests. Most "my agent works locally but hangs in Cloud Run" bug reports are one of these two.
 
 ---
 
@@ -80,7 +80,7 @@ ADK agents are I/O-bound (waiting on Gemini, BigQuery, MCP servers). High concur
 
 For ADK, "app init" is where the time goes — importing google.adk, building agents, connecting to Vertex. 2-5 s typical. Mitigations:
 
-- **`--min-instances=1`** keeps one warm. Eliminates cold start at the cost of always-on billing (~$5-15/mo per instance).
+- **`--min-instances=1`** keeps one warm. Eliminates cold start at the cost of always-on billing (~$5-15/mo per instance — actual figure depends on CPU/memory sizing and whether `--no-cpu-throttling` is set, which roughly doubles billing per instance-second).
 - **`--cpu-boost`** doubles CPU for the first 10 s of cold start. Free, often halves init time.
 - **Lazy imports** — defer heavy imports until first use, not module load. Helps for branchy code paths.
 - **Smaller image** — slimmer base, fewer deps. `python:3.12-slim` over `python:3.12`.
@@ -114,7 +114,7 @@ Rule:
 
 ## 🌐 6. Identity — the runtime service account
 
-Cloud Run runs as a service account. By default: the Compute Engine default SA, which is overprivileged. Always set explicit:
+Cloud Run runs as a service account. By default: the Compute Engine default SA, which is overprivileged. (Depends on project age — projects created since ~2024 default to a more-restrictive Cloud Run service agent in many regions.) Always set explicit:
 
 ```bash
 gcloud iam service-accounts create my-agent-sa
@@ -141,8 +141,10 @@ gcloud run domain-mappings create \
 
 # Put behind Identity-Aware Proxy (zero-trust auth)
 gcloud run services update my-agent \
-  --ingress=internal-and-cloud-load-balancing
+  --ingress=internal-and-cloud-load-balancing \
+  --no-allow-unauthenticated
 # then attach a load balancer + IAP per Cloud docs
+# (IAP-protected pattern requires BOTH the ingress restriction and --no-allow-unauthenticated)
 ```
 
 IAP gives you "only users in `agents-team@company.com` group can hit this URL," enforced at Google's edge — no auth code in your container. The standard pattern for internal-only agent UIs.
@@ -162,8 +164,10 @@ gcloud run deploy my-agent \
 adk deploy cloud_run \
   --project=my-proj --region=us-central1 \
   --service_name=my-agent \
-  --agent_engine_app=agent_engine_app.py \
-  ./my_agent_package
+  ./my_agent_package \
+  -- --no-allow-unauthenticated --min-instances=1
+# Note: any flags meant for the underlying `gcloud run deploy` go AFTER `--`.
+# Without the separator, adk rejects unknown args.
 ```
 
 `adk deploy cloud_run` is great for the first deploy — it knows to expose `/run`, `/run_sse`, `/apps/{app}/users/{u}/sessions`, etc. After that, most teams switch to a hand-written Dockerfile + their own CI, because they want:
