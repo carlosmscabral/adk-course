@@ -33,18 +33,23 @@ Wired as `on_tool_error_callback`. Combine with a `before_tool_callback` that op
 
 ## Auth: per-request tokens beat baked-in secrets
 
-In `antom-payment/`, secrets live in subprocess env — fine because the subprocess is the trust boundary. For HTTP MCP servers, **never bake long-lived keys** into the agent process. Pattern:
+In `antom-payment/`, secrets live in subprocess env — fine because the subprocess is the trust boundary. For HTTP MCP servers, **never bake long-lived keys** into the agent process. The real ADK hook is `MCPToolset(header_provider=...)` — a callable that takes a `ReadonlyContext` and returns a dict of headers, evaluated on every MCP call (see `mcp_toolset.py:112-114` and the merge logic in `mcp_tool.py:386-398`):
 
 ```python
-def inject_user_token(tool, args, tool_context):
-    if isinstance(tool, MCPTool):  # the wrapped MCP tool
-        tool_context.headers["Authorization"] = (
-            f"Bearer {tool_context.state['user:access_token']}"
-        )
-    return None
+from google.adk.tools.mcp_tool import MCPToolset, StreamableHTTPConnectionParams
+
+def per_user_headers(ctx):
+    # ctx is a ReadonlyContext; reach the live session state via the invocation ctx.
+    token = ctx._invocation_context.session.state.get("user:access_token")
+    return {"Authorization": f"Bearer {token}"} if token else {}
+
+toolset = MCPToolset(
+    connection_params=StreamableHTTPConnectionParams(url="https://mcp.example.com/v3/mcp"),
+    header_provider=per_user_headers,
+)
 ```
 
-That way each MCP call carries the right user's token, not your service account's blanket access.
+Each MCP call carries the right user's token, not your service account's blanket access. `MCPTool` merges these on top of any `auth_credential`-derived headers for that request — see `mcp_tool.py:386-398`. (There is no `tool_context.headers` attribute; the framework owns the wire-format headers.)
 
 ## Pin MCP server versions
 
@@ -88,8 +93,8 @@ In a real deployment, ship to your tracing backend ([[15_Observability/00_Overvi
 
 ## Lifecycle (recap)
 
-- **Scripts:** `async with MCPToolset(...) as ts:` and you're done.
-- **Servers:** open at startup, teardown in `lifespan`.
+- **Scripts:** let `Runner.close()` walk the agent tree — it calls `await toolset.close()` on each toolset for you (`runners.py:2094-2144`). `MCPToolset` is not an async context manager.
+- **Servers:** open at startup; rely on the auto-built `Runner`'s shutdown — or, for belt-and-braces, call `await toolset.close()` in `to_a2a(..., lifespan=...)`.
 - **Tests:** mock the toolset, don't spin a real subprocess in CI unless you have to.
 
 ## Cross-link

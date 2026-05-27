@@ -24,7 +24,7 @@ It shares almost the entire hook vocabulary with callbacks (`before_model_callba
 |--|--|--|
 | Wired on | one `LlmAgent` | the `Runner` |
 | Scope | only that agent | every agent, every model call, every tool call |
-| Composition | one per hook per agent | a list, fire in order |
+| Composition | list per hook (per agent) — `Union[Callable, list[Callable]]` per `llm_agent.py:75-87` | a list (runner-wide), fire in order |
 | Use for | per-agent specialization | cross-cutting policy |
 
 🗺 Look at the figure:
@@ -61,13 +61,14 @@ If you find yourself adding the same callback to five sub-agents, that's a plugi
 
 ## Hook surface
 
-Plugins implement (any subset of) these — same names as callbacks plus a few runner-level ones:
+Plugins implement (any subset of) these — same names as callbacks plus a few runner-level ones. **The real method names all end with `_callback`** (see `google/adk/plugins/base_plugin.py`):
 
-- `on_user_message` — runner received a user message
-- `before_agent` / `after_agent` — any agent's turn boundaries
-- `before_model` / `after_model` / `on_model_error` — any LLM call
-- `before_tool` / `after_tool` / `on_tool_error` — any tool call
-- `on_event` — every event the runner yields
+- `on_user_message_callback` — runner received a user message
+- `before_run_callback` / `after_run_callback` — runner-level run boundaries
+- `before_agent_callback` / `after_agent_callback` — any agent's turn boundaries
+- `before_model_callback` / `after_model_callback` / `on_model_error_callback` — any LLM call
+- `before_tool_callback` / `after_tool_callback` / `on_tool_error_callback` — any tool call
+- `on_event_callback` — every event the runner yields
 
 The exact methods come from `google.adk.plugins.base_plugin.BasePlugin`. We'll see custom plugin authoring in page 07.
 

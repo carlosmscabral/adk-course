@@ -21,7 +21,7 @@ You are here: 🗺 Runtime Track ▸ 14 Evaluation ▸ 00 Overview
 - Why evals are different from tests, and why both matter.
 - The `EvalCase`/`EvalSet` format and how to write your own.
 - The full `AgentEvaluator` workflow from JSON to `pytest` verdict.
-- The four evaluator types: `FinalResponseMatch{V1,V2}`, `TrajectoryEvaluator`, `LlmAsJudge`, `RubricBasedEvaluator`, `HallucinationsV1`.
+- The five evaluator types: `FinalResponseMatch{V1,V2}`, `TrajectoryEvaluator`, `LlmAsJudge`, `RubricBasedEvaluator`, `HallucinationsV1`.
 - How to run `adk eval` from the CLI and wire it into CI.
 - Real-world tax: cost, flakiness, golden-set curation, score-over-time tracking.
 

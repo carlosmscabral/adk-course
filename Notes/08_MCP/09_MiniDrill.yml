@@ -17,7 +17,11 @@ exercise:
     3. Add a driver block that runs the agent against the prompt
        "What's the weather in Tokyo?" and prints the final reply.
 
-    4. Open the MCPToolset inside an `async with` block so it cleans up.
+    4. Ensure the MCPToolset gets cleaned up — either by calling
+       `await runner.close()` in a `try/finally` around the run, or by
+       calling `await toolset.close()` directly. (MCPToolset does NOT
+       implement `__aenter__` / `__aexit__`; `async with MCPToolset(...)`
+       will raise.)
   scaffolding_hint: |
     See `currency-agent/mcp-server/server.py` for the FastMCP shape.
     See `currency-agent/currency_agent/agent.py` for the consumer shape.
@@ -33,7 +37,7 @@ exercise:
       - "Server uses `@mcp.tool()` decorator and exposes `fetch_weather`."
       - "Server starts with `mcp.run_async(transport=\"http\", ...)`."
       - "Client uses `StreamableHTTPConnectionParams` with the matching URL."
-      - "Client wraps the toolset in `async with` (no subprocess / connection leak)."
+      - "Client closes the toolset before exit — `await runner.close()` (preferred, walks the agent tree) or `await toolset.close()` directly. No subprocess / connection leak."
       - "Run output ends with a reply containing weather info from the mock."
   solution_pointer: Solutions/08_MCP/weather_drill.py
   tutor_notes: |
@@ -44,7 +48,12 @@ exercise:
     - Starting the agent before the server is ready — connection is lazy
       but first tool call fails immediately. Have them retry with the
       server running.
-    - Skipping `async with` and wondering why a port stays bound after exit.
+    - Skipping cleanup (`await runner.close()` or `await toolset.close()`)
+      and wondering why a port stays bound after exit. Note: trying
+      `async with MCPToolset(...)` is a real footgun — it raises
+      `AttributeError: __aenter__` because MCPToolset does not implement
+      the async-context-manager protocol. Cleanup is via `Runner.close()`
+      (auto, walks agent tree) or the explicit `await toolset.close()`.
     Stretch: ask them to add a `before_tool_callback` that injects a
     fake `Authorization` header into the MCP call and confirm the
     server sees it (add a `print(request.headers)` in the FastMCP tool).

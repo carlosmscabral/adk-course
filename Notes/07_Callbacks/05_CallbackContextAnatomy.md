@@ -33,7 +33,7 @@ def probe(ctx: CallbackContext):
     print(f"  invocation_id={ctx.invocation_id}")
     print(f"  agent_name={ctx.agent_name}")
     print(f"  user_id={ctx.user_id}")
-    print(f"  session_id={ctx.session_id}")
+    print(f"  session_id={ctx.session.id}")   # access the id via ctx.session — there is no shortcut attribute on ctx itself
     print(f"  state keys={list(ctx.state.keys())}")
     return None
 
@@ -62,10 +62,10 @@ asyncio.run(main())
 
 ```
 $ uv run python Work/05_cbctx_probe.py
-  invocation_id=inv_01HX…
+  invocation_id=e-…       # a uuid4
   agent_name=probe_agent
   user_id=u-42
-  session_id=ses_01HX…
+  session_id=…             # ctx.session.id — also a uuid4
   state keys=['seed']
 ```
 
@@ -75,7 +75,7 @@ $ uv run python Work/05_cbctx_probe.py
 |---|---|---|---|
 | `state` | ✅ | ✅ via assignment | The state dict — same view your tools see. Writes become `state_delta` events. |
 | `user_id` | ✅ | ❌ | Owner of this conversation. Stable across the session. |
-| `session_id` | ✅ | ❌ | Stable across the invocation. |
+| `session` | ✅ | ❌ | The `Session` object — `ctx.session.id` for the session id, `ctx.session.events` for history (read-only). There is **no** top-level shortcut attribute; always go through `.session`. |
 | `invocation_id` | ✅ | ❌ | One per `run_async()` call. New invocation = new id even for the same session. |
 | `agent_name` | ✅ | ❌ | The agent currently executing — important in sub-agent trees. |
 | `_invocation_context` | ✅ | ❌ (private) | Deeper handle for advanced patterns; use sparingly. |
@@ -88,21 +88,21 @@ $ uv run python Work/05_cbctx_probe.py
 * **No direct access to `events`.** You can't read the conversation history through `CallbackContext`. If you need it, the surface is on `_invocation_context.session.events` (private; expect breakage).
 * **No `tool` reference.** That's `ToolContext`'s job (page 03).
 * **No `LlmRequest` / `LlmResponse`.** Those are passed as separate args to the model callbacks.
-* **No write to `user_id` / `session_id`** — these identify the conversation; mutating them is meaningless.
+* **No write to `user_id` or `session.id`** — these identify the conversation; mutating them is meaningless.
 
-## 🧠 `ToolContext` is a superset
+## 🧠 `ToolContext` and `CallbackContext` are the SAME class
 
 ```python
 from google.adk.tools.tool_context import ToolContext
 
 def my_tool_cb(tool, args, tool_context: ToolContext):
-    # everything in CallbackContext, PLUS:
-    print(tool_context.function_call_id)   # the LLM's call id for this invocation
+    # exact same surface as CallbackContext — they are aliases of one class:
+    print(tool_context.function_call_id)   # the LLM's call id for this tool invocation
     print(tool_context.actions)            # mutable EventActions for this turn
     return None
 ```
 
-`ToolContext` inherits from `CallbackContext` and adds tool-specific handles. **Same `.state`**, same `user_id`, etc.
+`ToolContext` is **not** a subclass of `CallbackContext` — both names are aliases for `google.adk.agents.context.Context` (`tools/tool_context.py:29` says `ToolContext = Context`; `agents/callback_context.py:22` says `CallbackContext = Context`). The names exist for self-documenting parameter types; the surface is identical. That means `function_call_id` and `actions` are technically present on every `CallbackContext` too — they're just only populated/meaningful inside a tool callback.
 
 > 🧭 Curious how ADK propagates context through async calls? Detour [[Detours/PY_contextvars]] explains the Python primitive — back in ~10 min.
 

@@ -53,30 +53,43 @@ The registry uses pattern matching (often a prefix) to route a model string to t
 
 ## 🛠 Discovery
 
+There is **no `LLMRegistry.list_models()`** API. The registry is a private regex→class dict (`_llm_registry_dict` in `google/adk/models/registry.py`). The public surface is three static methods: `register(llm_cls)`, `resolve(model)`, `new_llm(model)`.
+
+For a one-shot introspection in a REPL, call `resolve` against a candidate string and inspect the returned class:
+
 ```python
 from google.adk.models import LLMRegistry
-LLMRegistry.list_models()  # or similar — varies by minor version
+LLMRegistry.resolve("gemini-2.5-flash")        # <class 'google.adk.models.google_llm.Gemini'>
+LLMRegistry.resolve("claude-3-5-sonnet-v2@20241022")  # <class 'google.adk.models.anthropic_llm.Claude'>
 ```
 
-Check the framework source at `/home/carloscabral/study/adk-python/src/google/adk/models/registry.py` for the exact API in your installed version. The point is: the registry is *introspectable*. You can list what is wired in, and you can register new models.
+The canonical list of regex patterns and their classes lives in the lazy-provider table at the top of `google/adk/models/__init__.py` — that is the documentation. Read it directly when you need to know what is wired in.
 
 ## 🛠 Registering a custom model
+
+A `BaseLlm` subclass advertises which model strings it handles via the classmethod `supported_models() -> list[str]`. Each entry is a **regex** matched against the full model string. `LLMRegistry.register(llm_cls)` reads `supported_models()` and registers one entry per regex (see `registry.py:99-107`).
 
 ```python
 from google.adk.models import BaseLlm, LLMRegistry
 
 class MyCustomLlm(BaseLlm):
-    async def generate_content_async(self, llm_request):
-        # call your backend, return an LlmResponse
+    @classmethod
+    def supported_models(cls) -> list[str]:
+        return [r"mycorp/internal-v\d+"]   # regex, not literal
+
+    async def generate_content_async(self, llm_request, stream=False):
+        # call your backend, yield LlmResponse objects
         ...
 
-LLMRegistry.register("mycorp/internal-v1", MyCustomLlm)
+LLMRegistry.register(MyCustomLlm)             # single arg — the class
 
 # Now anywhere in your code:
 agent = Agent(model="mycorp/internal-v1", ...)
 ```
 
-The seven canonical classes (Gemini, Claude, LiteLlm, OpenAILlm, ApigeeLlm, Gemma, Gemma3Ollama) self-register at import time via the lazy-provider table in `google/adk/models/__init__.py`. Your own `BaseLlm` subclass needs `LLMRegistry.register(...)` once.
+⚠️ **Common mistake**: writing `LLMRegistry.register("mycorp/internal-v1", MyCustomLlm)` — the two-arg form does not exist. The class declares its own supported regexes via `supported_models()`.
+
+The canonical classes (Gemini, Claude, LiteLlm, ApigeeLlm, Gemma) self-register at import time via the lazy-provider table in `google/adk/models/__init__.py`. Your own `BaseLlm` subclass needs `LLMRegistry.register(MyCustomLlm)` once.
 
 ## ⚠️ Gotcha — model string typos fail late
 

@@ -16,8 +16,8 @@ questions:
     accept_paraphrase: true
     difficulty: medium
   - id: q4
-    prompt: "What happens if you never call `await toolset.__aexit__(...)` on an MCPToolset before exit?"
-    expected_keywords: [leak, subprocess, connection, resource]
+    prompt: "How do you clean up an MCPToolset before process exit, and what happens if you skip it?"
+    expected_keywords: [Runner.close, toolset.close, auto, leak, subprocess, connection]
     accept_paraphrase: true
     difficulty: medium
   - id: q5
@@ -27,7 +27,7 @@ questions:
     difficulty: easy
   - id: q6
     prompt: "In a long-running ADK server, where does MCPToolset lifecycle code typically live?"
-    expected_keywords: [lifespan, startup, shutdown, to_a2a, context manager]
+    expected_keywords: [lifespan, startup, shutdown, to_a2a, Runner.close]
     accept_paraphrase: true
     difficulty: medium
   - id: q7

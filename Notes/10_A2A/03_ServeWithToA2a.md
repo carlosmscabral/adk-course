@@ -99,8 +99,8 @@ agent = Agent(model="gemini-2.5-flash", tools=[toolset])
 async def lifespan(app):
     # startup
     yield
-    # shutdown
-    await toolset.__aexit__(None, None, None)
+    # shutdown — MCPToolset is NOT an async context manager; use .close()
+    await toolset.close()
 
 a2a_app = to_a2a(agent, port=10000, lifespan=lifespan)
 ```

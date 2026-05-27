@@ -4,7 +4,7 @@ page: 04_LifecycleManagement
 title: Lifecycle management — when MCP sessions open and close
 estimated_minutes: 20
 prereqs: [08_MCP/03]
-concepts: [MCPToolset, async context manager, __aexit__, session pooling]
+concepts: [MCPToolset, Runner auto-cleanup, toolset.close, session pooling]
 icon: ⚠️
 in_production: true
 detours_suggested: [PY_async]
@@ -30,19 +30,30 @@ toolset = MCPToolset(connection_params=...)
 
 ### Pattern A — per-session (short-lived)
 
-For a script that runs an agent once and exits, the cleanest pattern is an `async with`:
+For a script that runs an agent once and exits, let the `Runner` close the toolset for you:
 
 ```python
 async def main():
-    async with MCPToolset(connection_params=params) as toolset:
-        agent = Agent(model="gemini-2.5-flash", tools=[toolset])
-        runner = InMemoryRunner(agent)
+    toolset = MCPToolset(connection_params=params)
+    agent = Agent(model="gemini-2.5-flash", tools=[toolset])
+    runner = InMemoryRunner(agent)
+    try:
         async for event in runner.run_async(...):
             print(event)
-    # toolset closed on exit
+    finally:
+        await runner.close()   # walks the agent tree, closes every toolset
 ```
 
-ADK's runner does NOT auto-manage your toolsets — that's your code's job.
+ADK's `Runner` DOES auto-manage your toolsets. `Runner.close()` calls
+`_collect_toolset(agent)` to walk sub-agents and then `_cleanup_toolsets(...)`
+to `await toolset.close()` on each one with a 10-second timeout (see
+`runners.py:2094-2144`). The toolset's own docstring (`mcp_toolset.py:92`) says
+"Cleanup is handled automatically by the agent framework." `MCPToolset` does
+**not** implement `__aenter__` / `__aexit__` — `async with MCPToolset(...)`
+will raise `AttributeError`.
+
+If you need explicit teardown outside a `Runner` (e.g., a one-off script that
+constructed the toolset directly), call `await toolset.close()` yourself.
 
 ### Pattern B — long-lived (server / persistent app)
 
@@ -59,12 +70,12 @@ agent = Agent(model="gemini-2.5-flash", tools=[toolset])
 async def lifespan(app):
     # toolset opens lazily on first call; explicit warm-up optional
     yield
-    await toolset.__aexit__(None, None, None)
+    await toolset.close()
 
 app = to_a2a(agent, lifespan=lifespan)
 ```
 
-The agent reuses the same MCP session across all incoming requests. Faster, fewer subprocesses, but you commit to clean teardown.
+The agent reuses the same MCP session across all incoming requests. Faster, fewer subprocesses, but you commit to clean teardown. (You can also rely on the auto-built `Runner` inside `to_a2a` to close the toolset when it shuts down — explicit `lifespan` cleanup is belt-and-braces.)
 
 ## What gets shared across calls
 
@@ -76,20 +87,21 @@ If you need parallel MCP calls, run one toolset per concurrency lane (e.g., per-
 
 | Symptom                                              | Cause                                              |
 | ---------------------------------------------------- | -------------------------------------------------- |
-| Hanging on shutdown                                  | Forgot `await toolset.__aexit__(...)`.             |
+| Hanging on shutdown                                  | Constructed `MCPToolset` outside a `Runner` and never called `await toolset.close()`. |
+| `AttributeError: __aenter__`                         | You tried `async with MCPToolset(...)`. It is not an async context manager — use `Runner.close()` or `await toolset.close()`. |
 | "subprocess died" mid-conversation                   | Stdio server crashed. Catch in `on_tool_error_callback`. |
 | Slow first tool call                                 | Lazy connection. Warm up in `before_agent_callback`. |
 | `RuntimeError: Event loop is closed`                 | Toolset cleanup running in a dead loop — wrong lifecycle. |
 
 ## Cleanup callback pattern
 
-For a self-contained agent module:
+For a self-contained agent module that wants per-invocation churn instead of process-lifetime reuse:
 
 ```python
 toolset = MCPToolset(connection_params=...)
 
 async def cleanup(callback_context):
-    await toolset.__aexit__(None, None, None)
+    await toolset.close()
 
 agent = Agent(
     model="gemini-2.5-flash",
@@ -98,9 +110,9 @@ agent = Agent(
 )
 ```
 
-⚠️ This is fine for per-call lifecycle but creates churn. Prefer Pattern B for servers.
+⚠️ This is fine for per-call lifecycle but creates churn. Prefer Pattern B for servers, and prefer letting `Runner.close()` handle it for scripts.
 
-> 🛠 **Have the student run:** spawn a stdio toolset, call one tool, exit without `__aexit__`. Check `ps aux` for leftover children — there will be one. Now wrap in `async with` and rerun. Gone.
+> 🛠 **Have the student run:** spawn a stdio toolset, call one tool, exit the process without ever calling `await runner.close()` (or `await toolset.close()`). Check `ps aux` for leftover children — there will be one. Now wrap the run in `try / finally: await runner.close()` and rerun. Gone.
 
 > 🚀 **In Production**
 >

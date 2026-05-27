@@ -156,12 +156,16 @@ Write the 15-line server above into `weather_server.py`, then point ADK at it:
 
 ```python
 # inside an ADK agent file
-from google.adk.tools.mcp_tool import MCPToolset, StdioServerParameters
+from google.adk.tools.mcp_tool import MCPToolset, StdioConnectionParams
+from mcp import StdioServerParameters  # comes from the upstream `mcp` package
 
 mcp_tools = MCPToolset(
-    connection_params=StdioServerParameters(
-        command="python",
-        args=["weather_server.py"],
+    connection_params=StdioConnectionParams(
+        server_params=StdioServerParameters(
+            command="python",
+            args=["weather_server.py"],
+        ),
+        timeout=10.0,
     ),
 )
 
@@ -172,6 +176,10 @@ root_agent = Agent(
     tools=[mcp_tools],
 )
 ```
+
+> ⚠️ `StdioServerParameters` is **not** exported by `google.adk.tools.mcp_tool` — see `google/adk/tools/mcp_tool/__init__.py` (only `SseConnectionParams`, `StdioConnectionParams`, `StreamableHTTPConnectionParams`, `MCPTool`, `MCPToolset` and their alias forms are re-exported). Import `StdioServerParameters` from `mcp` directly.
+>
+> Passing a raw `StdioServerParameters` to `connection_params=` does work (`mcp_session_manager.py:200-204`, `mcp_toolset.py:99-105`), but the recommended pattern is to wrap it in `StdioConnectionParams(server_params=..., timeout=...)` so you get timeout control — `StdioServerParameters` alone has none.
 
 Then ask the agent "what time is it?" and "what's the weather in NYC?" — you should see two distinct MCP tool invocations in the event stream. Confirm by adding a `print` inside `now()` / `get_weather()`.
 

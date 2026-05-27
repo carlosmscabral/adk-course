@@ -18,13 +18,13 @@ Triggered from: `06_GraphWorkflows` (when a graph has >5 nodes and ASCII gets no
 
 ## 🗺 1. What it is
 
-ADK 2.0 ships a browser-based **Visual Builder** for the graph-workflow API (the same one you write by hand with `WorkflowAgent`). You drag nodes, connect edges, fill in properties on the right panel, hit *Export* — out comes Python that runs in the same runtime.
+ADK 2.0 ships a browser-based **Visual Builder** for the graph-workflow API (the same one you write by hand with `Workflow` from `google.adk.workflow`). You drag nodes, connect edges, fill in properties on the right panel, hit *Export* — out comes Python that runs in the same runtime.
 
 ```
    ┌──────────────────────┐         ┌──────────────────────┐
    │   Visual Builder     │ export  │  Python file using   │
-   │   (browser canvas)   ├────────►│  WorkflowAgent API   │
-   │                      │         │                      │
+   │   (browser canvas)   ├────────►│  google.adk.workflow │
+   │                      │         │      .Workflow       │
    │                      │◄────────┤                      │
    └──────────────────────┘ import  └──────────────────────┘
 ```
@@ -54,10 +54,10 @@ Per `https://adk.dev/` (snapshot 2026-05-27):
 
 ```bash
 $ adk web                       # the dev UI we covered in [[a2UI]]
-# In the UI, switch to the "Builder" tab.
-# Or directly:
-$ adk web --builder
+# In the UI, switch to the "Builder" tab / route.
 ```
+
+There is **no `adk web --builder` flag**. The Visual Builder ships built-in as part of the standard dev UI — verified against `cli_tools_click.py` (no `--builder` click option on `adk web`; only `--logo-text`, `--logo-image-url`, and the common host/port/log options). Open `adk web` and navigate to the Builder route in the UI.
 
 The builder shares the dev-server process — same caveats apply (localhost only, no auth, dev-only). You select a target Python file; edits in the canvas sync to that file on save.
 
@@ -77,7 +77,7 @@ The killer feature is **bidirectional sync**:
 5. Drag a new edge                       → save → pipeline.py updates
 ```
 
-This works because the Builder treats the code as the source of truth. It doesn't keep its own serialized format — it reads and writes the same `WorkflowAgent` Python that you'd write by hand. So `git diff` is meaningful, code review works, no `.builder.json` sidecar.
+This works because the Builder treats the code as the source of truth. It doesn't keep its own serialized format — it reads and writes the same `Workflow` Python that you'd write by hand. So `git diff` is meaningful, code review works, no `.builder.json` sidecar.
 
 ⚠️ One catch: **the parser is conservative**. Anything that isn't a recognized pattern (e.g., a node assembled via a helper function, or a comprehension over edges) becomes an opaque "custom code" block on the canvas — you can see it but not edit visually. Keep the drawable portion declarative.
 
@@ -89,18 +89,17 @@ Even if you never open the Builder, knowing what it spits out helps:
 
 ```python
 # Equivalent to a 3-node Builder drawing: research → critique → revise
-from google.adk.agents import WorkflowAgent, Agent
+from google.adk.agents import Agent
+from google.adk.workflow import Workflow, START
 
 research = Agent(model="gemini-2.5-flash", name="research", instruction="...")
 critique = Agent(model="gemini-2.5-flash", name="critique", instruction="...")
 revise   = Agent(model="gemini-2.5-flash", name="revise",   instruction="...")
 
-root_agent = WorkflowAgent(
+root_agent = Workflow(
     name="reviewer_pipeline",
-    nodes=[research, critique, revise],
     edges=[
-        ("research", "critique"),
-        ("critique", "revise"),
+        (START, research, critique, revise),
     ],
 )
 ```
@@ -115,7 +114,7 @@ A drawing of three boxes with two arrows produces this. That's it. The Builder i
 
 ## 🛠 Have the student try
 
-Sketch a 3-node graph on paper (or text), then write it as `WorkflowAgent` code from scratch — no UI required.
+Sketch a 3-node graph on paper (or text), then write it as `Workflow` code from scratch — no UI required.
 
 **The shape**: a researcher emits a draft; a fact-checker reads it; if the fact-checker flags an issue, route to a reviser, otherwise emit. (Conditional edge.)
 
@@ -134,7 +133,7 @@ Sketch a 3-node graph on paper (or text), then write it as `WorkflowAgent` code 
    (done)
 ```
 
-Have the student write this as a `WorkflowAgent` with `nodes=[...]` and `edges=[...]`. Then if the Builder is available, **import that file** and confirm the canvas matches the drawing.
+Have the student write this as a `Workflow` with `edges=[(START, research, fact_check), (fact_check, revise, "ISSUE"), (revise, ...)]`. Then if the Builder is available, **import that file** and confirm the canvas matches the drawing.
 
 If the Builder isn't accessible, the exercise still works — the point is that "drawing" and "code" are isomorphic.
 

@@ -25,12 +25,10 @@ exercise:
       3. "Explain how Python's GIL works and the trade-offs against free-threaded builds." → expert_B
 
   scaffolding_hint: |
-    Imports you need:
+    Imports you need (2.0 framework API):
       from google.adk.agents import LlmAgent
-      from google.adk.agents.workflow.workflow_agent import WorkflowAgent
-      from google.adk.agents.workflow.base_node import START
-      from google.adk.agents.workflow.function_node import FunctionNode
-      from google.adk.agents.workflow.events.event import Event
+      from google.adk.workflow import Workflow, START, FunctionNode
+      from google.adk.events import Event
 
     The router is a `FunctionNode` wrapping an async generator. It must
     yield (a) the user's text (to pass along) and (b) `Event(route="SHORT")`
@@ -53,7 +51,7 @@ exercise:
   solution_pointer: Solutions/06_GraphWorkflows/router_graph.py
   tutor_notes: |
     Gate-keeper solution is provided because this is the student's
-    first WorkflowAgent — they need a reference for the imports and
+    first `Workflow` — they need a reference for the imports and
     tuple shape.
 
     Common mistakes:

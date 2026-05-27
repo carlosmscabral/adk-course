@@ -79,11 +79,11 @@ This catches typos at edit time, not at runtime.
 
 ## 🚀 Nested workflows are normal
 
-Don't fear a 5-edge `WorkflowAgent` becoming a node inside a larger one. The runtime nests cleanly, traces stay attributed to the inner nodes, and reasoning about each piece in isolation gets easier. `workflow-concurrent_research_writer` does this with research + blog inside root.
+Don't fear a 5-edge `Workflow` becoming a node inside a larger one. The runtime nests cleanly (`Workflow` is a `BaseNode`), traces stay attributed to the inner nodes, and reasoning about each piece in isolation gets easier. `workflow-concurrent_research_writer` does this with research + blog inside root.
 
 ## 🚀 The Visual Builder (NEW 2.0)
 
-ADK 2.0 ships a visual graph editor that exports to / imports from `WorkflowAgent` definitions. For design-by-PM workflows or for sharing the *shape* with non-coders, it can replace hand-written `edges=[]`. We dedicate [[VisualBuilder]] to this when authored.
+ADK 2.0 ships a visual graph editor that exports to / imports from `Workflow` definitions. For design-by-PM workflows or for sharing the *shape* with non-coders, it can replace hand-written `edges=[]`. We dedicate [[VisualBuilder]] to this when authored.
 
 ## 🚀 Checklist before deploying a graph
 

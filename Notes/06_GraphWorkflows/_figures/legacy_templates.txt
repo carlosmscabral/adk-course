@@ -48,7 +48,7 @@ LoopAgent(sub_agents=[A, B], max_iterations=N)
     Always set max_iterations as a budget cap.
 
 ────────────────────────────────────────────────────────────────────────
-when to upgrade to graph (WorkflowAgent, module 06 pages 04+)
+when to upgrade to graph (Workflow, module 06 pages 04+)
 ────────────────────────────────────────────────────────────────────────
 
 - need conditional routing (if/else between nodes)

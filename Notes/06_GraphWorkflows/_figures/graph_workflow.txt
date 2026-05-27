@@ -1,13 +1,13 @@
 Graph workflow — workflow-concurrent_research_writer
 
 ──────────────────────────────────────────────────────────────────────────
-root_agent = WorkflowAgent(edges=[("START", research_workflow, blog_workflow)])
+root_agent = Workflow(edges=[(START, research_workflow, blog_workflow)])
 ──────────────────────────────────────────────────────────────────────────
 
   START
    │   user_input: "The Future of AI in Education"
    ▼
- ╔══════════════════ research_workflow (WorkflowAgent) ══════════════════╗
+ ╔══════════════════ research_workflow (Workflow) ═══════════════════════╗
  ║                                                                       ║
  ║   START                                                               ║
  ║    │                                                                  ║
@@ -16,7 +16,7 @@ root_agent = WorkflowAgent(edges=[("START", research_workflow, blog_workflow)])
  ║    │  yield Event(state={"topic": "..."})                             ║
  ║    │  yield ["X", "LinkedIn", "Reddit", "Medium"]   ←── list = fan-out║
  ║    ▼                                                                  ║
- ║   ParallelWorker(research_worker_agent)                               ║
+ ║   research_worker_agent  (LlmAgent — runs once per list element)      ║
  ║    │  ┌─ "X"        ──▶ worker → summary X                            ║
  ║    │  ├─ "LinkedIn"  ──▶ worker → summary LI                          ║
  ║    │  ├─ "Reddit"    ──▶ worker → summary R                           ║
@@ -31,7 +31,7 @@ root_agent = WorkflowAgent(edges=[("START", research_workflow, blog_workflow)])
  ╚═══════════════════════════════════════════════════════════════════════╝
    │
    ▼   user thesis for blog post
- ╔══════════════════ blog_workflow (WorkflowAgent) ══════════════════════╗
+ ╔══════════════════ blog_workflow (Workflow) ═══════════════════════════╗
  ║                                                                       ║
  ║   START                                                               ║
  ║    │                                                                  ║
@@ -60,9 +60,9 @@ root_agent = WorkflowAgent(edges=[("START", research_workflow, blog_workflow)])
 node-kind cheat sheet
 ──────────────────────────────────────────────────────────────────────────
   LlmAgent              — passes user/upstream input through as a turn
-  FunctionNode(fn)      — wraps an async generator; yields state/route/content
-  ParallelWorker(agent) — runs `agent` once per upstream-list-element, in parallel
-  WorkflowAgent         — nests! a whole workflow becomes a node in a bigger one
+  FunctionNode(fn)      — wraps a sync/async function; yields state/route/content
+  list-yield fan-out    — yield ["x","y"] and the next node runs once per element
+  Workflow              — nests! a whole workflow becomes a node in a bigger one
 
 ──────────────────────────────────────────────────────────────────────────
 edge tuple cheat sheet

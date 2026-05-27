@@ -60,13 +60,13 @@ Use `tool_filter` to expose only what the agent should touch.
 | `PROTECTED` | Allows writes to a specific dataset only (some SDK versions). |
 
 > ⚠️ **Gotcha**
-> The default is `ALLOWED` on some versions of the toolset. **Always set it explicitly.** A pure-read agent should never be `WriteMode.ALLOWED`.
+> The default is `BLOCKED` (see `src/google/adk/integrations/bigquery/config.py:56` — `write_mode: WriteMode = WriteMode.BLOCKED`). **Set it explicitly anyway** — for clarity in code review and to guard against future default changes. A pure-read agent should never be `WriteMode.ALLOWED`.
 
 ## 💸 The cost cap — `maximum_bytes_billed`
 
 `google.cloud.bigquery.Client.query(...)` accepts a `job_config` with `maximum_bytes_billed`. **If the query would scan more than this, it errors out before it runs**. No "oops" $$$$.
 
-The `BigQueryToolConfig` doesn't always expose this directly — for hardening, **wrap or guard with a callback**. This is the recommended production pattern.
+`BigQueryToolConfig` exposes `maximum_bytes_billed` directly as a first-class field (see `src/google/adk/integrations/bigquery/config.py:63-69` — `maximum_bytes_billed: Optional[int] = None`; note BQ requires the value to be `>=10_485_760` because on-demand pricing rounds up to the nearest MB with a 10 MB minimum). Set it on the toolset, **and** pair with a `before_tool_callback` for defense-in-depth: the callback gives you per-query rejection messages the LLM can react to, while the hard cap on execute is the real firewall.
 
 ## 🛠 Cost-guard via `before_tool_callback`
 

@@ -65,7 +65,7 @@ Same agent. Same behavior at runtime. The YAML is 6 lines; the Python is 7. Leng
 |---|---|
 | **No callbacks** | `before_model_callback`, `after_tool_callback`, etc. require Python functions. YAML can reference a tool *function* by import path; it cannot inline a callback. |
 | **No dynamic instruction** | YAML `instruction: |` is a static string. The Python form accepts `instruction=callable` for state-aware prompts. |
-| **No custom `BaseAgent` subclasses** | If your agent class is something other than `LlmAgent` / `SequentialAgent` / `ParallelAgent` / `LoopAgent` / `WorkflowAgent`, YAML cannot construct it. |
+| **No custom `BaseAgent` subclasses** | If your agent class is something other than `LlmAgent` / `SequentialAgent` / `ParallelAgent` / `LoopAgent`, YAML cannot construct it. Graph workflows (`Workflow`) are Python-only too. |
 | **No plugin wiring** | Plugins live on the **App**, not the agent — and `App` is still constructed in Python today. YAML reaches the agent boundary, not the App boundary. |
 | **Stringly-typed errors** | If you misspell a tool's import path in YAML, the error surfaces at load time as a string error, not a Python `NameError` your IDE caught two seconds after typing. |
 

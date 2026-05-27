@@ -18,6 +18,13 @@ You are here: 🗺 Integration Track ▸ 07 Callbacks ▸ 06 Callback recipe coo
 
 You've seen the hooks. Now see them solving real problems. Each recipe is a runnable snippet — drop in, adapt, ship.
 
+> **All recipes assume these imports** (paste once at the top of your file):
+>
+> ```python
+> from google.adk.models import LlmResponse, LlmRequest
+> from google.genai import types
+> ```
+
 ## Recipe 1 — Response cache (deterministic prompts)
 
 If the same exact prompt is asked twice, skip the LLM call.
@@ -179,7 +186,26 @@ Wire to `after_tool_callback`. Don't print args directly — they may contain PI
 
 ## 🧠 Stacking recipes
 
-A single agent often wants several of these. ADK allows **one callback per hook per agent**, so compose by hand:
+A single agent often wants several of these. Each callback hook on an `LlmAgent` accepts **either a single callable OR a list of callables**. When you pass a list, ADK runs them in order until one returns a non-`None` value — that return short-circuits the chain (and, for `before_model_callback`, replaces the LLM call). See `llm_agent.py:75-87` and the field docstring at lines 391-405 ("Callback or list of callbacks…called in the order they are listed until a callback does not return None").
+
+So you have two equally valid styles:
+
+**Style A — pass a list, let ADK iterate:**
+
+```python
+agent = Agent(
+    name="cookbook_demo", model="gemini-2.5-flash",
+    instruction="Help the user.",
+    tools=[google_search],
+    before_agent_callback=start_budget,
+    before_model_callback=[cache_lookup, per_user_limit],   # run in order
+    after_model_callback=[redact_pii, inject_citations],    # run in order
+    before_tool_callback=[feature_gate, enforce_budget],
+    after_tool_callback=audit_tool,
+)
+```
+
+**Style B — compose by hand** (still fine; preferred when you need conditional plumbing between steps):
 
 ```python
 def composed_before_model(ctx, llm_request):
@@ -200,7 +226,7 @@ agent = Agent(
 )
 ```
 
-That's PII redaction + citations + cache + rate-limit + budget + feature flag + audit, on one agent. About 60 lines of glue once you have the seven recipes in hand.
+Either way: PII redaction + citations + cache + rate-limit + budget + feature flag + audit, on one agent. Style A is shorter when each step is independent; Style B wins when one step's behavior depends on another's output.
 
 > 🛠 **Have the student do this:** pick TWO recipes (cache + redact is a great pair), wire them onto their Module 02 agent, and confirm both fire by adding `print(...)` markers.
 

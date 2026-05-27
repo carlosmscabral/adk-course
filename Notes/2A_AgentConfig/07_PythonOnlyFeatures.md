@@ -79,7 +79,9 @@ Plugins live on the **App**, not the agent. The YAML schema covers `LlmAgent` an
 # main.py — App-level plugin wiring (cannot move to YAML today)
 from google.adk.apps import App
 from google.adk.agents import config_agent_utils
-from google.adk.plugins import GlobalInstructionPlugin
+# GlobalInstructionPlugin is not re-exported from google.adk.plugins.__init__;
+# import from its module directly.
+from google.adk.plugins.global_instruction_plugin import GlobalInstructionPlugin
 
 agent = config_agent_utils.from_config("root_agent.yaml")
 app = App(
@@ -93,7 +95,7 @@ This means **every YAML-driven ADK project still has a Python entry point** for 
 
 ## 🧠 Category 4 — Custom `BaseAgent` subclasses
 
-The YAML schema's `agent_class:` accepts a fixed set: `LlmAgent`, `SequentialAgent`, `ParallelAgent`, `LoopAgent`, `WorkflowAgent`. If you wrote `class MyCustomRouter(BaseAgent): ...` to implement your own routing logic (Module 09 covers when this is appropriate), YAML cannot construct it.
+The YAML schema's `agent_class:` accepts a fixed set: `LlmAgent`, `SequentialAgent`, `ParallelAgent`, `LoopAgent` (per `agent_config.py:_ADK_AGENT_CLASSES`). Anything else falls through to `BaseAgent`. Graph workflows (`google.adk.workflow.Workflow`) are **not** YAML-loadable — they live in Python only. If you wrote `class MyCustomRouter(BaseAgent): ...` to implement your own routing logic (Module 09 covers when this is appropriate), YAML cannot construct it either.
 
 **Workaround:** Python entry point.
 

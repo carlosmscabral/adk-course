@@ -88,7 +88,7 @@ Per-session cost cap, per-user rate limit, per-tool quota. Page-05 cookbook reci
 
 ### 9. Auth at the tool, not the prompt
 
-The model should *never* be the gatekeeper for "is this user allowed?" The tool's `before_tool_callback` reads `tool_context.auth_state` and refuses unauthorized calls deterministically. (Page 03.)
+The model should *never* be the gatekeeper for "is this user allowed?" The tool calls `tool_context.get_auth_response(auth_config)` to fetch the resolved credential (or `tool_context.request_credential(auth_config)` to kick off OAuth if it is missing) — and a `before_tool_callback` compares `tool_context.state["user_id"]` against `args["user_id"]` to refuse cross-user calls deterministically. (Page 03.)
 
 ### 10. Session poisoning protection
 

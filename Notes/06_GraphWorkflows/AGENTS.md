@@ -3,7 +3,7 @@
 ## What the student should walk away knowing
 
 - The three legacy templates (`SequentialAgent`, `ParallelAgent`, `LoopAgent`) still ship in 2.0 and compose by nesting.
-- Graph workflows (`WorkflowAgent` + `FunctionNode` + `ParallelWorker` + routes) are the 2.0 primary primitive, used when templates can't express the shape.
+- Graph workflows (`Workflow` + `FunctionNode` + the `@node` decorator + routes via `Edge`) are the 2.0 primary primitive, used when templates can't express the shape. Fan-out is achieved by yielding a list from a node (not by importing `_ParallelWorker`, which is private).
 - Four template ceilings: conditional routing, joins, retries-per-node, HITL pauses.
 - Edges are tuples; the third element is an optional route label.
 - A FunctionNode is a thin adapter: yields state writes, route Events, content values.
@@ -17,7 +17,7 @@
 
 ## Watch for these mistakes
 
-- Confusing `google.adk.workflow.Workflow` (framework alias) with `google.adk.agents.workflow.workflow_agent.WorkflowAgent` (sample-blessed import). Teach the latter — it's what every official sample uses.
+- The 2.0 framework API is `from google.adk.workflow import Workflow, START, FunctionNode, BaseNode, Edge, node`. The class is `Workflow` (no `Agent` suffix). Ignore older samples that import `google.adk.agents.workflow.*` — those paths exist only in the 1.x sample tree and are pinned to `google-adk<2.0.0`. Teach against the framework source (`google/adk/workflow/`), not the stale sample imports.
 - Forgetting to yield content *before* `Event(route=...)`.
 - Magic-string route labels — typos silently route nowhere.
 - Cycles without an exit route — the workflow runs forever (well, until budget cap).

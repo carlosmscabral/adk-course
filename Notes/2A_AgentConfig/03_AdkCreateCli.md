@@ -30,8 +30,8 @@ Flags:
 |---|---|
 | `--type config` | Scaffold a YAML agent (`root_agent.yaml`). The alternative is `--type code` for the Python form. |
 | `--model gemini-2.5-flash` | The model string to write into the template. Defaults to `gemini-2.5-flash` if omitted. |
-| `--google-api-key KEY` | Writes `GOOGLE_API_KEY=KEY` into `.env` and sets `GOOGLE_GENAI_USE_VERTEXAI=0`. |
-| `--google-cloud-project PROJECT --google-cloud-region us-central1` | The Vertex AI alternative — writes `GOOGLE_GENAI_USE_VERTEXAI=1` and the project/region. |
+| `--api_key KEY` | Writes `GOOGLE_API_KEY=KEY` into `.env` and sets `GOOGLE_GENAI_USE_VERTEXAI=0`. |
+| `--project PROJECT --region us-central1` | The Vertex AI alternative — writes `GOOGLE_GENAI_USE_VERTEXAI=1` and the project/region. |
 
 If you omit `--type`, `--model`, or the auth flags, the CLI prompts you interactively. The prompts are friendly; pass flags only when you want the command to be non-interactive (CI scripts).
 
@@ -129,7 +129,7 @@ The dotted path is a **Python import path** — ADK uses `importlib` to resolve 
 >
 > `adk create` writes secrets into `.env`. The CLI warns about adding `.env` to `.gitignore`, but that warning is easy to miss in CI. Standard mitigation: add `.env` to your repo's root `.gitignore` **before** the first `adk create` call, and use a secret-manager (GCP Secret Manager, Vault) for production deploys — never ship the dev `.env` to prod. See [16 Production & Security § 02 Secrets Handling](../16_ProductionSecurity/02_SecretsHandling.md).
 
-> 🛠 **Have the student run:** `adk create scratch_yaml --type config --model gemini-2.5-flash --google-api-key $GOOGLE_API_KEY`. Then `adk run scratch_yaml` and confirm the agent replies. The whole loop should take under two minutes — that is the point of the scaffold.
+> 🛠 **Have the student run:** `adk create scratch_yaml --type config --model gemini-2.5-flash --api_key $GOOGLE_API_KEY`. Then `adk run scratch_yaml` and confirm the agent replies. The whole loop should take under two minutes — that is the point of the scaffold. (Flag names verified against `cli_tools_click.py:436-498`.)
 
 ---
 

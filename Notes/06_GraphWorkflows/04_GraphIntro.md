@@ -1,10 +1,10 @@
 ---
 module: 06_GraphWorkflows
 page: 04_GraphIntro
-title: WorkflowAgent, nodes, edges
+title: Workflow, nodes, edges
 estimated_minutes: 25
 prereqs: [06_GraphWorkflows/03]
-concepts: [WorkflowAgent, START, edges-tuple, node-chaining]
+concepts: [Workflow, START, edges-tuple, node-chaining]
 icon: 🧠
 in_production: true
 detours_suggested: []
@@ -17,10 +17,9 @@ You are here: 🗺 Composition Track ▸ 06 Graph Workflows ▸ 04 Graph Intro
 ## 🧠 The minimum-viable graph
 
 ```python
-from google.adk.agents.workflow.workflow_agent import WorkflowAgent
-from google.adk.agents.workflow.base_node import START
+from google.adk.workflow import Workflow, START
 
-root_agent = WorkflowAgent(
+root_agent = Workflow(
     name="root_agent",
     edges=[
         (START, city_generator_agent, lookup_time_function, city_report_agent),
@@ -28,11 +27,11 @@ root_agent = WorkflowAgent(
 )
 ```
 
-This is the entire `workflows-sequential` sample. Three observations:
+This is the entire shape of the minimum-viable graph. Three observations:
 
-1. **`WorkflowAgent`** is the new orchestrator. Like `SequentialAgent`, it has no model — it's a runtime that walks a graph.
+1. **`Workflow`** is the new orchestrator. Like `SequentialAgent`, it has no model — it's a runtime (a `BaseNode` subclass whose `_run_impl` IS the scheduler loop).
 2. **`edges`** is a list of tuples. Each tuple is a **chain**: read it as "from START, go to A, then to B, then to C."
-3. **`START`** is a sentinel constant. Every graph begins there.
+3. **`START`** is a sentinel `BaseNode` constant. Every graph begins there.
 
 ## 🧠 The edges API in one breath
 
@@ -71,11 +70,11 @@ A is followed by both B and E (two outgoing edges), B branches to C, C to D.
 Any of:
 
 - An **`LlmAgent`** — the runtime invokes it like a turn.
-- A **`FunctionNode`** — wraps an async generator (we'll see this on page 05).
-- A **`WorkflowAgent`** — graphs nest inside graphs. Real-world feature.
-- A **`ParallelWorker`** wrapper — fan-out to N parallel copies of one agent (page 05).
+- A **`FunctionNode`** — wraps a sync/async function or generator (we'll see this on page 05).
+- A **`Workflow`** — graphs nest inside graphs. `Workflow` is itself a `BaseNode`, so a whole workflow can serve as a node in a bigger one.
+- A **`@node`-decorated function** — decorator-style equivalent of `FunctionNode` (page 05).
 
-Heterogeneous nodes are normal. The `workflow-concurrent_research_writer` sample mixes all four.
+Heterogeneous nodes are normal. Fan-out (parallel execution) is achieved by **yielding a list** from one node — the framework dispatches the next node once per element. There is no public `ParallelWorker` class in 2.0.
 
 ## 🧠 The 3-node graph, drawn
 
@@ -118,7 +117,7 @@ Watch each node fire in order. The output is `"It is HH:MM:SS in CITY right now.
 >
 > (Answer: functionally identical for this case! The graph wins only when you add routing, parallelism, or HITL. Always pick the simpler tool when you can.)
 
-> ⚠️ **API surface note**: imports come from `google.adk.agents.workflow.workflow_agent` and `google.adk.agents.workflow.base_node` — this is the path used by every official sample. The framework also ships a `Workflow` class at `google.adk.workflow` (note: no `Agent` suffix); they expose the same concepts but the *sample-blessed* imports are the `agents.workflow.*` ones. Use those.
+> ⚠️ **API surface note**: the framework 2.0 API lives at `google.adk.workflow`. Public exports (see `google/adk/workflow/__init__.py`) are `Workflow`, `BaseNode`, `START`, `FunctionNode`, `Edge`, `node`, `JoinNode`, `RetryConfig`, `NodeTimeoutError`, `DEFAULT_ROUTE`. The 1.x-era samples (`workflow-concurrent_research_writer`, `workflows-HITL_concierge`) still import from `google.adk.agents.workflow.*` — those `pyproject.toml` files pin `google-adk<2.0.0`. On 2.0, use `from google.adk.workflow import Workflow, START, FunctionNode` and ignore the old paths.
 
 ---
 

@@ -4,7 +4,7 @@ page: 08_DissectingWorkflowSample
 title: Dissecting workflow-concurrent_research_writer
 estimated_minutes: 90
 prereqs: [06_GraphWorkflows/07]
-concepts: [WorkflowAgent, nested-workflows, ParallelWorker, FunctionNode, route-fan-out]
+concepts: [Workflow, nested-workflows, list-fan-out, FunctionNode, route-fan-out]
 icon: 🛠
 in_production: false
 detours_suggested: []
@@ -18,7 +18,7 @@ You are here: 🗺 Composition Track ▸ 06 Graph Workflows ▸ 08 Dissecting Wo
 
 ```
 adk-samples/python/agents/workflow-concurrent_research_writer/
-├── agent.py                  ← two WorkflowAgents + the root
+├── agent.py                  ← two Workflows + the root
 ├── main.py                   ← runner driver
 ├── prompts.py
 ├── tools.py
@@ -30,38 +30,42 @@ adk-samples/python/agents/workflow-concurrent_research_writer/
     └── publishing.py         ← FunctionNodes: start_blog, router, post, shoutout
 ```
 
-> 🛠 **Have the student open these files in tabs**, starting with `agent.py`. We'll walk top-down.
+> ⚠️ **Sample version pin**: this sample's `pyproject.toml` declares `google-adk>=1.5.0,<2.0.0`. Its code uses the 1.x import paths (`from google.adk.agents.workflow.workflow_agent import WorkflowAgent`, etc.) — those modules do not exist in 2.0. The dissection below shows the **2.0 equivalent** using `google.adk.workflow.Workflow`. If you check out the sample on a 2.0 install, the imports will fail; treat the sample as a *shape reference*, not as runnable code on 2.0.
 
-## 📁 `agent.py` — the orchestration
+> 🛠 **Have the student open these files in tabs**, starting with `agent.py`. We'll walk top-down — but read the actual imports against the 2.0 framework source (`/home/carloscabral/study/adk-python/src/google/adk/workflow/__init__.py`), not against the sample's 1.x imports.
+
+## 📁 `agent.py` — the orchestration (2.0 equivalent)
 
 ```python
-research_workflow = WorkflowAgent(
+from google.adk.workflow import Workflow, START
+
+research_workflow = Workflow(
     name="research_workflow",
     edges=[
         (
             START,
-            start_node,                              # FunctionNode
-            ParallelWorker(research_worker_agent),   # fan-out
-            distill_agent,                           # LlmAgent — synthesize
-            save_node,                               # FunctionNode — persist
+            start_node,            # FunctionNode — yields list for fan-out
+            research_worker_agent, # LlmAgent — runs once per list element
+            distill_agent,         # LlmAgent — synthesize the merged Content
+            save_node,             # FunctionNode — persist
         ),
     ],
 )
 
 # ... (blog_workflow definition — many edges, routes by post length, shoutouts)
 
-root_agent = WorkflowAgent(
+root_agent = Workflow(
     name="root_agent",
     rerun_on_resume=True,
-    edges=[("START", research_workflow, blog_workflow)],
+    edges=[(START, research_workflow, blog_workflow)],
 )
 ```
 
 Three layers:
 
-1. **`research_workflow`** — linear: start → parallel research → distill → save.
+1. **`research_workflow`** — linear: start → parallel research (via list yield) → distill → save.
 2. **`blog_workflow`** — linear stem → dynamic routing by length → parallel shoutouts.
-3. **`root_agent`** — composes the two as nodes. Workflows nest like agents.
+3. **`root_agent`** — composes the two as nodes. `Workflow` subclasses `BaseNode`, so workflows nest as nodes.
 
 ## 📁 `function_nodes/research.py`
 
@@ -85,18 +89,16 @@ Each `async def` is a generator. The `FunctionNode(...)` wrappers at the bottom 
 ## 📁 `agent_nodes/research.py`
 
 ```python
-_research_worker_llm_agent = LlmAgent(
+research_worker_agent = LlmAgent(
     name="research_worker_llm_agent",
     model="gemini-2.5-flash",
     instruction="Your sole task is to research the topic '{topic}' on the platform "
                 "given as your input. Execute a search and summarize.",
     tools=[execute_search],
 )
-
-research_worker_agent = ParallelWorker(_research_worker_llm_agent)
 ```
 
-One agent, wrapped in `ParallelWorker`. The wrapper makes it run once per element of the upstream list. `{topic}` substitution reaches into state (saved by the start node) — same mechanic as `output_key` ↔ `{key}` from module 05.
+One agent, placed in the chain *after* a node that yields a list. The framework runs it once per element of that list — no public `ParallelWorker` wrapper required in 2.0. `{topic}` substitution reaches into state (saved by the start node) — same mechanic as `output_key` ↔ `{key}` from module 05.
 
 ## 📁 `function_nodes/publishing.py` (excerpt)
 
@@ -121,8 +123,8 @@ Input: `"The Future of AI in Education"` (250 words eventually).
    ▼
   start_node          (yields Event(state={topic: ...}); yields list of 4 platforms)
    │
-   ▼  (fan-out, 4 parallel)
-  ParallelWorker(research_worker_agent)
+   ▼  (fan-out, 4 parallel — framework dispatches once per list element)
+  research_worker_agent (LlmAgent)
        │ ┌─ "X"        → worker runs → summary X
        │ ├─ "LinkedIn" → worker runs → summary LI
        │ ├─ "Reddit"   → worker runs → summary R
@@ -159,7 +161,7 @@ A linear 5-stage research stem, a 4-way fan-out, fan-in, then a blog stem with 1
 ## ❓ Comprehension checks
 
 > ❓ **Ask the student:**
-> 1. If `research_worker_agent` was an `LlmAgent` directly (not wrapped in `ParallelWorker`), what would happen when `start_node` yielded the list of 4 platforms?
+> 1. What does the framework do when an upstream node yields a list? (Answer: it dispatches the next node once per element, in parallel — no `ParallelWorker` import required in 2.0.)
 > 2. Why does `start_node` write `topic` to state instead of just passing it as `node_input`?
 > 3. The `route_changer` yields `node_input` *before* `Event(route=...)`. If you swapped the order, would it still work?
 

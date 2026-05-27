@@ -62,7 +62,7 @@ A plugin fires for **every agent under that runner**. A callback fires for **the
 # Callback — registered ON the agent
 agent = Agent(
     ...,
-    before_model_callback=my_cb,        # exactly ONE per hook per agent
+    before_model_callback=[guardrail, cache_check],   # list also accepted
 )
 
 # Plugin — registered ON the runner
@@ -70,12 +70,12 @@ runner = Runner(
     agent=agent,
     app_name="x",
     session_service=ses,
-    plugins=[LoggingPlugin(), MyPolicyPlugin()],   # plugins STACK
+    plugins=[LoggingPlugin(), MyPolicyPlugin()],      # plugins STACK
 )
 ```
 
-* **Callbacks don't stack.** One `before_model_callback` per agent. Compose by hand (page 06 showed the pattern).
-* **Plugins stack.** Order matters: they fire in list order on the "before" side, reverse order on the "after" side (LIFO).
+* **Callbacks stack per agent.** Every `*_callback` field on `LlmAgent` is typed `Union[Callable, list[Callable]]` (see `llm_agent.py:75-87`). Pass a list and ADK runs them in declared order; the first to return a non-`None` value short-circuits the rest (and, for `before_model_callback`, replaces the LLM call). You can still compose by hand when you need conditional plumbing between steps (page 06).
+* **Plugins stack runner-wide.** Order matters: they fire in list order on the "before" side, reverse order on the "after" side (LIFO).
 
 ## 🧠 The promotion path
 
@@ -106,8 +106,8 @@ The function body doesn't change. The shell does.
 
 | Surface | Scope | Stacks? | Where it lives | Module |
 |---|---|---|---|---|
-| Callback | One agent | No — one per hook | `Agent(before_model_callback=...)` | 07 (this) |
-| Plugin | One runner (all agents under it) | Yes | `Runner(plugins=[...])` | 13 |
+| Callback | One agent | Yes — pass a list (per-agent) | `Agent(before_model_callback=[...])` | 07 (this) |
+| Plugin | One runner (all agents under it) | Yes — module-wide | `Runner(plugins=[...])` | 13 |
 | Tool guard | All uses of one tool | One per tool | tool definition | 03 |
 | `output_schema=` | One agent's reply shape | n/a | `Agent(output_schema=Model)` | 17 |
 

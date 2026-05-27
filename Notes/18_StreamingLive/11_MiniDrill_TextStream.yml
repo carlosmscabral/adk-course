@@ -21,6 +21,15 @@ exercise:
   scaffolding_hint: |
     Start from `Work/_template_run.py` (the basic InMemoryRunner skeleton).
     Use `time.time()` snapshots; convert with `f"{t - t0:.2f}"`.
+
+    CRITICAL — opt into SSE streaming, or the rubric's "3 distinct chunk
+    timestamps" check cannot pass. `RunConfig` defaults to
+    `StreamingMode.NONE`, which yields only the final aggregated event:
+
+        from google.adk.agents.run_config import RunConfig, StreamingMode
+        run_config = RunConfig(streaming_mode=StreamingMode.SSE)
+        async for event in runner.run_async(..., run_config=run_config):
+            ...
   estimated_minutes: 30
   verification:
     type: script_output

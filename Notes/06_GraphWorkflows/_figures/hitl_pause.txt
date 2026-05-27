@@ -2,7 +2,7 @@ HITL pause / resume lifecycle
 
 ──────────────────────────────────────────────────────────────────────────
 
-  application                  WorkflowAgent                      user
+  application                  Workflow                           user
     │                              │                               │
     │  runner.run_async(input)     │                               │
     │─────────────────────────────▶│                               │
@@ -28,9 +28,10 @@ HITL pause / resume lifecycle
     │                                                              │
     │ ◀─── {"city": "Paris"} ──────────────────────────────────────│
     │                                                              │
-    │  runner.resume(             │                                │
+    │  runner.run_async(          │                                │
     │    invocation_id=token,     │                                │
-    │    user_input={"city": ...},│                                │
+    │    new_message=function_    │                                │
+    │      response_content,      │                                │
     │  )                          │                                │
     │─────────────────────────────▶│                               │
     │                              │   node C re-runs              │
@@ -56,5 +57,7 @@ key invariants
     False for expensive LLM calls and side-effecting nodes
 - On resume, nodes UPSTREAM of the suspension point are NOT re-paid —
   their outputs replay from the checkpoint.
-- runner.cancel(invocation_id) is the dual: tear down a suspended
-  workflow cleanly (timeout, user abandon, admin override).
+- Cancellation is handled at the session-service layer: simply do not
+  resume, or delete the session entirely. There is no public
+  `runner.cancel(invocation_id)` in 2.0 — the App-level lifecycle owns
+  abandonment.

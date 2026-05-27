@@ -93,7 +93,7 @@ Before shipping a BQ agent:
 
 ## ⚠️ Specific pitfalls observed in real teams
 
-- **Forgetting `WriteMode`** — agent defaults to allowing writes in some SDK versions. Audited apps caught this in code review weeks after launch.
+- **Forgetting `WriteMode`** — the SDK default is `BLOCKED` (see `src/google/adk/integrations/bigquery/config.py:56`), but **set it explicitly** for clarity and to guard against future default changes. Audited apps still caught implicit defaults in code review weeks after launch — the explicit setting is the documentation.
 - **Cost-guard with `use_query_cache=True`** — dry_run returns 0 bytes for a cached query. Set `use_query_cache=False` in the dry_run job_config.
 - **Embedding model task-type wrong in `ML.GENERATE_EMBEDDING`** — same 10A gotcha, surfaced via SQL. RETRIEVAL_DOCUMENT on ingest, RETRIEVAL_QUERY at search.
 - **No retry on transient BQ errors** — long queries can hit 503s. Use `google.api_core.retry` with backoff.

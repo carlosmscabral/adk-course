@@ -24,7 +24,7 @@ That said: **the entire point of this module is teaching cost discipline.** Even
 
 ## Watch for these mistakes
 
-- **Default WriteMode** — the SDK default is not BLOCKED in all versions. Always set explicitly.
+- **Default WriteMode** — the SDK default *is* `BLOCKED` (see `src/google/adk/integrations/bigquery/config.py:56`), but always set it explicitly for clarity and to guard against future changes. Students who skip the explicit setting are relying on a default they did not verify.
 - **`use_query_cache=True` in dry_run** — silently returns 0 bytes for cached queries → cost-guard always passes → false sense of safety.
 - **Forgetting partition info in the schema** — LLM generates queries that scan the whole table.
 - **`SELECT *`** — LLM defaults to it. Forbid in the prompt.

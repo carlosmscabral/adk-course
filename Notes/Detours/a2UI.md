@@ -57,8 +57,8 @@ Common flags:
 ```bash
 adk web --port 8001                # different port
 adk web --host 0.0.0.0             # accept LAN connections (NOT for prod)
-adk web --reload                   # watch for code changes, reload agent
-adk web --session-service sqlite:///dev.db   # persist sessions across restarts
+adk web --reload_agents            # live-reload agent code on file change
+adk web --session_service_uri sqlite:///dev.db   # persist sessions across restarts
 ```
 
 ---
@@ -69,7 +69,7 @@ This is what makes `adk web` worth the disk space:
 
 ```
 1. Edit agent instruction in code           ↑
-2. --reload picks it up                     │
+2. --reload_agents picks it up              │
 3. Re-send the same user message            │  tight loop, ~10s
 4. Click the model_thought event            │  inspect why it
 5. Adjust instruction                       │  picked that tool /
@@ -103,7 +103,7 @@ In `adk web` you'll watch `user:<key>` appear in the state panel in real-time. T
 
 ⚠️ **Not safe to expose.** No auth, prints request payloads to logs, hot-reloads code from disk. Localhost only.
 
-⚠️ **Session service defaults to in-memory.** Restart `adk web` and you lose every conversation. Pass `--session-service sqlite:///dev.db` if you want persistence across reloads.
+⚠️ **Session service defaults to in-memory.** Restart `adk web` and you lose every conversation. Pass `--session_service_uri sqlite:///dev.db` if you want persistence across reloads.
 
 > **🚀 In Production**
 >

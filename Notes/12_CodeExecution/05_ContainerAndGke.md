@@ -31,16 +31,20 @@ agent = LlmAgent(
     name="analyst",
     code_executor=ContainerCodeExecutor(
         image="my-org/python-sandbox:3.12-slim",
-        # network=None, timeout_seconds=30, mem_limit="512m", etc.
+        # Other ctor kwargs (per container_code_executor.py):
+        #   base_url=None       — point at a remote Docker daemon
+        #   docker_path=None    — build from a Dockerfile dir instead of `image`
     ),
 )
 ```
 
+The constructor only accepts `base_url`, `image`, and `docker_path`. **Network isolation, timeouts, and memory caps are not executor kwargs** — they're properties of the Docker daemon / image / container runtime config. Bake them into the image (or the `docker run` defaults for your daemon); the executor itself doesn't expose knobs for them.
+
 You control:
 
 - The base image (so the package set is yours).
-- Resource limits (cpu, memory, network).
-- Volume mounts (data files made available to the sandbox).
+- Resource limits and network policy — at the **Docker layer**, not via the executor.
+- Volume mounts (data files made available to the sandbox) — same: configured on the Docker side.
 
 Cost: container startup per execution adds latency. Worth it when you need real isolation on your own host.
 
@@ -56,9 +60,27 @@ agent = LlmAgent(
     code_executor=GkeCodeExecutor(
         image="us-central1-docker.pkg.dev/proj/repo/sandbox:1.0",
         namespace="agent-sandbox",
-        # service_account=..., resources=..., timeout=...
+        executor_type="job",   # "job" (default) or "sandbox"
+        cpu_limit="500m",      # other real fields: timeout_seconds, mem_limit, cpu_requested,
+                               # mem_requested, kubeconfig_path, kubeconfig_context, etc.
     ),
 )
+
+# Service-account binding is NOT a constructor kwarg — there is no `service_account`
+# field on GkeCodeExecutor, and passing one raises a Pydantic ValidationError.
+# Bind identity at the cluster level via Workload Identity:
+#
+#   gcloud iam service-accounts add-iam-policy-binding \
+#     SANDBOX_GSA@PROJECT.iam.gserviceaccount.com \
+#     --role roles/iam.workloadIdentityUser \
+#     --member "serviceAccount:PROJECT.svc.id.goog[agent-sandbox/sandbox-ksa]"
+#
+#   kubectl annotate serviceaccount sandbox-ksa \
+#     -n agent-sandbox \
+#     iam.gke.io/gcp-service-account=SANDBOX_GSA@PROJECT.iam.gserviceaccount.com
+#
+# The pods the executor creates will run under whatever KSA the namespace
+# defaults to (or the one the controlling pod template specifies).
 ```
 
 Use when:

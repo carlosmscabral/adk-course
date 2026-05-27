@@ -79,7 +79,7 @@ See [`_figures/legacy_templates.txt`](_figures/legacy_templates.txt).
 
 ## 🧠 Why this still works in 2.0
 
-Every nesting is just `SequentialAgent(sub_agents=[...other agent...])`. There's no graph, no `WorkflowAgent`, no edges. The composition is the **tree structure**. The runtime executes by depth-first walk: enter the outer Sequential → enter the Loop → enter the inner Sequential → enter the Parallel → run both writers → exit → run critique → exit Sequential → next loop iteration → ...
+Every nesting is just `SequentialAgent(sub_agents=[...other agent...])`. There's no graph, no `Workflow`, no edges. The composition is the **tree structure**. The runtime executes by depth-first walk: enter the outer Sequential → enter the Loop → enter the inner Sequential → enter the Parallel → run both writers → exit → run critique → exit Sequential → next loop iteration → ...
 
 ## ⚠️ Where this style hits its ceiling
 

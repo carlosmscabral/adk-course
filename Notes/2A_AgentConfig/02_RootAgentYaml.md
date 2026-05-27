@@ -23,9 +23,13 @@ A canonical `root_agent.yaml`, every field annotated. The YAML on the left maps 
 # yaml-language-server: $schema=https://raw.githubusercontent.com/google/adk-python/refs/heads/main/src/google/adk/agents/config_schemas/AgentConfig.json
 
 agent_class: LlmAgent              # ←┬─ which BaseAgent subclass to instantiate.
-                                   #  │  Default is LlmAgent if omitted. Other values:
-                                   #  │  SequentialAgent, ParallelAgent, LoopAgent,
-                                   #  │  WorkflowAgent.
+                                   #  │  Default is LlmAgent if omitted. The full set
+                                   #  │  recognised by the discriminator (see
+                                   #  │  agent_config.py:_ADK_AGENT_CLASSES) is:
+                                   #  │  LlmAgent, SequentialAgent, ParallelAgent,
+                                   #  │  LoopAgent. Anything else falls through to
+                                   #  │  BaseAgent. Graph workflows (`Workflow`)
+                                   #  │  are NOT YAML-loadable — they live in Python.
 
 name: root_agent                   # ── agent name (Event.author label).
 
@@ -55,9 +59,13 @@ generate_content_config:           # ── per-agent Gemini config (safety, res
     - category: HARM_CATEGORY_DANGEROUS_CONTENT
       threshold: 'OFF'
 
-global_instruction: |              # ── prefixed to every sub-agent's system prompt
-  You are part of the                 too. Use sparingly; modern preference is the
-  AcmeCo tutor platform.              GlobalInstructionPlugin (App-level) instead.
+# global_instruction:              # ── NOT a YAML field. LlmAgentConfig is
+#                                   #    extra='forbid', so writing this key raises
+#                                   #    a validation error at load time. The
+#                                   #    behavior exists only as Python's
+#                                   #    LlmAgent(global_instruction=...) kwarg
+#                                   #    (deprecated). For new code, use the App-
+#                                   #    level GlobalInstructionPlugin instead.
 
 output_key: last_reply             # ── if set, the agent's reply is also written to
                                    #    state[output_key] via an Event delta.
@@ -69,6 +77,8 @@ output_key: last_reply             # ── if set, the agent's reply is also wr
 
 That is the **entire shape of an LlmAgent in YAML today**. Every field above has a 1:1 Python equivalent.
 
+> ⚠️ **Workflow graphs are not YAML-loadable.** `WorkflowAgent` is not a valid `agent_class:`. The 2.0 discriminator (`agent_config.py:_ADK_AGENT_CLASSES`) only accepts `LlmAgent`, `LoopAgent`, `ParallelAgent`, `SequentialAgent`. Graph workflows live in Python via `from google.adk.workflow import Workflow` — see [Module 06 Graph Workflows](../06_GraphWorkflows/).
+
 ## 🧠 Quick crib — YAML → Python kwarg map
 
 | YAML field | Python `LlmAgent(...)` kwarg | Notes |
@@ -78,7 +88,6 @@ That is the **entire shape of an LlmAgent in YAML today**. Every field above has
 | `model:` | `model=` | String only. For `Gemini(retry_options=...)` or `LiteLlm(...)`, use Python. |
 | `description:` | `description=` | |
 | `instruction:` | `instruction=` | Static string only. |
-| `global_instruction:` | `global_instruction=` | Deprecated in favor of `GlobalInstructionPlugin`. Avoid in new YAML. |
 | `sub_agents:` | `sub_agents=` | Each entry is `{config_path: ...}`. Loaded recursively. |
 | `tools:` | `tools=` | Each entry is `{name: dotted.path}` — see page 04. |
 | `generate_content_config:` | `generate_content_config=` | Maps to `genai.types.GenerateContentConfig`. |

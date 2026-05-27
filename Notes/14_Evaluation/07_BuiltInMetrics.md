@@ -20,6 +20,8 @@ You are here: 🗺 Runtime Track ▸ 14 Evaluation ▸ 07 Built-in Metrics
 
 String/regex-style match between the agent's final response and the gold reference. Returns a similarity score (typically token-overlap based).
 
+> 🪧 **Naming.** The class in the framework is actually `RougeEvaluator` (in `google/adk/evaluation/final_response_match_v1.py`), and the metric name it reports under is `response_match_score`. The "FinalResponseMatchV1" label is colloquial — the implementation is ROUGE-1 F-measure over the final response. Reach for it by the metric name in `test_config.json`, not by class import.
+
 Use when:
 
 - The expected response is short and well-defined.

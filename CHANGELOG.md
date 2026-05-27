@@ -4,6 +4,52 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.2] - 2026-05-27
+
+Dogfood Wave 2. Six parallel verification agents (read-only, `git status` clean post-run) covered the modules 0.3.1 did not sample: 06 Graph Workflows, 07 Callbacks, 08 MCP, 2A Agent Config, 10C BigQuery, 12 Code Execution, 13 Plugins, 14 Evaluation, 16 Production & Security, 17 Advanced Models, 18 Streaming & Live, and the VisualBuilder / a2UI / FastMCP detours. Same severity rubric as 0.3.1 (🔴 wrong shape, won't run / 🟡 drifted / 🟢 verified). Five parallel fix agents then corrected ~51 files surgically against `/home/carloscabral/study/adk-python/src/`. Only the 🔴 wave landed in this bump; 🟡 stays pending for the next pass.
+
+### Fixed
+- **Graph workflow API path** — real import is `from google.adk.workflow import Workflow, START` (not `google.adk.agents.workflow.WorkflowAgent`). `FunctionNode` + `@node` decorator are the public surface; `_ParallelWorker` is private. `Event` lives at `google.adk.events`. Real resume API is `runner.run_async(invocation_id=..., new_message=...)`. Worst offender because `AGENTS.md` doubled down on the wrong path; reversed. Affected all of `Notes/06_GraphWorkflows/` plus `Detours/VisualBuilder.md`.
+- **`FunctionNode.rerun_on_resume` does exist** (brief was wrong) — `_function_node.py:174` shows `rerun_on_resume: bool = False`; workflow-level default is `True`, per-node default is `False`. Kept kwarg in examples with the scope note.
+- **Sample-version skew** — `workflow-*`, `agent-skills-tutorial`, `financial-advisor` samples pin `google-adk<2.0.0`; flagged in 06's sample-anchor table so students don't read 1.x APIs as canonical.
+- **`adk create` flags** — real flags are `--api_key`, `--project`, `--region` (no `google-` prefix). Source: `cli_tools_click.py:436-498`. Affected `Notes/2A_AgentConfig/03_AdkCreateCli.md`.
+- **`LlmAgentConfig` is `extra='forbid'`** — unknown YAML keys (e.g., `global_instruction:`) raise validation errors at load; `_ADK_AGENT_CLASSES = {"LlmAgent", "LoopAgent", "ParallelAgent", "SequentialAgent"}` (no `WorkflowAgent`; graphs are Python-only). `ToolConfig` accepts only `name:` + `args:` — no `toolset:`/`class:` discriminator. Affected `Notes/2A_AgentConfig/02_RootAgentYaml.md`, `04_ToolReferences.md`, `07_PythonOnlyFeatures.md`, `01_WhyDeclarative.md`.
+- **Callbacks DO stack per agent** — `BeforeModelCallback: TypeAlias = Union[_SingleBeforeModelCallback, list[_SingleBeforeModelCallback]]` (llm_agent.py:75-87). Pages and `AGENTS.md` previously claimed otherwise. Affected `Notes/07_Callbacks/05_CallbackContextAnatomy.md`, `06_CallbackRecipeCookbook.md`, `07_CallbacksVsPlugins.md`, `AGENTS.md`.
+- **`ToolContext` and `CallbackContext` are aliases of the same class** — `ToolContext = Context` (tool_context.py:29), `CallbackContext = Context` (callback_context.py:22). Not subclasses. `ctx.session_id` is not real; use `ctx.session.id`.
+- **Plugin imports + signatures** — `ContextFilterPlugin` and `GlobalInstructionPlugin` are not in `plugins/__init__.py __all__`; deep imports required. `GlobalInstructionPlugin(global_instruction=...)` kwarg, not `instruction=`. Real plugin hook names are `_callback`-suffixed. Affected `Notes/13_Plugins/01_WhatIsAPlugin.md`, `04_ContextFilterPlugin.md`, `05_GlobalInstructionPlugin.md`.
+- **MCP lifecycle — Runner auto-closes toolsets** — `runners.py:2094-2144` (`_cleanup_toolsets`). Use `await runner.close()` with try/finally; `MCPToolset` is NOT an async context manager (no `__aenter__`/`__aexit__`). Affected `Notes/08_MCP/04_LifecycleManagement.md`, `07_InProduction.md`, `08_KnowledgeCheck.yml`, `09_MiniDrill.yml`, `AGENTS.md`, `Notes/10_A2A/03_ServeWithToA2a.md`.
+- **MCP auth headers** — fabricated `tool_context.headers["Authorization"]` replaced with real `MCPToolset(header_provider=...)` recipe (`mcp_toolset.py:112-114`, `mcp_tool.py:386-398`).
+- **`FastMCP` detour imports** — `MCPToolset, StdioConnectionParams` from `google.adk.tools.mcp_tool`; `StdioServerParameters` from `mcp` itself; example wraps params in `StdioConnectionParams(server_params=..., timeout=10.0)`.
+- **`adk web` flags** — `--session_service_uri` (not `--session-service`), `--reload_agents` (not `--reload` for agent-code reload; `--reload` toggles the server). Affected `Detours/a2UI.md`.
+- **Evaluation API shapes** — `LlmAsJudge` is an abstract base, config-driven via `judge_model_options.judge_model` (NOT `LlmAsJudge(model=...)`); real `__init__(self, eval_metric, criterion_type, expected_invocations_required=False)`. `RubricBasedEvaluator` constructor takes config, not `rubric=[...]`. Affected `Notes/14_Evaluation/04_LlmAsJudge.md`, `05_RubricBasedEvaluator.md`.
+- **`adk eval` flags** — first positional is a DIRECTORY; real flags are `--config_file_path`, `--print_detailed_results`, `--eval_storage_uri`, `--log_level`. `--num_runs`, `--output_dir`, `--config_path` were fabricated. Affected `Notes/14_Evaluation/08_AdkEvalCli.md`.
+- **Five evaluator types, not four** — `00_Overview.md` count fixed. `RougeEvaluator` (real class) has metric name `response_match_score`; surfaced as a 🪧 Naming callout.
+- **`ContainerCodeExecutor` real kwargs** — only `base_url`, `image`, `docker_path`; dropped fictional `network`, `timeout_seconds`, `mem_limit`. **`GkeCodeExecutor` real fields** — `kubeconfig_path`, `kubeconfig_context`, `image`, `namespace`, `executor_type`, `cpu_limit`; no `service_account` (use Workload Identity binding via gcloud + kubectl annotate). Affected `Notes/12_CodeExecution/05_ContainerAndGke.md`.
+- **Auth API real shape** — `BaseAuthenticatedTool` subclass + `tool_context.request_credential(auth_config)` / `get_auth_response(auth_config)` two-turn flow (`context.py:679, 696`). `@requires_auth` decorator and `tool_context.auth_state` do NOT exist. `BaseAuthenticatedTool` subclass overrides `_run_async_impl(args, tool_context, credential)`. Affected `Notes/16_ProductionSecurity/03_Authentication.md`, `10_InProduction.md`.
+- **Streaming requires opt-in** — `runner.run_async()` default is `StreamingMode.NONE` (run_config.py); text streaming needs `run_config=RunConfig(streaming_mode=StreamingMode.SSE)`. Affected `Notes/18_StreamingLive/01_StreamingFundamentals.md`, `03_TextStreaming.md`, `11_MiniDrill_TextStream.yml`.
+- **`LongRunningFunctionTool` is deferred-result, not async-generator** — `function_call_id` round-trip; tool returns `{"status": "pending", "job_id": ...}`; worker replays `function_response` with matching id (`function_tool.py:213-274`, `auth_tool.py:141-148`). Yield-progress pattern is the common fabrication. `_call_live(input_stream=...)` is the LIVE-only streaming-INPUT path, separate concern. Affected `Notes/18_StreamingLive/05_StreamingTools.md`.
+- **`LLMRegistry.register(llm_cls)` is single-arg** — class implements `supported_models() -> list[str]` regex patterns classmethod (`registry.py:99-107`, `base_llm.py:45`). Two-arg `register("name", cls)` and `LLMRegistry.list_models()` were fabricated; real lookup is `LLMRegistry.resolve(model)`. Class is `Claude` (NOT `ClaudeLlm`), subclass of `AnthropicLlm` (anthropic_llm.py:716). Affected `Notes/17_AdvancedModels/01_LLMRegistry.md`, `14_MiniDrill.yml`.
+- **BigQuery WriteMode default** — `BLOCKED` (config.py:56); `maximum_bytes_billed` IS first-class on `BigQueryToolConfig` (config.py:63-69, `>=10_485_760` validator). Page previously claimed unsafe default. Affected `Notes/10C_BigQueryAgents/03_BigQueryAsTool.md`, `07_InProduction.md`, `AGENTS.md`.
+- **`adk web --builder` flag does not exist** — removed phantom flag from VisualBuilder detour.
+
+### Method
+- **Dogfood**: 6 read-only verification agents with non-overlapping module scopes, grounded against `/home/carloscabral/study/adk-python/src/` and ADK docs at <https://adk.dev/>. Reports written to the 🔴/🟡/🟢 severity rubric established in 0.3.1. `git status --short` verified empty after each agent returned.
+- **Fix wave (🔴 only)**: 5 parallel agents with non-overlapping file scopes. Each fix verified against framework source with file:line citations; grep confirmations of bad strings returning 0 hits.
+- **New pattern surfaced**: sample-version skew. Several samples still pin `google-adk<2.0.0`; pages anchored to them inherit 1.x APIs as if canonical. Flagged in 06's sample-anchor table; full sweep deferred to the 🟡 pass.
+- **Reaffirmed lesson from 0.3.1**: brief-only authoring → confident hallucination; source-grounded authoring → correct content. The 0.3.0 modules touched by this wave were brief-authored; the bill is this entry.
+
+### Pending (🟡 next pass, per user "later the imprecise as well")
+- A2A well-known path (`/.well-known/agent-card.json` vs legacy `/.well-known/agent.json`)
+- Skills signatures sweep
+- GCP drift remainder (10A/10B)
+- Memory module typos
+- CLI flag drift remainder (`staging_bucket` deprecation note, Chat issuer)
+
+### Why
+- User: "let's expand our dogfood/review for the rest of our course, and then later, fix them." then "let's dispatch it all. first the wrong ones and later the imprecise as well." This entry is the 🔴 dispatch; 🟡 follows.
+
+---
+
 ## [0.3.1] - 2026-05-27
 
 Dogfood-and-fix cycle. Four parallel verification agents read the new 2.0-surface modules against `/home/carloscabral/study/adk-python/src/` (the real framework source) instead of against the brief. Five parallel fix agents then corrected ~25 surgically. The pattern that the verification surfaced: pages authored from the brief were confidently wrong on real API shapes; pages anchored to source were correct. This entry is the corrections, not new scope.

@@ -10,7 +10,7 @@
 ## Three pages added in the expansion (05, 06, 07)
 - **Page 05 — CallbackContext anatomy**: full surface of `CallbackContext` and `ToolContext`, what's read-only, what's mutable, common gotchas (container mutation, `temp:` scope across sub-agents, async artifact calls, `invocation_id` as the tracing key).
 - **Page 06 — Recipe cookbook**: 7 production-grade snippets (response cache, per-user rate limit, PII redaction, source citations, latency budget, feature gate, audit log) plus the composition pattern for stacking.
-- **Page 07 — Callbacks vs Plugins**: decision rubric and the "rule of three" promotion path from per-agent callback to runner-wide plugin. Mutation semantics differ — callbacks don't stack, plugins do (LIFO on the "after" side).
+- **Page 07 — Callbacks vs Plugins**: decision rubric and the "rule of three" promotion path from per-agent callback to runner-wide plugin. Both stack — callbacks stack per-agent (every `*_callback` field on `LlmAgent` accepts `Union[Callable, list[Callable]]` per `llm_agent.py:75-87`), plugins stack runner-wide (LIFO on the "after" side).
 
 ## Pacing
 - Easy if: student already wrote a Python decorator. The signature pattern feels familiar.
@@ -35,6 +35,6 @@
 - Edge case to probe: what if the LLM tries to obfuscate (`rm -r -f`)? Their regex must catch it OR they must articulate the limitation. Don't fail them — make them name the gap.
 
 ## Common follow-up questions
-- "Can I have two `after_model_callback`s?" — No, just one per agent. Compose them into one Python function. (Plugins stack; callbacks don't.)
+- "Can I have two `after_model_callback`s?" — Yes. Pass a list: `after_model_callback=[redact_pii, inject_citations]`. ADK runs them in declared order; first to return non-`None` short-circuits. (You can still compose by hand when one step's behavior depends on another's output.)
 - "Does a callback fire for sub-agents?" — Yes, per-agent — each child's callbacks fire when that child runs.
-- "What's `CallbackContext` vs `ToolContext`?" — `ToolContext` is a `CallbackContext` plus tool-specific data (function call id, etc). Same `state`.
+- "What's `CallbackContext` vs `ToolContext`?" — They are aliases of the SAME class (`google.adk.agents.context.Context`). `tools/tool_context.py:29` and `agents/callback_context.py:22` both assign `= Context`. The two names exist for self-documenting parameter types; the surface is identical (same `state`, same `function_call_id`, same `actions`).

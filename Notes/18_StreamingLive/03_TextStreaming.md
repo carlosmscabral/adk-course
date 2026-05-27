@@ -21,6 +21,7 @@ You are here: 🗺 Production Track ▸ 18 Streaming & Live ▸ 03 Text Streamin
 import asyncio, time
 from google.adk.runners import InMemoryRunner
 from google.adk.agents import Agent
+from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.genai import types
 
 agent = Agent(name="streamer", model="gemini-2.5-flash",
@@ -30,8 +31,13 @@ runner = InMemoryRunner(app_name="demo", agent=agent)
 async def main():
     session = await runner.session_service.create_session(app_name="demo", user_id="u")
     msg = types.Content(role="user", parts=[types.Part(text="Explain async iterators in 3 sentences.")])
+    # MUST opt into SSE — RunConfig defaults to StreamingMode.NONE, which would
+    # give us one final event and no chunks.
+    run_config = RunConfig(streaming_mode=StreamingMode.SSE)
     t0 = time.time()
-    async for event in runner.run_async(user_id="u", session_id=session.id, new_message=msg):
+    async for event in runner.run_async(
+        user_id="u", session_id=session.id, new_message=msg, run_config=run_config,
+    ):
         if not event.content or not event.content.parts:
             continue
         text = event.content.parts[0].text or ""
@@ -85,6 +91,7 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from google.adk.runners import InMemoryRunner
 from google.adk.agents import Agent
+from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.genai import types
 
 agent = Agent(name="streamer", model="gemini-2.5-flash")
@@ -95,10 +102,12 @@ app = FastAPI()
 async def stream(q: str):
     session = await runner.session_service.create_session(app_name="sse-demo", user_id="u")
     msg = types.Content(role="user", parts=[types.Part(text=q)])
+    run_config = RunConfig(streaming_mode=StreamingMode.SSE)
 
     async def gen():
         async for event in runner.run_async(
-            user_id="u", session_id=session.id, new_message=msg
+            user_id="u", session_id=session.id, new_message=msg,
+            run_config=run_config,
         ):
             if event.content and event.content.parts:
                 text = event.content.parts[0].text or ""

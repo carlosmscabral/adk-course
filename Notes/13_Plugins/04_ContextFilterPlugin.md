@@ -27,19 +27,27 @@ By default, the LLM gets the full session history each turn. That's fine for sho
 
 ```python
 from google.adk.runners import Runner
-from google.adk.plugins import ContextFilterPlugin
+# Deep import — ContextFilterPlugin is NOT re-exported from google.adk.plugins.
+# Verify with: python -c "import google.adk.plugins as p; print(p.__all__)"
+# → ['BasePlugin', 'DebugLoggingPlugin', 'LoggingPlugin', 'PluginManager', 'ReflectAndRetryToolPlugin']
+from google.adk.plugins.context_filter_plugin import ContextFilterPlugin
 
 runner = Runner(
     app_name="dev",
     agent=root_agent,
     plugins=[
-        ContextFilterPlugin(
-            # the exact API surface (function vs config) follows the framework;
-            # the idea is "given the in-flight contents, return a filtered list"
-        ),
+        # Real signature (context_filter_plugin.py:103-110):
+        #   ContextFilterPlugin(
+        #       num_invocations_to_keep: Optional[int] = None,
+        #       custom_filter: Optional[Callable[[list[Content]], list[Content]]] = None,
+        #       name: str = "context_filter_plugin",
+        #   )
+        ContextFilterPlugin(num_invocations_to_keep=5),
     ],
 )
 ```
+
+For full control, pass `custom_filter=` instead — a callable that receives the in-flight `list[types.Content]` and returns a filtered list.
 
 ## Three filter strategies
 

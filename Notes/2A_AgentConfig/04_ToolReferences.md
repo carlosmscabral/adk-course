@@ -41,35 +41,32 @@ fn = getattr(module, attr)
 
 The function must be importable from the running Python environment. That is the *only* constraint.
 
-### Form 2 — built-in tools by name
+### Form 2 — built-in tools by name (no module prefix)
 
-For tools that ADK ships, you reference them by their canonical path:
-
-```yaml
-tools:
-  - name: google.adk.tools.google_search          # built-in google search
-  - name: google.adk.tools.load_memory            # built-in memory loader
-  - name: google.adk.tools.exit_loop              # built-in loop exit
-```
-
-Same resolution mechanism. The `google.adk.tools.*` namespace is the canonical place to find them.
-
-### Form 3 — toolset reference (multiple tools from one source)
-
-For tools that come from a toolset (MCP, Skills, AgentTool), the syntax expands a little. The exact shape is in the JSON Schema; one example for MCP:
+For tools that ADK ships, the canonical YAML form is the bare name — as shown by `contributing/samples/multi_agent/multi_agent_basic_config/`:
 
 ```yaml
 tools:
-  - toolset:
-      class: google.adk.tools.mcp_tool.MCPToolset
-      args:
-        connection_params:
-          class: google.adk.tools.mcp_tool.StreamableHTTPConnectionParams
-          args:
-            url: http://localhost:8080/mcp
+  - name: google_search                           # built-in google search
+  - name: load_memory                             # built-in memory loader
+  - name: exit_loop                               # built-in loop exit
 ```
 
-This is the most verbose form because YAML has to express *constructor kwargs* for the toolset. Use Python if this gets hairy — the line between "declarative" and "manually serializing Python" is exactly here. See [Module 08 MCP](../08_MCP/) for the in-depth coverage.
+The full dotted path (`google.adk.tools.google_search`) also resolves — both forms work through the same `ToolConfig.name` field. The bare form is the sample-blessed style.
+
+### Form 3 — toolset reference with constructor args
+
+For tools that come from a toolset (MCP, Skills, AgentTool), the YAML form is **the same `ToolConfig` shape** — `name:` (dotted path to the toolset class) plus optional `args:`. There is **no special `toolset:` / `class:` discriminator key**.
+
+```yaml
+tools:
+  - name: google.adk.tools.mcp_tool.MCPToolset
+    args:
+      connection_params:
+        url: http://localhost:8080/mcp
+```
+
+`ToolConfig` is intentionally minimal (two fields: `name`, `args`). YAML has to express *constructor kwargs* under `args:`. Use Python if this gets hairy — the line between "declarative" and "manually serializing Python" is exactly here. See [Module 08 MCP](../08_MCP/) for the in-depth coverage.
 
 ## 🛠 End-to-end — YAML agent + Python tools
 

@@ -4,7 +4,7 @@ page: 00_Overview
 title: Graph workflows — beyond Sequential / Parallel / Loop
 estimated_minutes: 15
 prereqs: [05_MultiAgent/11]
-concepts: [WorkflowAgent, nodes, edges, routing, HITL]
+concepts: [Workflow, nodes, edges, routing, HITL]
 icon: 🧠
 in_production: true
 detours_suggested: [VisualBuilder]
@@ -33,8 +33,8 @@ Before we get there, we cover the **legacy** workflow templates you still see ev
 ## 📦 Sample anchors
 
 - `adk-samples/python/agents/story_teller/` — **legacy mixed**: a `SequentialAgent` containing a `LoopAgent` that wraps a `ParallelAgent`. Three templates, one file.
-- `adk-samples/python/agents/workflows-sequential/` — minimal `WorkflowAgent` proof-of-life (3-node linear graph).
-- `adk-samples/python/agents/workflow-concurrent_research_writer/` — **the** graph sample: research workflow + blog workflow, with parallel workers, function nodes, dynamic routing by output route, two nested `WorkflowAgent`s.
+- `adk-samples/python/agents/workflows-sequential/` — minimal `Workflow` proof-of-life (3-node linear graph). Sample pins `google-adk<2.0.0` — read for shape, port imports to `google.adk.workflow` for 2.0.
+- `adk-samples/python/agents/workflow-concurrent_research_writer/` — **the** graph sample: research workflow + blog workflow, with list-fan-out parallel research, function nodes, dynamic routing by output route, two nested `Workflow`s. Same 1.x pin — same caveat.
 - `adk-samples/python/agents/workflows-HITL_concierge/` — HITL pause/resume using `RequestInput` and `rerun_on_resume=True`.
 
 ## 🎯 Where this sits in the spiral
@@ -48,8 +48,8 @@ In 05 we built the research-assistant team with `sub_agents`. Here we rebuild it
 | 01 | Legacy templates: Sequential, Parallel, Loop, `exit_loop`. |
 | 02 | Legacy mixed — `story_teller` walk-through. |
 | 03 | Why graphs — what templates can't express. |
-| 04 | Graph intro — `WorkflowAgent`, nodes, edges. |
-| 05 | Defining nodes — `FunctionNode`, agent nodes, `ParallelWorker`. |
+| 04 | Graph intro — `Workflow`, nodes, edges. |
+| 05 | Defining nodes — `FunctionNode`, agent nodes, list-yield fan-out. |
 | 06 | Routing edges — static vs dynamic, route labels. |
 | 07 | Human-in-the-loop — `RequestInput`, resume token, Resume/Cancel. |
 | 08 | 🛠 Dissecting `workflow-concurrent_research_writer`. |

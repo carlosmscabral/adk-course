@@ -19,7 +19,7 @@ You are here: 🗺 Composition Track ▸ 06 Graph Workflows ▸ 07 HITL
 A workflow node can yield a special event that **pauses the entire workflow** until a human responds:
 
 ```python
-from google.adk.agents.workflow.events.request_input import RequestInput
+from google.adk.events import RequestInput
 
 async def ask_for_city(ctx):
     yield RequestInput(
@@ -61,8 +61,9 @@ See [`_figures/hitl_pause.txt`](_figures/hitl_pause.txt) for the diagram.
 ## 🛠 Pattern from `workflows-HITL_concierge`
 
 ```python
-from google.adk.agents.workflow.events.request_input import RequestInput
-from google.adk.agents.workflow.workflow_context import Context
+from google.adk.events import RequestInput
+from google.adk.agents.context import Context
+from google.adk.workflow import Workflow, START
 
 async def initial_prompt(ctx: Context):
     """Ask the user for a city + optional details."""
@@ -79,35 +80,38 @@ async def get_user_feedback(node_input):
         response_schema={"user": "response"},
     )
 
-root_agent = WorkflowAgent(
+root_agent = Workflow(
     name="root_agent",
-    rerun_on_resume=True,                  # ← critical for HITL nodes
+    rerun_on_resume=True,                  # ← Workflow field; default is already True
     edges=[
-        ("START", initial_prompt, concierge_agent, get_user_feedback, process_feedback),
+        (START, initial_prompt, concierge_agent, get_user_feedback, process_feedback),
         (process_feedback, concierge_agent),    # cycle back if user wants changes
     ],
 )
 ```
 
-Notice `rerun_on_resume=True` on the workflow itself. When the workflow resumes, the HITL node re-runs with the user's response as its input — the prior LLM calls upstream are *not* re-paid because their outputs are checkpointed.
+`Workflow.rerun_on_resume` defaults to `True` (see `_workflow.py:157`), so the outer workflow re-enters its scheduler loop on resume. The HITL node re-runs with the user's response as its input — prior LLM calls are *not* re-paid because their outputs are checkpointed in the session events. Per-node `rerun_on_resume` is set on individual `FunctionNode`s.
 
 ## 🧠 Resume tokens
 
-When the runtime emits a `RequestInput`, it also produces a **resume token** identifying the suspension point. Your application stores the token (typically in your own database keyed by the user's session) and presents it to the resume API later:
+When the runtime emits a `RequestInput`, the event carries an **invocation_id** identifying the paused invocation. Your application stores it (typically in your own database keyed by the user's session) and passes it back to `Runner.run_async` along with the user's response wrapped in a `Content` with a function response:
 
 ```python
-# pseudo
-await runner.resume(
-    invocation_id=stored_token,
-    user_input={"user response": "Paris, age 28, hiking"},
-)
+# Resume — the SAME run_async entrypoint, with invocation_id + a function-response message.
+async for event in runner.run_async(
+    user_id="u1",
+    session_id="s1",
+    invocation_id=stored_invocation_id,   # pause point
+    new_message=function_response_content, # the user's reply as a function response
+):
+    ...
 ```
 
-The exact API for `resume()` lives on the `Runner` in ADK 2.0; consult the latest docs and the `workflows-HITL_concierge` sample for the up-to-date signature.
+There is no separate `runner.resume(...)` method — resume is the regular `run_async` call with `invocation_id` set. See [`1A_AppAndRunner/04_WiringResumability`](../1A_AppAndRunner/04_WiringResumability.md) for the wiring and `runners.py` (`_resolve_invocation_id`, `_extract_resume_inputs`) for the exact contract.
 
 ## 🧠 Cancel
 
-`runner.cancel(invocation_id)` is the dual — it tears down a suspended workflow cleanly. Use it for timeouts, user-abandons-chat scenarios, or admin overrides.
+To cancel a suspended workflow, the dual is to simply not resume — the session keeps the paused state until you either resume or garbage-collect the session. Programmatic cancellation is handled at the App / session-service layer (delete the session, or send a cancel signal that the consuming code translates into "skip this invocation"). The `Workflow._cleanup_all_tasks` path covers in-process cancellation when the orchestration loop exits.
 
 ## ⚠️ HITL gotchas
 

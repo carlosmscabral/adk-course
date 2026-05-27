@@ -22,6 +22,7 @@ You are here: 🗺 Production Track ▸ 18 Streaming & Live ▸ 01 Fundamentals
 # Work/01_streaming_loop.py — run with: uv run python Work/01_streaming_loop.py
 import asyncio
 from google.adk.agents import LlmAgent
+from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import InMemoryRunner
 from google.genai import types
 
@@ -32,14 +33,19 @@ async def main():
     runner = InMemoryRunner(agent=agent, app_name="demo")
     session = await runner.session_service.create_session(app_name="demo", user_id="u")
     msg = types.Content(role="user", parts=[types.Part(text="hi")])
+    # StreamingMode.NONE is the default — you would only see the final aggregated
+    # event. Opt into SSE to get partial chunks.
+    run_config = RunConfig(streaming_mode=StreamingMode.SSE)
     async for event in runner.run_async(
-        user_id="u", session_id=session.id, new_message=msg,
+        user_id="u", session_id=session.id, new_message=msg, run_config=run_config,
     ):
         text = event.content.parts[0].text if event.content and event.content.parts else None
         print(event.author, "->", text)
 
 asyncio.run(main())
 ```
+
+> ⚠️ **`StreamingMode.NONE` is the default** (see `src/google/adk/agents/run_config.py` — `streaming_mode: StreamingMode = StreamingMode.NONE`). Without `RunConfig(streaming_mode=StreamingMode.SSE)`, `run_async` yields **one** aggregated event per turn and no `event.partial=True` chunks. Every example on this page assumes SSE; if you forget the `run_config=`, the "live" feeling disappears.
 
 Three things to internalize:
 
@@ -49,10 +55,13 @@ Three things to internalize:
 
 ## Partial vs final
 
-A streamed turn comes out as N partial events plus 1 final event:
+A streamed turn comes out as N partial events plus 1 final event (only when `run_config=RunConfig(streaming_mode=StreamingMode.SSE)` is passed — otherwise you just get the final):
 
 ```python
-async for event in runner.run_async(...):
+from google.adk.agents.run_config import RunConfig, StreamingMode
+
+run_config = RunConfig(streaming_mode=StreamingMode.SSE)
+async for event in runner.run_async(..., run_config=run_config):
     is_partial = event.partial is True            # incremental chunk
     is_final   = event.turn_complete is True      # turn is over
     text = event.content.parts[0].text if event.content and event.content.parts else ""
@@ -68,8 +77,11 @@ The **partial events carry deltas** (just the new tokens since the last event). 
 The producer is paused inside your loop body. If you `await` a slow I/O call inside that loop, **you slow down the stream**.
 
 ```python
+from google.adk.agents.run_config import RunConfig, StreamingMode
+run_config = RunConfig(streaming_mode=StreamingMode.SSE)
+
 # BAD — every token waits for a DB write
-async for event in runner.run_async(...):
+async for event in runner.run_async(..., run_config=run_config):
     await db.write(event)        # blocks the producer
     print(event.content.parts[0].text)
 
@@ -81,7 +93,7 @@ async def writer():
         await db.write(event)
 
 asyncio.create_task(writer())
-async for event in runner.run_async(...):
+async for event in runner.run_async(..., run_config=run_config):
     print(event.content.parts[0].text)
     queue.put_nowait(event)      # never awaits
 ```

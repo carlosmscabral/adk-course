@@ -38,6 +38,8 @@ edges=[
 
 The third element is the **route label**. If the node doesn't yield a matching route, the edge isn't taken.
 
+> ⚠️ Routing uses `Event(route=...)` from `google.adk.events`. The framework also has a graph-level `Edge` class (public, in `google.adk.workflow.__init__`) and a private `Event` page representation inside `_workflow.py` — when you write a node, you yield the public `google.adk.events.Event`, NOT the private one. Don't import `from google.adk.workflow._workflow import Event`; stick to the public surface.
+
 ## 🛠 The router function
 
 ```python
@@ -86,7 +88,9 @@ After posting to platform X, the graph fans out shoutouts to LinkedIn and Reddit
 From `workflow-concurrent_research_writer/agent.py`:
 
 ```python
-blog_workflow = WorkflowAgent(
+from google.adk.workflow import Workflow, START
+
+blog_workflow = Workflow(
     name="blog_workflow",
     edges=[
         # 1. Linear start: write the blog, then route by length.
