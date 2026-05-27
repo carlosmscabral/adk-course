@@ -4,6 +4,34 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.3.12] - 2026-05-27
+
+Dogfood Wave 9b — cheatsheet display-label cleanup (15 fixes across 7 files). Wave 9 fixed all the broken URLs in the cheatsheets' "Where it's covered in the course" sections, but a verification pass revealed the *display labels* (the bracket text humans read) were still showing the OLD page numbers/filenames. The links would land you on the right page, but with a confusing "huh, the label said `01_SessionLifecycle` but I'm on `01_SessionVsState`" experience. Pure 🟡 polish — the kind of debt that erodes trust in the cheatsheets even though navigation works.
+
+### Fixed
+
+**Cheatsheet label/href mismatches (7 files)**
+- `runner_session_lifecycle.md` — `03_RunAsyncAndEvents` → `03_RunAsyncIsAGenerator`; `01_SessionLifecycle` → `01_SessionVsState`; `03_EventDeltas` → `04_WritingStateFromTools`; `01_TracingRunAsync` → `09_DissectingOneCall`.
+- `event_actions.md` — same `03_RunAsyncAndEvents`/`03_EventDeltas` labels; plus `02_Transfer` → `03_TransferToAgent`, `04_HumanInTheLoop` → `07_HumanInTheLoop`, `03_SessionMutation` → `11_TracingOneStateMutation`.
+- `llmagent_signature.md` — `01_SubAgents` → `02_SubAgents`; `04_InstructionTemplating` → `03_ReadingStateInPrompts` (2 sites).
+- `state_prefixes.md` — `04_InstructionTemplating` → `03_ReadingStateInPrompts` (2 sites); `03_EventDeltas` → `04_WritingStateFromTools`; `04_GuardrailsCookbook` → `05_GuardrailsCookbook`.
+- `tool_authoring.md` — `04_BuiltInTools` → `05_BuiltInTools`; `03_AgentAsTool` → `04_AgentAsTool`.
+- `callback_signatures.md` — off-by-one on the 4 callback-slot labels (`01/02/03/04_*` → `02/03/04/08_*`); merged the duplicate-target lines (Callbacks-as-policy + Guardrails cookbook both pointed to `05_GuardrailsCookbook.md`; collapsed to one accurate pointer since there is no separate `CallbacksAsPolicy.md` page in module 16 — the concept lives inside GuardrailsCookbook).
+- `a2a_mcp_quickref.md` — `04_A2A_vs_MCP` → `05_A2A_vs_MCP`.
+
+### Method
+- Targeted audit agent (read-only) over the four Wave 4 surfaces: cheatsheets, drills, 21_AdkApiSurface, module-local AGENTS.md files. Drills + 21_AdkApiSurface + AGENTS.md surfaces verified CLEAN (drills correctly use `Workflow`/`McpToolset`; 21 is HTTP/CLI surface as designed, not Python API enumeration; all 35 module AGENTS.md files populated with substantive teaching guidance, no stubs).
+- Cheatsheet edits applied synchronously per-file (verified each line in context before substitution).
+- Re-ran link audit: 1/2 190 (the lone remaining is the verified false positive in M4 drill — `[title](uri)` template inside backticks).
+
+### Why
+- Same user authorization as Wave 9: "let's not leave polish behind." Display-label drift is exactly the kind of silent debt that prior waves' link-target sweeps don't catch — the URL works, so the audit is green, but the human reading experience is degraded. Worth a 24-line follow-up commit to land properly.
+
+### Deferred
+- Nothing on the Wave 4 surface. The dogfood backlog as of this commit is empty: links audit clean, class-names verified against 2.0 source, structural pages (drills + AGENTS.md + 21_AdkApiSurface + cheatsheets) all populated and current. Next natural work is content depth (e.g., the 4B_HumanInTheLoop expansion noted in v0.3.11), not defect-class fixes.
+
+---
+
 ## [0.3.11] - 2026-05-27
 
 Dogfood Wave 9 — internal-links integrity sweep. Built a programmatic auditor over all `.md` files in the course (2 190 internal markdown links across 430 files; code-block stripping to avoid false positives on f-strings and illustrative prose). The audit surfaced 93 broken links clustered into ~10 systemic patterns that had accumulated as modules grew, files were renumbered, and folders were renamed without rewriting the cross-refs left behind in detours, cheatsheets, and the 2.0 release-note absorption.

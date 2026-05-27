@@ -82,12 +82,11 @@ Errors:
 ## Where it's covered in the course
 
 - Engine-first walks per slot:
-  - [Notes/07_Callbacks/01_BeforeAfterModel](../../Notes/07_Callbacks/02_BeforeAfterModel.md)
-  - [Notes/07_Callbacks/02_BeforeAfterTool](../../Notes/07_Callbacks/03_BeforeAfterTool.md)
-  - [Notes/07_Callbacks/03_BeforeAfterAgent](../../Notes/07_Callbacks/04_BeforeAfterAgent.md)
-  - [Notes/07_Callbacks/04_OnErrorCallbacks](../../Notes/07_Callbacks/08_ErrorCallbacks.md)
-- Callbacks-as-policy (production): [Notes/16_ProductionSecurity/03_CallbacksAsPolicy](../../Notes/16_ProductionSecurity/05_GuardrailsCookbook.md)
-- Guardrails cookbook: [Notes/16_ProductionSecurity/04_GuardrailsCookbook](../../Notes/16_ProductionSecurity/05_GuardrailsCookbook.md)
+  - [Notes/07_Callbacks/02_BeforeAfterModel](../../Notes/07_Callbacks/02_BeforeAfterModel.md)
+  - [Notes/07_Callbacks/03_BeforeAfterTool](../../Notes/07_Callbacks/03_BeforeAfterTool.md)
+  - [Notes/07_Callbacks/04_BeforeAfterAgent](../../Notes/07_Callbacks/04_BeforeAfterAgent.md)
+  - [Notes/07_Callbacks/08_ErrorCallbacks](../../Notes/07_Callbacks/08_ErrorCallbacks.md)
+- Callbacks-as-policy / guardrails cookbook (production): [Notes/16_ProductionSecurity/05_GuardrailsCookbook](../../Notes/16_ProductionSecurity/05_GuardrailsCookbook.md)
 
 ---
 

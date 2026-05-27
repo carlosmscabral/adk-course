@@ -80,12 +80,12 @@ for event in async for ...:
 
 ## Where it's covered in the course
 
-- Event anatomy: [Notes/02_FirstAgent/03_RunAsyncAndEvents](../../Notes/02_FirstAgent/03_RunAsyncIsAGenerator.md)
-- State deltas: [Notes/04_SessionsState/03_EventDeltas](../../Notes/04_SessionsState/04_WritingStateFromTools.md)
-- `transfer_to_agent`: [Notes/05_MultiAgent/02_Transfer](../../Notes/05_MultiAgent/03_TransferToAgent.md)
-- `escalate` + human-in-the-loop: [Notes/06_GraphWorkflows/04_HumanInTheLoop](../../Notes/06_GraphWorkflows/07_HumanInTheLoop.md)
+- Event anatomy: [Notes/02_FirstAgent/03_RunAsyncIsAGenerator](../../Notes/02_FirstAgent/03_RunAsyncIsAGenerator.md)
+- State deltas: [Notes/04_SessionsState/04_WritingStateFromTools](../../Notes/04_SessionsState/04_WritingStateFromTools.md)
+- `transfer_to_agent`: [Notes/05_MultiAgent/03_TransferToAgent](../../Notes/05_MultiAgent/03_TransferToAgent.md)
+- `escalate` + human-in-the-loop: [Notes/06_GraphWorkflows/07_HumanInTheLoop](../../Notes/06_GraphWorkflows/07_HumanInTheLoop.md)
 - `skip_summarization` use case: [Notes/03_Tools/02_FunctionTool](../../Notes/03_Tools/02_FunctionTool.md)
-- Internals trace through `actions`: [Notes/19_Internals/03_SessionMutation](../../Notes/19_Internals/11_TracingOneStateMutation.md)
+- Internals trace through `actions`: [Notes/19_Internals/11_TracingOneStateMutation](../../Notes/19_Internals/11_TracingOneStateMutation.md)
 
 ---
 
