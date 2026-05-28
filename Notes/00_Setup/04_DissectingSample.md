@@ -75,9 +75,11 @@ That's because `adk run fun_facts` provides all of it. The CLI is a 100-line `ma
 > 🛠 **Have the student run:**
 > ```bash
 > $ python -c "from fun_facts.agent import root_agent; print(type(root_agent).__name__, root_agent.name, root_agent.model)"
-> Agent Facts gemini-flash-latest
+> LlmAgent Facts gemini-flash-latest
 > ```
-> That confirms `root_agent` is just a normal Python object — nothing magic. The "framework" is just `Agent(...)`.
+> Note the class name: **`LlmAgent`**, not `Agent`. That's the lesson. The import `from google.adk.agents import Agent` rebinds the name — `Agent` *is* `LlmAgent`, no subclass involved. `type(...).__name__` always returns the real class. So `root_agent` is just a normal Python object, and the "framework" you're using is the `LlmAgent` class with a friendlier import name.
+
+> 🤖 **Tutor:** if the student's output prints `Agent` instead of `LlmAgent`, something has gone wrong (probably they're on a much older ADK, or there's a stale `__pycache__`). Verify `adk --version` ≥ 2.0 and have them `rm -rf fun_facts/__pycache__` before re-running.
 
 ## 🧭 Detour pointer
 

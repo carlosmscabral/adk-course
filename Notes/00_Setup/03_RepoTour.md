@@ -50,7 +50,9 @@ Throughout this course you'll consult three directories. Knowing which one to op
 > ```bash
 > $ ls ~/study/adk-samples/python/agents/ | wc -l
 > ```
-> They should see roughly 60+ samples. That's the textbook.
+> Expect somewhere in the **70s** (the catalog grew from ~60 at ADK 1.x to ~75 at 2.0, and Google keeps adding). The exact number isn't load-bearing — the point is "this textbook is large; almost any pattern you'll need has a real example in here."
+
+> 🤖 **Tutor:** if the count is far off (e.g., 12), the student probably cloned the wrong fork or a stale tag. Verify with `cd ~/study/adk-samples && git log -1 --oneline` and ensure they're on `main` of `github.com/google/adk-samples`.
 
 ## 🧭 Where your work lives
 

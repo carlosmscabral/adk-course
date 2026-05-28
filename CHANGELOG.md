@@ -4,6 +4,36 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.4] - 2026-05-28
+
+Phase-0 dogfood fix #4 — smaller scope than v0.4.1–v0.4.3, mostly content correctness. Fourth live Antigravity session ran cleanly through pages 03 → 04 → 05 → KC → drill of Module 00. The engine-first + secrets-handling contracts held (every command was student-typed, no `.env` written by the tutor, KCs asked one-at-a-time, end-of-session `PROGRESS.md` + `student_profile.md` updates landed). Two real defects + one soft observation surfaced:
+
+1. **Page 04's verification command predicted the wrong output.** The page said `python -c "print(type(root_agent).__name__, ...)"` would print `Agent Facts gemini-flash-latest`. It actually prints `LlmAgent Facts gemini-flash-latest` — because `Agent` is a name alias (re-export), not a subclass, so `type(...).__name__` returns the real class name. The tutor papered over the mismatch on the fly, but the page itself was wrong, and the "huh, why `LlmAgent`?" moment is actually a *better* teaching beat than the page's original prediction.
+
+2. **Tutor answered the drill's probe question for the student.** The mini-drill asked the student to swap the agent's personality AND to articulate "what's the difference between editing `instruction=` vs `model=`?" The student returned the (excellent grumpy-IT-picanha) output but skipped the probe. The tutor's wrap-up *answered the probe itself* instead of re-prompting. Violates the existing "Do not read the answer to the student" rule, but only implicitly — the rule didn't name drill probes specifically, and the tutor treated the probe as rhetorical color rather than a graded item.
+
+3. **Soft:** page 03 said "60+ samples" but the actual `wc -l` reality is ~75. Tutor noticed and used 75; no harm, but the page would age better with a non-pinned framing.
+
+### Fixed
+
+- **`Notes/00_Setup/04_DissectingSample.md`** — corrected expected output from `Agent Facts gemini-flash-latest` to `LlmAgent Facts gemini-flash-latest`, and rewrote the surrounding prose to make the alias-vs-class distinction the teaching beat: *"Note the class name: `LlmAgent`, not `Agent`. That's the lesson. The import `from google.adk.agents import Agent` rebinds the name — `Agent` *is* `LlmAgent`, no subclass involved. `type(...).__name__` always returns the real class."* Added a `🤖 Tutor` hook covering the failure mode (if the student sees `Agent`, suspect a stale `__pycache__` or a pre-2.0 ADK).
+- **`Notes/00_Setup/03_RepoTour.md`** — changed "roughly 60+ samples" to "somewhere in the **70s** (the catalog grew from ~60 at ADK 1.x to ~75 at 2.0, and Google keeps adding). The exact number isn't load-bearing — the point is 'this textbook is large.'" Added a `🤖 Tutor` hook for the "way off" failure mode (wrong fork / stale tag, verify with `git log -1`).
+- **`AGENTS.md`** — added a new negative rule to `❌ What NOT to do`: *"Do not answer drill probe questions on the student's behalf."* Calls out that mini-drills often pair a coding task with a probe question, that re-prompting (not auto-answering) is the contract, and gives a verbatim re-prompt the tutor can use: *"Great output — but you still owe me the probe answer. In your own words: what's the actual difference between editing `instruction=` and `model=`?"*
+
+### Why
+
+The page-04 mismatch is the kind of defect that erodes student trust silently — the tutor smoothed it over once, but next session a different tutor or a stricter student will flag it as "the course is wrong about its own output." Better to fix the page so the truth lands as the lesson rather than as a workaround. The probe-answering defect is the more interesting one: it's an *adjacent* failure mode to v0.4.3 (tutor optimizes for momentum, fills perceived gaps). v0.4.3 fixed the setup-commands and secrets versions; v0.4.4 closes the drill-probe version. Together they shape a stable rule: *if the page asks the student a question, the tutor's job is to elicit and grade, never to supply.*
+
+### Method
+
+Read the transcript end-to-end, mapped each tutor turn against the page text and AGENTS.md contract, isolated 2 page-content defects and 1 contract-coverage defect. Three `Edit`s across three files. No new tasks or sweeps deferred — the fixes are surgical and the broader hook-audit deferred from v0.4.3 is still the right next sweep, not anything specific to this fix.
+
+### Deferred
+
+- Still the v0.4.3 deferred items (broader `Have the student run` hook audit; student-facing README note; automated bash-block-without-hook grep). v0.4.4 doesn't add new debt.
+
+---
+
 ## [0.4.3] - 2026-05-27
 
 Phase-0 dogfood fix #3 — the deepest defect so far. v0.4.2 fixed *where* files go; v0.4.3 fixes *who types the commands to put them there*. Third live Antigravity session (same `~/_demos/adk-course/`): with the workspace layout now authoritative, the tutor ran every setup command itself — `git clone` (background), `python3 -m venv`, `pip install google-adk`, even started preparing to ask the student for their API key so it could "write the `.env` for you." Setup completed in seconds. Engine-first muscle memory completed in zero seconds.
