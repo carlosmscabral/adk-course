@@ -16,7 +16,9 @@ You are here: 🗺 Foundation Track ▸ 01 Foundations ▸ 01 What is an Agent?
 
 # 🧠 What is an agent?
 
-> An **agent** is an LLM that has been given a list of tools and the ability to decide, on each turn, whether to call one of them or just reply.
+> An **agent** is a piece of software that drives an LLM in a loop: each turn it sends the conversation to the LLM, parses the response as either a final text reply or a tool-call request, executes the tool, feeds the result back, and repeats — until the LLM produces a reply (or you cap the loop).
+
+The LLM itself is stateless and tool-less; it just emits tokens. The **agent** is the program that interprets those tokens as actions and keeps the loop running. Hold this distinction precisely — when you build `Runner` + `Session` by hand in Module 02, you are building exactly that program.
 
 That's it. The whole field of "agentic AI" reduces to that loop. Everything else — multi-agent, callbacks, plugins, A2A — is plumbing around it.
 

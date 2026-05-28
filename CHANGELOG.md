@@ -4,6 +4,28 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.5] - 2026-05-28
+
+Phase-0 dogfood fix #5 — single-page content-precision fix on the very first page of Module 01. User flagged the opening definition as conceptually wrong, not just imprecise.
+
+### Fixed
+
+- **`Notes/01_Foundations/01_WhatIsAnAgent.md`** — replaced the opening definition. Was: *"An agent is an LLM that has been given a list of tools and the ability to decide, on each turn, whether to call one of them or just reply."* Now: *"An agent is a piece of software that drives an LLM in a loop ... The LLM itself is stateless and tool-less; it just emits tokens. The agent is the program that interprets those tokens as actions and keeps the loop running."* Added a forward-reference to Module 02 (`Runner` + `Session` by hand): "you are building exactly that program."
+
+### Why
+
+The original wording conflated the LLM (a stateless token-emitter) with the agent (the software that orchestrates around it). It's the kind of definition that reads fine in isolation but breaks Module 02 in advance: if the student internalizes "agent = LLM," then `Runner` and `Session` feel like inexplicable overhead rather than the obvious mechanism for "drive a loop and hold state across turns." Engine-first pedagogy requires the right mental model at the *start*, because everything that's built by hand later assumes it.
+
+### Method
+
+User flagged the line during their own re-read of Module 01 (pre-dogfood, while reviewing the page text). One `Edit`, two sentences added.
+
+### Deferred
+
+- Audit the rest of Module 01 (and Module 02 prose) for similar agent-vs-LLM conflations. Held until the user dogfoods Module 01 — same rationale as the v0.4.4 deferred sweeps.
+
+---
+
 ## [0.4.4] - 2026-05-28
 
 Phase-0 dogfood fix #4 — smaller scope than v0.4.1–v0.4.3, mostly content correctness. Fourth live Antigravity session ran cleanly through pages 03 → 04 → 05 → KC → drill of Module 00. The engine-first + secrets-handling contracts held (every command was student-typed, no `.env` written by the tutor, KCs asked one-at-a-time, end-of-session `PROGRESS.md` + `student_profile.md` updates landed). Two real defects + one soft observation surfaced:
