@@ -159,6 +159,8 @@ Three LLM calls, two tool round-trips, all orchestrated by the agent. The LLM em
 
 Cross-ref: this is the wire-level view of [Module 01's agent loop](../01_Foundations/01_WhatIsAnAgent.md). Same loop, just zoomed in to the actual `Content` payloads flowing across the boundary. When you build `Runner` by hand in Module 02, the code that assembles `tool_turn` and re-calls the LLM is what you're writing.
 
+> ⚠️ **This round-trip is for `FunctionTool` (custom Python tools).** Gemini's **built-in** tools — `google_search`, the server-side code executor, URL-context retrieval — don't surface a `function_call` Part for the agent to dispatch. The model invokes them server-side at Google, runs them inside Google's infrastructure, and returns a final text `Content` (with `grounding_metadata` attached when relevant). The agent never sees a `function_response` Part for these; there's nothing for it to wrap. The five-step exchange above is what happens for *your* Python tools. The shorthand "the LLM picks `google_search(...)`" is fine as long as you remember that for built-ins the model and its host do the picking *and* the running — the agent just observes the result come back.
+
 ---
 
 ## 🧠 5. Cleaning model output — the `llm-auditor` pattern

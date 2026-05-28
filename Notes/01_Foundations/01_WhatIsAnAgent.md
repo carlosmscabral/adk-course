@@ -44,7 +44,9 @@ That's the agent loop. Burn it in.
 
 **Example 1 — chatbot (no tools).** `fun-facts` if you delete `tools=[google_search]`. Agent forwards the user message to the LLM; LLM emits a text reply; agent returns it to the user. One iteration, no tool round-trip.
 
-**Example 2 — single-tool agent.** `fun-facts` as-shipped. User asks *"tell me a fact about octopuses."* The LLM emits a tool-call request for `google_search("octopus facts")` — that's all the LLM does. **The agent** runs the search, appends the result to the conversation, and calls the LLM again. The LLM now emits a final text reply summarizing the results. **Two iterations** (one tool round-trip + one final reply).
+**Example 2 — single-tool agent.** `fun-facts` as-shipped. User asks *"tell me a fact about octopuses."* The LLM emits a tool-call request for `google_search("octopus facts")`, the search runs, the result is fed back into the LLM, and the LLM emits a final text reply summarizing it. **Two iterations** (one tool round-trip + one final reply).
+
+> ⚠️ **Built-in vs custom tools — important nuance.** `google_search` is a Gemini **built-in**: the search itself runs **server-side at Google**, not inside your agent's Python process. The "agent runs the tool" framing from the loop diagram applies to *custom* tools — Python functions you wrap as `FunctionTool`. For built-ins, the model and Google's infrastructure handle dispatch; the agent just sees the grounded response come back through the event stream. We use `google_search` in Example 2 because it ships as the simplest one-line agent in the samples — but **Example 3 is the canonical "agent runs the tool" case.** Module 03 makes the built-in vs custom distinction precise.
 
 **Example 3 — multi-tool agent (Module 03 preview).** User asks *"what's 3 * (2 + 5)?"* with `[add, multiply]` tools.
 1. LLM emits tool-call `add(2, 5)`; **agent** runs it → `7`; appends; calls LLM again.

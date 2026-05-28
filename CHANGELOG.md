@@ -4,6 +4,29 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.7] - 2026-05-28
+
+Phase-0 dogfood fix #7 — closes the agent-vs-LLM precision arc by drawing the **built-in vs custom tool** line that v0.4.6 left implicit. While fact-checking the user's framing of "LLM picks → agent runs," a nuance surfaced: `google_search` is a Gemini **built-in** — the search executes server-side at Google, not inside the agent's Python process. So Example 2 on Module 01's opener (just rewritten in v0.4.6 to say *"the agent runs the search"*) was technically inaccurate for `google_search` specifically. The general pattern is correct and Example 3's `add`/`multiply` demonstrate it correctly; `google_search` is the exception, and the page never named it as such.
+
+### Fixed
+
+- **`Notes/01_Foundations/01_WhatIsAnAgent.md`** — Example 2 reworded to neutral voice (*"the LLM emits a tool-call request for `google_search(...)`, the search runs, the result is fed back into the LLM"*) and followed by a new `⚠️ Built-in vs custom tools` callout naming the distinction: built-ins run server-side at Google's infrastructure; custom `FunctionTool`-wrapped Python tools run in the agent process. The callout explicitly redirects the reader to Example 3 as the canonical "agent runs the tool" case and forward-refs Module 03 for the precise treatment.
+- **`Notes/Detours/GeminiPayload.md`** — appended a `⚠️ This round-trip is for FunctionTool (custom Python tools)` callout at the end of section 4. Names which built-ins follow the model-side path (`google_search`, server-side code executor, URL-context retrieval), states that they never surface a `function_call` Part for the agent to dispatch, and notes that the final `Content` carries `grounding_metadata` instead of a `function_response` Part. Frames the shorthand "the LLM picks `google_search(...)`" as fine *if* the reader holds the built-in vs custom distinction in mind.
+
+### Why
+
+The v0.4.5 → v0.4.6 arc tightened the agent-vs-LLM language but used `google_search` as the example of "agent runs the tool" — the one tool in the samples for which that's untrue. Leaving it would silently re-introduce a different conflation (built-in tools vs `FunctionTool`-wrapped Python functions), and a student who later reads any sample using a built-in tool would be confused by the missing `function_call` Part in the event stream. The fix doesn't change the engine-first arc — Example 3 (`add`/`multiply`) is still the canonical case, and Module 03 still owns the full distinction. v0.4.7 just makes sure Example 2 doesn't quietly contradict either of them.
+
+### Method
+
+User flagged the nuance directly after the fact-check: *"yes, let's made this clear. google_search is a model functionality."* Two `Edit`s, one on each affected file. No drawing change needed — the loop diagram is generic (it shows "the agent runs the tool" as the loop's default branch; built-ins are an external optimization the diagram doesn't need to depict).
+
+### Deferred
+
+- Same backlog as v0.4.4–v0.4.6 (hook audit, expected-output truthing, brittle-count, theoretical-precision sweep). No new debt. The theoretical-precision sweep's case gets stronger again: v0.4.5 caught a definition defect, v0.4.6 caught drawing + examples + detour defects, v0.4.7 caught a built-in-tool exception — the pattern of "one foundational concept page tends to harbor several adjacent imprecisions" is now well-attested across three fix versions.
+
+---
+
 ## [0.4.6] - 2026-05-28
 
 Phase-0 dogfood fix #6 — completes the agent-vs-LLM precision arc that v0.4.5 started. v0.4.5 fixed the opening definition on `01_WhatIsAnAgent.md`. User then re-read the same page and surfaced two more instances of the same conflation, plus a directive to harden the supporting detour:
