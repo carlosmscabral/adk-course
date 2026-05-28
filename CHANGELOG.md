@@ -4,6 +4,34 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.9] - 2026-05-28
+
+Phase-0 dogfood fix #9 — **the tutor treated a correct KC answer as a green light to advance to the next page.** User caught it from a live Antigravity transcript walking through Module 01's first two pages: student answered the multi-tool KC question correctly (3 iterations + per-call context list); the tutor's very next message opened with *"Now we move to 01_Foundations/02_RunnerSessionEvent"* and immediately rendered the new page's table and timeline diagram — all in one message, with no pause. The student had to interrupt twice (*"quick step back! on my prior answer, I used ',' to separate..."* and then *"for convenience, let's restart 01_Foundations/02_RunnerSessionEvent again please!"*) to recover the clarifying question they'd been holding and to reset the cadence.
+
+This is the same momentum-bias pattern as v0.4.3 (running setup commands), v0.4.4 (answering drill probes), and v0.4.8 (skipping diagrams): the tutor optimizes for forward throughput and treats structural pause points as transitions to barrel through rather than as gates the student must open. v0.4.9 closes the page-and-section transition variant.
+
+### Fixed
+
+- **`AGENTS.md`** — two new sections:
+  - **Positive rule (in `🧠 During a lesson`, immediately after "One concept at a time")** — new "Clarify-then-advance: the student drives the pace" subsection. States that the student sets the cadence, not the tutor; lists three phrasings the tutor can use to hand control back (*"Anything to clarify before we move on?"*, *"Ready to advance to [next page]?"*, *"That closes this page. Questions, or shall we continue to [next page]?"*); states explicitly that **a correct answer is not a green light to advance** (it means the concept landed, not that the student is done thinking about it); enumerates the six pause points where the gate MUST fire (after every KC question even when correct; after every major diagram; at `──────` section dividers; between pages within a module; between modules; after every mini-drill even when the rubric passes); names the exact failure mode in the student's own words (*"quick step back!"*, *"let's restart this page, please"*) so the tutor recognizes it next session.
+  - **Negative rule (in `❌ What NOT to do`)** — "Do not chain pages or sections." Cross-references the positive rule, names the same failure mode in the student's voice for symmetry, frames it as the *opposite* of student-driven cadence — silent throughput inflation at the cost of understanding.
+
+### Why
+
+The course's whole pedagogical commitment is engine-first + student-driven cadence: the student types primitives by hand, asks "why?" three times when needed, and decides when they've absorbed a concept. The tutor's job is to teach and pause, not to march. Page-chaining is the most insidious version of momentum bias because it *feels* helpful — "you got the answer right, here's more" — but it removes the student's natural reflection window. By the time the student notices they had a question, the tutor has already loaded a new page's table + diagram into context; the question gets dropped or comes out as a "quick step back!" that costs both sides a thread.
+
+The fix also generalizes: the same gate applies between concepts within a page, between visuals and prose, between drills and the next module. The new rule lists six explicit pause points so the tutor doesn't have to infer them.
+
+### Method
+
+User flagged from the transcript with the proposed fix already framed: *"it would be nice to put a 'anything to ask? can we move to the next section?' gate inside each module and only move if the student is satisfied/gives the go ahead."* Read existing AGENTS.md "One concept at a time" rule first to confirm the new rule doesn't overlap (it doesn't — that one is about content chunking; this one is about transition gating). Two `Edit`s on AGENTS.md. No page-level edits — the natural pause points already exist on pages (KC questions, `──────` separators, page boundaries); the AGENTS.md rule just tells the tutor to honor them.
+
+### Deferred
+
+- Same backlog as v0.4.4–v0.4.8. No new debt. If a future dogfood reveals that the tutor still chains despite the rule, page-level `> ✋ **Checkpoint:** anything to ask before we continue?` markers can be added as explicit hooks — but starting with the AGENTS.md rule alone (smaller surface, future-proof).
+
+---
+
 ## [0.4.8] - 2026-05-28
 
 Phase-0 dogfood fix #8 — **the tutor silently dropped the foundational agent-loop diagram.** User caught it from the live Antigravity transcript of Module 01: the tutor presented the page's prose and Three Examples cleanly, but the ASCII drawing of the agent loop never appeared in the rendering. Diagram-first is a non-negotiable learning style for this course (the user reads visuals before prose, then types primitives by hand from what the visual showed). Dropping the drawing breaks the contract at the most foundational page in the curriculum.
