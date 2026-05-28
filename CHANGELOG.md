@@ -4,6 +4,37 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.6] - 2026-05-28
+
+Phase-0 dogfood fix #6 — completes the agent-vs-LLM precision arc that v0.4.5 started. v0.4.5 fixed the opening definition on `01_WhatIsAnAgent.md`. User then re-read the same page and surfaced two more instances of the same conflation, plus a directive to harden the supporting detour:
+
+1. The ASCII drawing (`_figures/agent_loop.txt`) made the agent invisible — drew only LLM, TOOL, and arrows. The agent (the program holding the loop) was implicit at best and arguably depicted as the LLM at worst. Perfectly contradicted the v0.4.5 definition.
+2. Examples 2 and 3 on the page used language like "LLM picks `google_search(...)`, gets results, summarizes" — recreating the conflation in narrative form.
+3. The `Detours/GeminiPayload.md` detour briefly mentioned `function_call` and `function_response` Parts in passing (sections 2 and 3), but never showed the *round trip* — agent → LLM (function_call) → agent (runs tool) → agent → LLM (function_response) → text reply. Without that worked example, the precision lesson from Module 01 had nowhere to land at the wire level.
+
+### Fixed
+
+- **`Notes/01_Foundations/_figures/agent_loop.txt`** — full redraw. AGENT is now the outer bordered box containing a pseudo-Python loop (`while True: ... tokens = LLM(...); parsed = parse(...); if parsed is TEXT: return; else: result = tool(parsed.args); continue`). LLM and TOOL are two separate external boxes on the right that the agent invokes via labeled arrows. Includes an explicit comment in the loop body — `# the AGENT runs the tool — not the LLM` — and a closing legend: *"The AGENT is the box: the loop, the history, the parse, the tool execution, the decision to stop. The LLM never runs your tools — it emits a request as tokens; the AGENT parses those tokens and runs the tool."*
+- **`Notes/01_Foundations/01_WhatIsAnAgent.md`** — bullets 3 and 4 rewritten: bullet 3 now says *"The LLM returns tokens. The agent parses those tokens as either: a text reply, or a tool-call request — the LLM does not run it; it just emits the request."* Bullet 4: *"the agent looks up the matching Python function, runs it, appends the result..."*. Examples 1, 2, 3 all rewritten to put the agent in the active voice for every tool execution. Example 3 expanded into a numbered three-step list with the alternation `LLM emits → agent runs → agent appends → LLM emits ...` made literal, and a closing sentence: *"Notice the pattern: the LLM only ever emits — text or a tool-call request. The agent does all the running."*
+- **`Notes/Detours/GeminiPayload.md`** — inserted a new section 4 (and renumbered sections 4 → 5 and 5 → 6): **"The function-call round trip — what 'the LLM picks a tool' actually means"**. Contents: a five-step exchange (agent → LLM → agent runs tool → agent → LLM); a worked code example assembling the three `Content`s in order (`user_turn`, `model_call` with `function_call` Part, `tool_turn` with `function_response` Part); explicit annotation on step 3 *"The LLM is not involved in this step. At all."*; a multi-tool variant showing the same pattern repeated for "weather in Tokyo and Madrid"; two "burn this in" takeaways (`function_call` is a structured Part, not an invocation; `role='tool'` exists precisely so the model knows the Content is a tool result, not user-typed JSON); cross-reference to Module 01's drawing as *"the wire-level view of the same loop."*
+
+### Why
+
+v0.4.5 fixed the definition; v0.4.6 makes the rest of the surface area match. The user's framing for the sweep was *"this is foundation knowledge we can't get the luxury of getting/teaching wrong"* — and the page-04-of-Module-01 issue would have been exactly that: a corrected paragraph followed immediately by a drawing and examples that contradicted it. The GeminiPayload detour is the natural landing pad for the wire-level proof — without the worked function-call round trip example, the precision lesson stays abstract.
+
+The compounding effect across v0.4.5 + v0.4.6 is what matters: the engine-first arc through Modules 01 → 02 now reads coherently. Module 01 says "the agent is the program that drives the loop"; Module 01's drawing shows that program with the loop inside it; Module 01's examples put the agent in the active voice; the detour proves it at the wire level. When the student hits Module 02 and writes `Runner` + `Session` by hand, the API stops feeling like overhead and starts feeling like the *exact* code the agent box in the drawing was always running.
+
+### Method
+
+User flagged the drawing and Examples 2/3 in two follow-up turns after v0.4.5. Read the drawing + sibling `runtime_timeline.txt` (which was already fine — explicit Runner column, legend "Runner = orchestrator; owns the loop"); confirmed only `agent_loop.txt` needed the redraw. Read the GeminiPayload detour to find the right insertion point for the round-trip section. Four edits across three files (the prose change on Module 01 split into bullets and examples), one full file rewrite (`agent_loop.txt`).
+
+### Deferred
+
+- Same v0.4.4/v0.4.5 deferred sweeps (hook audit, expected-output truthing, brittle-count, theoretical-precision audit on remaining Foundation pages). v0.4.6 doesn't add new debt; the theoretical-precision sweep just got more justified.
+- Module 02's page-by-page review for the same conflation pattern — when the student/tutor gets there, it'll surface; not preempting per user's "dogfood first, extrapolate after" rule.
+
+---
+
 ## [0.4.5] - 2026-05-28
 
 Phase-0 dogfood fix #5 — single-page content-precision fix on the very first page of Module 01. User flagged the opening definition as conceptually wrong, not just imprecise.

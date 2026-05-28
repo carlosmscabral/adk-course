@@ -2,33 +2,31 @@
               │            THE AGENT LOOP               │
               └─────────────────────────────────────────┘
 
-   user msg
-       │
-       ▼
-   ┌─────────┐
-   │  LLM    │  ── reads instruction + history + tool catalog
-   │ (Gemini)│
-   └────┬────┘
-        │
-        │   produces ONE of:
-        │
-   ┌────┴──────────────────────────┐
-   │                               │
-   ▼                               ▼
-  TEXT REPLY                  TOOL CALL  ←─────┐
-  (done with this turn)            │           │
-   │                               ▼           │
-   │                          ┌─────────┐      │
-   │                          │  TOOL   │      │
-   │                          │ (Python)│      │
-   │                          └────┬────┘      │
-   │                               │           │
-   │                               ▼           │
-   │                          tool result      │
-   │                               │           │
-   │                               └─loop back─┘
-   │                          (LLM sees the result,
-   │                           may call another tool,
-   │                           or finally reply)
-   ▼
-  user
+       user msg
+            │
+            ▼
+   ┌─────────────────────────────────────────────────────┐
+   │   AGENT  ── your loop code (the program)            │
+   │                                                     │
+   │   while True:                                       │
+   │      append latest_msg to history                   │
+   │                                                     │
+   │      tokens = LLM(history + tool_catalog) ──────────┼──┐
+   │      parsed = parse(tokens)                         │  │   ┌─────────┐
+   │                                                     │  └──►│   LLM   │
+   │      if parsed is a TEXT REPLY:                     │      │ (Gemini)│
+   │          return parsed.text to user  ── DONE        │ ◄────┤ tokens  │
+   │                                                     │      │ in/out, │
+   │      else:  # parsed is a TOOL CALL                 │      │ no state│
+   │          # the AGENT runs the tool — not the LLM    │      └─────────┘
+   │          result     = tool(parsed.args) ────────────┼──┐
+   │          latest_msg = result                        │  │   ┌─────────┐
+   │          continue                                   │  └──►│  TOOL   │
+   │                                                     │      │ (Python │
+   │                                                     │ ◄────┤  func)  │
+   └─────────────────────────────────────────────────────┘      └─────────┘
+
+   The AGENT is the box: the loop, the history, the parse, the tool
+   execution, the decision to stop. The LLM and TOOL are services the
+   agent invokes. The LLM never runs your tools — it emits a request
+   as tokens; the AGENT parses those tokens and runs the tool.

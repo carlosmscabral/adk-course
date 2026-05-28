@@ -92,7 +92,76 @@ multimodal = types.Content(
 
 ---
 
-## 🧠 4. Cleaning model output — the `llm-auditor` pattern
+## 🧠 4. The function-call round trip — what "the LLM picks a tool" actually means
+
+When Module 01 says *"the LLM picks `google_search(...)`"*, what literally happens on the wire is this five-step exchange between the **agent** (your program) and the **LLM** (a stateless token-emitter):
+
+1. **Agent → LLM:** a `Content(role='user')` carrying the user's text.
+2. **LLM → Agent:** a `Content(role='model')` whose `parts` contain a `function_call` Part — *not* a function invocation. Just a structured request: *"I'd like you to run `google_search` with these args."*
+3. **Agent runs the tool** locally. The LLM never touches your function. It can't — it only emits tokens. The agent reads the `function_call` Part, looks up the matching Python function, calls it, captures the return value.
+4. **Agent → LLM:** a `Content(role='tool')` whose parts contain a `function_response` Part carrying the return value.
+5. **LLM → Agent:** a `Content(role='model')` with the final text reply, now that it can see the tool result.
+
+Inspect the three `Content`s the *agent assembles* across one user turn with one tool call:
+
+```python
+from google.genai import types
+
+# Step 1 — what the agent sends first
+user_turn = types.Content(
+    role='user',
+    parts=[types.Part(text='What is the weather in Tokyo?')],
+)
+
+# Step 2 — what the model emits (this is the "tool pick")
+model_call = types.Content(
+    role='model',
+    parts=[types.Part(function_call=types.FunctionCall(
+        name='get_weather',
+        args={'city': 'Tokyo'},
+    ))],
+)
+
+# Step 3 — agent runs the Python function LOCALLY:
+#     result = get_weather(city='Tokyo')
+#     → returns {'temp_c': 14, 'condition': 'overcast'}
+# The LLM is not involved in this step. At all.
+
+# Step 4 — agent wraps the return value as a function_response Part
+tool_turn = types.Content(
+    role='tool',
+    parts=[types.Part(function_response=types.FunctionResponse(
+        name='get_weather',
+        response={'temp_c': 14, 'condition': 'overcast'},
+    ))],
+)
+
+# Step 5 — agent calls LLM again with the full history:
+#     llm([user_turn, model_call, tool_turn])
+# The LLM now produces:
+#     Content(role='model', parts=[Part(text="It's 14°C and overcast in Tokyo.")])
+```
+
+Two things worth burning in:
+
+- **`function_call` is just a structured Part — like text, or an image.** The model "picks" a tool the same way it "picks" a word: by emitting tokens that the SDK decodes into `FunctionCall(name=..., args=...)`. There is no execution on the model side. The "pick" is a request, not an invocation.
+- **`role='tool'` exists precisely so the model knows "this `Content` is not the user typing JSON at me — it's a result returned from a tool I requested."** Without that role distinction, the model would treat the response as a weird-looking user message and confuse itself.
+
+**Multi-tool call in one turn:** when the user asks *"weather in Tokyo and Madrid?"* with `[get_weather]`, the sequence is the same shape, just repeated:
+
+```
+user_turn  →  model_call(Tokyo)  →  tool_turn(Tokyo)  →
+              model_call(Madrid) →  tool_turn(Madrid) →
+              model_text("Tokyo is 14°C overcast; Madrid is 22°C clear.")
+```
+
+Three LLM calls, two tool round-trips, all orchestrated by the agent. The LLM emits; the agent dispatches.
+
+Cross-ref: this is the wire-level view of [Module 01's agent loop](../01_Foundations/01_WhatIsAnAgent.md). Same loop, just zoomed in to the actual `Content` payloads flowing across the boundary. When you build `Runner` by hand in Module 02, the code that assembles `tool_turn` and re-calls the LLM is what you're writing.
+
+---
+
+## 🧠 5. Cleaning model output — the `llm-auditor` pattern
 
 Real sample (`adk-samples/python/agents/llm-auditor/llm_auditor/sub_agents/reviser/agent.py`):
 
@@ -122,7 +191,7 @@ This is the canonical "model-output scrubber" — same shape works for stripping
 
 ---
 
-## 🧠 5. Common bugs
+## 🧠 6. Common bugs
 
 ⚠️ **Forgetting `role='user'`.** Default isn't 'user' — it's nothing. You'll see `400 INVALID_ARGUMENT: contents[0].role`.
 

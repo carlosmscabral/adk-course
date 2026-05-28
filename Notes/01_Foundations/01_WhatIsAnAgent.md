@@ -32,21 +32,26 @@ Reading it left-to-right, top-to-bottom:
 
 1. The **user message** is appended to the conversation.
 2. The whole conversation (system prompt + history + this message) is sent to the **LLM**, along with the JSON schema of every tool the agent knows about.
-3. The LLM returns either:
+3. The LLM returns tokens. The agent parses those tokens as either:
    * A **text reply** → the turn is over.
-   * A **tool call** with a name + JSON arguments → the runtime executes the matching Python function.
-4. If it was a tool call, the **tool result** is appended to the conversation, and we send it all back to the LLM.
+   * A **tool-call request** with a name + JSON arguments — the LLM is asking the agent to run a specific tool. The LLM does not run it; it just emits the request.
+4. If it was a tool-call request, **the agent** looks up the matching Python function, runs it, appends the result to the conversation, and sends the whole thing back to the LLM.
 5. Loop until the LLM produces a text reply (or you cap iterations and bail).
 
 That's the agent loop. Burn it in.
 
 ## 🧠 Three examples (inductive, then deductive)
 
-**Example 1 — chatbot (no tools).** `fun-facts` if you delete `tools=[google_search]`. User asks, LLM replies. One step, no loop iteration.
+**Example 1 — chatbot (no tools).** `fun-facts` if you delete `tools=[google_search]`. Agent forwards the user message to the LLM; LLM emits a text reply; agent returns it to the user. One iteration, no tool round-trip.
 
-**Example 2 — single-tool agent.** `fun-facts` as-shipped. User asks "tell me a fact about octopuses." LLM picks `google_search("octopus facts")`, gets results, summarizes them in a reply. Two iterations of the loop.
+**Example 2 — single-tool agent.** `fun-facts` as-shipped. User asks *"tell me a fact about octopuses."* The LLM emits a tool-call request for `google_search("octopus facts")` — that's all the LLM does. **The agent** runs the search, appends the result to the conversation, and calls the LLM again. The LLM now emits a final text reply summarizing the results. **Two iterations** (one tool round-trip + one final reply).
 
-**Example 3 — multi-tool agent (Module 03 preview).** User asks "what's 3 * (2 + 5)?" with `[add, multiply]` tools. LLM picks `add(2, 5)` → gets `7` → picks `multiply(3, 7)` → gets `21` → replies. Three iterations.
+**Example 3 — multi-tool agent (Module 03 preview).** User asks *"what's 3 * (2 + 5)?"* with `[add, multiply]` tools.
+1. LLM emits tool-call `add(2, 5)`; **agent** runs it → `7`; appends; calls LLM again.
+2. LLM emits tool-call `multiply(3, 7)`; **agent** runs it → `21`; appends; calls LLM again.
+3. LLM emits a final text reply. Done.
+
+**Three iterations.** Notice the pattern: the LLM only ever emits — text or a tool-call request. The agent does all the running.
 
 The rule: **iterations = (number of tool calls) + 1 final reply.**
 
