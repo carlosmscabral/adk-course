@@ -62,6 +62,21 @@ Also invisible. `adk run` calls `session_service.create_session(app_name="fun_fa
 
 Each chunk from Gemini becomes an `Event(author="Facts", content=...)`, plus tool-call / tool-result events when the model invokes `google_search`. They're yielded from `runner.run_async(...)` and the CLI prints the text parts.
 
+## 🧠 What the Session's event log actually looks like
+
+Before the pop quiz, look at one. After a single tool-using turn of `fun-facts`, the Session's event log contains four `Event` objects. **The convention to internalize: the user's message is an `Event` too** — not a separate "input" the agent reads. Everything that crosses the runtime boundary is recorded as an event.
+
+```python
+session.events == [
+    Event(author='user',  content=Content(parts=[Part(text='tell me a fact about whales')])),
+    Event(author='Facts', content=Content(parts=[Part(function_call=...)])),       # model requests google_search
+    Event(author='tool',  content=Content(parts=[Part(function_response=...)])),   # tool result comes back
+    Event(author='Facts', content=Content(parts=[Part(text='Whales are...')])),    # final text reply
+]
+```
+
+Four events for one tool-using turn. Hold that shape — the pop quiz below tests it.
+
 ## ❓ Pop quiz before you advance
 
 > ❓ **Ask the student:** in `fun-facts`, if the user asks *"tell me a fact about whales"*:

@@ -2,11 +2,11 @@ module: 01_Foundations
 exercise:
   id: 01_Foundations_mini
   prompt: |
-    PAPER EXERCISE. Do not write code.
+    PAPER / VERBAL EXERCISE. Do not write code.
 
-    Draw the data flow for ONE user turn of the `fun-facts` agent where
+    Trace the data flow for ONE user turn of the `fun-facts` agent where
     the LLM invokes `google_search` exactly once before replying. Your
-    diagram must include and label:
+    answer must identify and label:
 
       - the User
       - the Runner
@@ -14,33 +14,47 @@ exercise:
       - the LlmAgent config (with model + instruction + tools)
       - the Gemini API
       - the `google_search` tool
-      - every arrow, labeled with what's being passed (e.g., "new user
-        message", "history + tools schema", "tool call: google_search('whales')",
-        "tool result", "final reply text")
+      - every arrow / step, labeled with what's being passed (e.g., "new
+        user message", "history + tools schema", "tool call:
+        google_search('whales')", "tool result", "final reply text")
       - every Event that gets appended to the Session, in order
 
-    Sketch on paper or a whiteboard, then transcribe it as ASCII into
-    Work/01_Foundations_sketch.txt for the tutor to grade.
+    Response mode is YOUR call. Any of these is a valid deliverable:
+
+      A. Sketch on paper or a whiteboard, then describe it to the tutor
+         in words (or photograph and describe what's in the photo).
+      B. Write a numbered/bulleted walkthrough of the steps in
+         Work/01_Foundations_sketch.txt — plain prose, one step per
+         line, with each step labeling the primitives involved and any
+         Event that gets appended.
+      C. Transcribe an ASCII diagram into
+         Work/01_Foundations_sketch.txt if you find that easier than
+         prose. This is OPTIONAL — do not let unicode-key-finding eat
+         your time.
+
+    The point is the concept (you can trace the data flow and name
+    every primitive that touches it), not the rendering format.
   scaffolding_hint: |
-    Use Notes/01_Foundations/_figures/runtime_timeline.txt as the
-    skeleton. Add the tool-call branch (which that figure shows in the
-    bottom half).
-  estimated_minutes: 30
+    Use Notes/01_Foundations/_figures/runtime_timeline.txt as a
+    reference for the shape — but you do NOT need to reproduce it
+    exactly. The tool-call branch (which that figure shows in the
+    bottom half) is the part you're being asked to extend.
+  estimated_minutes: 20
   verification:
     type: code_review
-    expect_files: [Work/01_Foundations_sketch.txt]
+    expect_files: []   # Mode B/C produces a file; Mode A is verbal — file is optional.
     expect_run_output_contains: []
     grading_rubric:
-      - "Diagram identifies User, Runner, Session, LlmAgent, Gemini API, and the tool as distinct nodes"
-      - "Arrow labels include the user message, the LLM prompt with tool schema, the tool call, the tool result, the final reply"
-      - "Session is shown accumulating ≥4 events for the tool-using turn"
+      - "Student identifies User, Runner, Session, LlmAgent, Gemini API, and the tool as distinct nodes"
+      - "Student names what crosses each boundary: user message, the LLM prompt with tool schema, the tool call, the tool result, the final reply"
+      - "Student accounts for ≥4 events accumulating in the Session for the tool-using turn"
       - "Student correctly places the system prompt ('instruction=') as part of the LlmAgent config, NOT in the Session"
       - "Student articulates that the Runner re-sends the full session history + instruction on EACH iteration of the loop"
   solution_pointer: null
   tutor_notes: |
     Common mistakes to probe for:
 
-    1. Drawing the instruction string as living in the Session. It
+    1. Drawing/saying the instruction string lives in the Session. It
        doesn't — it's a property of the LlmAgent and is sent on every
        LLM call by the Runner.
 
@@ -51,8 +65,18 @@ exercise:
     3. Treating the Runner as part of the LlmAgent. Runner is separate
        and reusable across many turns/sessions.
 
-    If the student's drawing has all six nodes and ≥4 labeled events,
-    pass. Push back on anything missing rather than rewriting it for
-    them — the act of revising the drawing is the learning.
+    Grading policy: if the student covers all five rubric items in any
+    of Modes A/B/C, pass. Push back on anything missing rather than
+    completing it for them — the act of self-correction IS the
+    learning. This rule is non-negotiable: see AGENTS.md "Drill
+    bail-out: scaffold or defer, never do-and-self-grade." If the
+    student bails on the drill mid-way, you offer to scaffold the
+    first step OR convert to verbal mode OR defer — you do NOT write
+    the full walkthrough yourself and mark it as a pass. That converts
+    the drill into a tutor demonstration and falsifies PROGRESS.md.
 
-    Discourage drawing tools. Pencil and paper. The friction is the point.
+    Drawing tools (Excalidraw, Miro, paper-and-pen photos) are all
+    fine. The historic "pencil and paper, friction is the point" line
+    was overstated — friction in the *format* doesn't teach the
+    *concept*, and asking a student to hand-type unicode box-drawing
+    characters at the end of a long session is a poor return on time.

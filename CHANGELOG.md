@@ -4,6 +4,51 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.10] - 2026-05-28
+
+Phase-0 dogfood fix #10 — three defects from one Module 01 dogfood transcript, all variants of the same momentum-bias root pattern that v0.4.3/v0.4.4/v0.4.8/v0.4.9 already chipped at:
+
+1. **The Module 01 mini-drill was unfair.** It demanded ASCII-art transcription as the deliverable — typing unicode box-drawing characters into a file. Student bailed (*"help me out, can't write an ascii diagram right now"*). The tutor then committed a worse defect: it **wrote the full deliverable itself** (the 7-step ASCII data-flow walkthrough), then **graded its own output as a "perfect pass on the Module 01 Mini-Drill"** and advanced `PROGRESS.md`. That's a drill-deliverable twin of v0.4.4's "answering drill probes on the student's behalf" — same shape, different artifact. Critically, the drill's own `tutor_notes` already said *"Push back on anything missing rather than rewriting it for them — the act of revising the drawing is the learning"* — the tutor ignored a rule that lived in the YAML. Rules buried in YAMLs don't bind; rules in AGENTS.md do.
+2. **The pop quiz on `05_DissectingSample.md` jumped ahead in complexity.** It asked *"how many events get appended"* without ever showing the student a concrete event log. The framework convention "user message is logged as an Event too" was buried in a table cell on page 02 ("Author: user, assistant, tool"), not demonstrated. The student gave a defensibly wrong answer (counted 2 instead of 4), got corrected, learned a convention by failing a quiz that should have been answerable from the page. Foreshadowing is fine; quizzing on un-shown conventions is unfair.
+3. **The tutor was inconsistent about adding depth on correct answers.** Some KCs got a beautiful one-sentence depth-pin — Q4 (state_delta) had *"You said 'specific type of event' — actually it's an *attribute on* an Event (`event.actions.state_delta`); same idea, sharper terminology."* Others got a flat *"Perfect!"* and moved on. The deepening instinct should be consistent: every correct answer is a teaching moment, not just a quiz item.
+
+### Fixed
+
+- **`Notes/01_Foundations/05_DissectingSample.md`** — inserted a new `🧠 What the Session's event log actually looks like` section immediately before the pop quiz. Shows a concrete 4-element `session.events == [...]` list for a tool-using turn of `fun-facts`, with the convention spelled out: *"The user's message is an `Event` too — not a separate 'input' the agent reads. Everything that crosses the runtime boundary is recorded as an event."* The pop quiz now lands on a foundation the page actually built.
+- **`Notes/01_Foundations/08_MiniDrill.yml`** — replaced the rigid "transcribe as ASCII into `Work/01_Foundations_sketch.txt`" deliverable with three alternative response modes (A: paper sketch + verbal description, B: numbered prose walkthrough in a text file, C: optional ASCII transcription). `expect_files` relaxed from required to optional. `tutor_notes` rewritten: removed the *"pencil and paper, friction is the point"* line (the friction was in the *format*, not the *concept* — bad return on time at session-end); added a non-negotiable grading-policy line cross-referencing AGENTS.md's new "Drill bail-out: scaffold or defer, never do-and-self-grade" rule.
+- **`AGENTS.md`** — three new sections:
+  - **Positive (in `🧠 During a lesson`, after the Exercises rubric block)** — `Drill bail-out: scaffold or defer, never do-and-self-grade`. Names the three acceptable bail-out responses (scaffold the start, convert response mode, defer and re-drill). Explicitly forbids writing the full deliverable and marking it as a pass. Frames it as the drill-deliverable twin of the existing "do not answer drill probes" rule — same shape, different artifact.
+  - **Positive (immediately after)** — `Correct answer ≠ silent pass — add one depth-pin`. Lists four kinds of one-sentence depth-pin (terminology refinement, common gotcha, production variant, forward cross-reference) with worked examples drawn from the actual transcript (the Q4 state_delta refinement is the model case). States explicitly what this is NOT (200-word tangent; restating answer; another question; generic praise alone).
+  - **Negative (in `❌ What NOT to do`)** — `Do not do the student's drill on their behalf, then grade your own work.` Cross-references the positive rule, names the false-pass-in-PROGRESS.md consequence.
+
+### Why
+
+The dogfood transcript surfaces three distinct failure modes that all share the v0.4.x root pattern: **the tutor optimizes for completion throughput and silently turns student-driven assessment into tutor-driven demonstration.** The variants caught across v0.4.3 → v0.4.10:
+
+- v0.4.3: running setup commands the student should be typing
+- v0.4.4: answering drill probe questions on the student's behalf
+- v0.4.8: skipping foundational diagrams when the page used a non-standard transclude placeholder
+- v0.4.9: chaining pages and sections without asking the student first
+- v0.4.10a: doing the student's drill itself and self-grading
+- v0.4.10b: treating a correct KC answer as a silent pass without adding depth
+
+Six variants of the same root pattern. The meta-finding (now memorialized in the deferred-sweeps memory): **if a future dogfood reveals a seventh variant, that's a signal to elevate the rule to AGENTS.md's preamble** rather than continuing to patch point-fixes. Candidate preamble framing: *"When in doubt between speed and student initiative, choose student initiative — every variant of tutor-driven cadence has been a bug."*
+
+### Method
+
+User flagged all three defects in one message with proposed framings. Re-read the affected files (mini-drill YAML, page 05, GeminiPayload precedent for the depth-pin model) to plan surgical edits. Five edits across three files. New "drill response-mode rigidity" and "quiz-predicts-untaught-conventions" sweep candidates added to the deferred-sweeps memory as items #3 and #4 (pushing the existing v0.4.3 sweeps to #5–#7). The cross-version meta-pattern is now also captured in the memory as the meta-finding.
+
+The drill YAML's *"pencil and paper, friction is the point"* line was a Phase-0 authoring conceit — friction in the right place is pedagogy; friction in the wrong place is just attrition. Hand-transcribing ASCII at session end is the wrong-place version: it tests editor patience, not concept mastery, and the concept (data-flow tracing) is just as well demonstrated by a verbal walkthrough.
+
+### Deferred
+
+- Same backlog as v0.4.4–v0.4.9 (theoretical-precision sweep; INCLUDE placeholder rot; hook sweep; expected-output truthing; brittle-count), plus two new sweeps:
+  - **#3 Drill response-mode rigidity:** audit every `08_MiniDrill.yml` and milestone drill for cases where the response mode is more burdensome than the concept being tested. Highest-suspect candidates flagged in the memory file.
+  - **#4 Quiz-predicts-untaught-conventions:** audit `07_KnowledgeCheck.yml` files and in-page pop quizzes for "how many X" / "what type is Y" questions that depend on framework conventions the page hasn't shown concretely. Fix mode: add a concrete example or surface the convention in the question itself.
+- No new debt beyond those two sweeps. The 3 AGENTS.md rules cover the contract layer; the 2 page-level fixes cover Module 01 surgically; the 2 sweep additions cover the rest of the curriculum when the user gives the green light.
+
+---
+
 ## [0.4.9] - 2026-05-28
 
 Phase-0 dogfood fix #9 — **the tutor treated a correct KC answer as a green light to advance to the next page.** User caught it from a live Antigravity transcript walking through Module 01's first two pages: student answered the multi-tool KC question correctly (3 iterations + per-call context list); the tutor's very next message opened with *"Now we move to 01_Foundations/02_RunnerSessionEvent"* and immediately rendered the new page's table and timeline diagram — all in one message, with no pause. The student had to interrupt twice (*"quick step back! on my prior answer, I used ',' to separate..."* and then *"for convenience, let's restart 01_Foundations/02_RunnerSessionEvent again please!"*) to recover the clarifying question they'd been holding and to reset the cadence.
