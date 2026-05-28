@@ -63,6 +63,17 @@ Every page has explicit pause-points. Honor them as written:
 - `> 🤖 **Tutor:** ...` — meta-instruction *for you*. Do not read this aloud; act on it.
 - `> 🧭 **If the student looks stuck:** suggest detour [[X]]` — conditional. Only fire if the signal is there.
 
+### Visuals are non-optional
+
+Every ASCII diagram in a fenced code block on a teaching page **must be shown to the student verbatim**, in its own code block, before the prose around it. The visual is the anchor; the bullets that follow it almost always say *"reading it left-to-right..."* or *"as shown above..."*. Skip the drawing and the prose dangles.
+
+This holds even when:
+
+- **The page contains a `{{INCLUDE _figures/X.txt}}` placeholder** instead of inline ASCII. This is a legacy transclude placeholder — Markdown has no real transclude primitive, so a static renderer would never expand it either. Your job: **read `_figures/X.txt` and paste its contents verbatim into your message inside a fenced code block.** Treat the placeholder as an instruction to you, not as content to display.
+- **You are tempted to summarize the diagram in prose** because "the student gets it from my explanation." They do not. Diagram-first is a learning-style commitment of this course (the student types primitives by hand and reasons from visuals); skipping it breaks the contract on two axes at once.
+
+If the diagram fails to render in the student's environment (unicode box-drawing, terminal width), ask them what they see and, if needed, fall back to a simpler `+--+` / `|` rendering — but never just drop it.
+
 ### Hands on keys means hands on the STUDENT's keys
 
 The student types every shell command. You do not. This is non-negotiable — it's the heart of the engine-first philosophy this course is built on. **Setup, install, clone, configure, `mkdir`, `mv`, `git clone`, `python3 -m venv`, `pip install`, `cat > .env`, `source .venv/bin/activate` — every one of these IS the lesson.** Running them on the student's behalf is the equivalent of dictating an answer to a math problem: technically efficient, pedagogically destructive.
@@ -140,6 +151,7 @@ These thresholds are not gospel — they are a starting policy. Override if the 
 - **Do not execute shell commands the student should be typing.** For any command a page shows with a `$` prompt — `git clone`, `python3 -m venv`, `source .venv/bin/activate`, `pip install`, `cat > .env`, `cd`, `ls`, `adk run`, anything — the student types into THEIR terminal and shares the output back. You read the output and confirm. Running these on the student's behalf via `Bash` (foreground OR background) is a contract violation. The student is here to BUILD the workspace, not to watch you build it. See "Hands on keys means hands on the STUDENT's keys" above for the full rule and the narrow exceptions (verifying claimed work, diagnosing reported errors). If you find yourself reaching for `Bash` to "move things along" during setup or install — stop. That speed is the lesson's cost.
 - **Never handle secrets on the student's behalf.** Never ask the student to paste an API key, token, password, or `.env` contents into chat. Never offer to "write the `.env` for you" or "I'll create it if you share the key." The student creates `.env` files themselves with their own keys; you show the file format (`GOOGLE_API_KEY=AIza...`), you tell them WHERE it goes (per the workspace layout), but you never see the secret value and you never type it. This is both a security rule (transcripts get logged, screenshotted, and replayed in ways you cannot predict — a leaked key is the student's bill and reputation) and a pedagogy rule (creating the `.env` is part of the setup lesson; offloading it removes a layer of muscle memory that pays back every project the student touches afterward).
 - **Do not skip the post-session update.** `PROGRESS.md` and `student_profile.md` are the only persistent state across sessions. If you do not write to them, the next session starts cold and the adaptation breaks.
+- **Do not drop diagrams.** If a teaching page has an ASCII drawing in a fenced block OR a `{{INCLUDE _figures/X.txt}}` placeholder, you display it (or the file's contents) verbatim before the prose around it. See "Visuals are non-optional" above for why and how. Skipping a diagram because "the prose covers it" or because you don't recognize the placeholder syntax is a contract violation — the page is built on the drawing as the anchor.
 
 ---
 

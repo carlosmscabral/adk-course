@@ -4,6 +4,40 @@ All notable changes to this course will be documented here. Follows a loose [Kee
 
 ---
 
+## [0.4.8] - 2026-05-28
+
+Phase-0 dogfood fix #8 — **the tutor silently dropped the foundational agent-loop diagram.** User caught it from the live Antigravity transcript of Module 01: the tutor presented the page's prose and Three Examples cleanly, but the ASCII drawing of the agent loop never appeared in the rendering. Diagram-first is a non-negotiable learning style for this course (the user reads visuals before prose, then types primitives by hand from what the visual showed). Dropping the drawing breaks the contract at the most foundational page in the curriculum.
+
+Root cause: the page contained `{{INCLUDE _figures/agent_loop.txt}}` inside a fenced code block — a transclude placeholder that **Markdown has no primitive for**. The tutor saw a literal `{{INCLUDE ...}}` token, didn't know what to do with it, and silently skipped to the next paragraph. This is the same pattern as v0.4.3/v0.4.4: the tutor optimizes for momentum and fills perceived structural gaps by skipping rather than asking.
+
+Convention scope: the `{{INCLUDE _figures/X.txt}}` pattern appears on **10 pages** across the course (`00_Setup/03`, `01_Foundations/01`+`02`, `02_FirstAgent/02`, `03_Tools/03`, `04_SessionsState/01`+`04`, `04A_ArtifactsHeavyData/04`, `1A_AppAndRunner/01`). Page `00_Setup/03` even has a tutor hook that tried to compensate (*"the `{{INCLUDE …}}` placeholder above is for the static site renderer..."*) — clearly insufficient, since the convention still broke on Module 01.
+
+### Fixed
+
+- **`Notes/01_Foundations/01_WhatIsAnAgent.md`** — replaced the `{{INCLUDE _figures/agent_loop.txt}}` placeholder with the **full ASCII drawing inlined** in the fenced code block. The page is now self-contained: a Markdown viewer, a tutor, or a static renderer all see the same thing. Added a `> 🤖 Tutor` hook immediately below the drawing reinforcing that the diagram must be shown verbatim before the prose around it (the bullets reference the drawing by phrase like *"reading it left-to-right..."* — without the drawing they dangle).
+- **`AGENTS.md`** — two new sections:
+  - **Positive rule (in `🧠 During a lesson`)** — new "Visuals are non-optional" subsection. States that every ASCII diagram in a fenced code block must be displayed verbatim before surrounding prose. Names the `{{INCLUDE _figures/X.txt}}` placeholder explicitly: it's a legacy transclude that the tutor must expand by `Read`ing the referenced file and pasting its contents verbatim into the message. Names the two failure modes (the placeholder is unfamiliar; the tutor thinks prose substitutes for the visual). Gives a fallback for unicode/width issues (ask the student what they see; degrade to `+--+ / |` if needed; never drop).
+  - **Negative rule (in `❌ What NOT to do`)** — "Do not drop diagrams." Short cross-reference to the positive rule above, naming the contract violation.
+
+### Why
+
+Diagram-first is one of the user's stated learning-style commitments — visuals are the *anchor*, prose is the *gloss*. The agent-loop drawing on `01_Foundations/01` is the single most important visual in the course; v0.4.6 even redrew it from scratch to depict the agent as the outer box (the v0.4.5/v0.4.6 precision arc culminated in that drawing). Shipping the precision fixes and then having the tutor silently skip the result is the worst of both worlds.
+
+The `{{INCLUDE}}` placeholder convention was a Phase-0 authoring shortcut — clean source, separate concern, one file per figure. In retrospect it's the kind of cleverness-tax pattern that fails to render in any consumer (Markdown viewers don't expand it, the tutor doesn't expand it, and a future static site generator would need a custom plugin). Inline ASCII in fenced blocks is what `practical-python` does, and it works for the same reason: zero indirection between source and student.
+
+v0.4.8 fixes only the page that just broke in dogfood, plus the AGENTS.md rule that future-proofs the other 9 affected pages until they're individually swept. The mechanical fan-out across the other 9 is deferred per the user's standing "dogfood first, extrapolate after" rule — but is now tracked as a new sweep candidate in the deferred backlog.
+
+### Method
+
+User flagged from a live Antigravity transcript: the tutor's rendering of the page included prose, the ⚠️ Key Distinction callout, the Three Examples, and the closing question — but the diagram was missing. Grep across `Notes/` confirmed the convention rot is broader than this page (10 affected pages, 1 with an inadequate compensating hook). Three edits: inline the diagram + add 1 positive + 1 negative AGENTS.md rule. No `_figures/agent_loop.txt` deletion — keeping it as the editor-facing source for now; the page is canonical, the .txt is artifact.
+
+### Deferred
+
+- **New deferred sweep #5: `{{INCLUDE _figures/X.txt}}` placeholder rot.** Inline the remaining 9 affected pages and update `_AUTHORING.md` to forbid the placeholder pattern going forward (inline ASCII in fenced blocks is the new convention). Update the deferred-sweeps memory file with this entry.
+- Same v0.4.4–v0.4.7 backlog otherwise (hook audit, expected-output truthing, brittle-count, theoretical-precision sweep).
+
+---
+
 ## [0.4.7] - 2026-05-28
 
 Phase-0 dogfood fix #7 — closes the agent-vs-LLM precision arc by drawing the **built-in vs custom tool** line that v0.4.6 left implicit. While fact-checking the user's framing of "LLM picks → agent runs," a nuance surfaced: `google_search` is a Gemini **built-in** — the search executes server-side at Google, not inside the agent's Python process. So Example 2 on Module 01's opener (just rewritten in v0.4.6 to say *"the agent runs the search"*) was technically inaccurate for `google_search` specifically. The general pattern is correct and Example 3's `add`/`multiply` demonstrate it correctly; `google_search` is the exception, and the page never named it as such.

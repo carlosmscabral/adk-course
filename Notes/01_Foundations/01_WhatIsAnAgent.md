@@ -25,8 +25,41 @@ That's it. The whole field of "agentic AI" reduces to that loop. Everything else
 ## 🧠 The loop, drawn
 
 ```
-{{INCLUDE _figures/agent_loop.txt}}
+              ┌─────────────────────────────────────────┐
+              │            THE AGENT LOOP               │
+              └─────────────────────────────────────────┘
+
+       user msg
+            │
+            ▼
+   ┌─────────────────────────────────────────────────────┐
+   │   AGENT  ── your loop code (the program)            │
+   │                                                     │
+   │   while True:                                       │
+   │      append latest_msg to history                   │
+   │                                                     │
+   │      tokens = LLM(history + tool_catalog) ──────────┼──┐
+   │      parsed = parse(tokens)                         │  │   ┌─────────┐
+   │                                                     │  └──►│   LLM   │
+   │      if parsed is a TEXT REPLY:                     │      │ (Gemini)│
+   │          return parsed.text to user  ── DONE        │ ◄────┤ tokens  │
+   │                                                     │      │ in/out, │
+   │      else:  # parsed is a TOOL CALL                 │      │ no state│
+   │          # the AGENT runs the tool — not the LLM    │      └─────────┘
+   │          result     = tool(parsed.args) ────────────┼──┐
+   │          latest_msg = result                        │  │   ┌─────────┐
+   │          continue                                   │  └──►│  TOOL   │
+   │                                                     │      │ (Python │
+   │                                                     │ ◄────┤  func)  │
+   └─────────────────────────────────────────────────────┘      └─────────┘
+
+   The AGENT is the box: the loop, the history, the parse, the tool
+   execution, the decision to stop. The LLM and TOOL are services the
+   agent invokes. The LLM never runs your tools — it emits a request
+   as tokens; the AGENT parses those tokens and runs the tool.
 ```
+
+> 🤖 **Tutor:** display this ASCII drawing **verbatim** to the student before any prose around it. The page's whole reading order assumes the drawing is on screen. If you skip it, the bullets below have nothing to refer to.
 
 Reading it left-to-right, top-to-bottom:
 
